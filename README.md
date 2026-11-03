@@ -60,6 +60,51 @@ npx expo run:ios
 npx expo run:android
 ```
 
+## Auf dem iPhone nutzen
+
+**Weg 1 – Expo Go (sofort, kostenlos, ohne Apple-Konto):**
+
+1. Auf dem iPhone die App **Expo Go** aus dem App Store installieren.
+2. Auf einem Rechner (Mac, Windows oder Linux mit Node.js 20+) das Projekt klonen und starten:
+   ```bash
+   git clone https://github.com/robertertl295-cell/Tablefinder.git
+   cd Tablefinder
+   npm install
+   npx expo start
+   ```
+3. Den QR-Code mit der iPhone-Kamera scannen. Die App öffnet sich in Expo Go.
+
+- **WLAN:** iPhone und Rechner müssen im selben WLAN sein. Klappt das nicht: `npx expo start --tunnel`.
+- **Nur mit Rechner:** Die App läuft nur, solange der Rechner den Dev-Server bereitstellt. Gut zum Ausprobieren, nicht für den Alltag.
+
+**Weg 2 – eigene App auf dem iPhone (dauerhaft, ohne Rechner):** über EAS Build, den Cloud-Build-Dienst von Expo. Man braucht dafür:
+
+- ein kostenloses Expo-Konto
+- das **Apple Developer Program** (99 €/Jahr), um die App für echte Geräte zu signieren
+
+```bash
+npm install -g eas-cli
+eas login
+eas init                                   # Projekt anlegen, Project-ID notieren
+eas device:create                          # iPhone registrieren (Link öffnen, Profil installieren)
+eas build --platform ios --profile preview # signierte .ipa, Installation per Link/QR-Code
+```
+
+- **Projekt-ID:** `eas init` vergibt eine Project-ID. Bei dieser dynamischen Konfiguration (`app.config.ts`) setzt man sie als Umgebungsvariable `EAS_PROJECT_ID` oder trägt sie unter `extra.eas.projectId` ein.
+- **Zertifikate:** EAS legt Zertifikate und Profile beim ersten Build selbst an, nach Anmeldung mit der Apple-ID.
+- **Google-Key:** Soll die App mit Google suchen, den Key für den Build hinterlegen: `eas env:create --name EXPO_PUBLIC_PLACES_API_KEY --value … --environment preview`. Ohne Key sucht sie mit OpenStreetMap.
+- **TestFlight:** Für TestFlight bzw. den App Store stattdessen `eas build --platform ios --profile production` und danach `eas submit --platform ios`.
+
+Build-Profile in `eas.json`:
+
+| Profil       | Ergebnis                                                             | Apple Developer Program |
+| ------------ | -------------------------------------------------------------------- | ----------------------- |
+| `preview`    | `.ipa` für registrierte Geräte, Installation per Link                | ja                      |
+| `production` | `.ipa` für TestFlight/App Store, Build-Nummer zählt automatisch hoch | ja                      |
+| `simulator`  | `.app` für den iOS-Simulator auf einem Mac                           | nein                    |
+
+Alle Profile bauen mit dem neuesten verfügbaren Xcode/iOS-SDK (`"image": "latest"`).
+
 ## API-Keys
 
 Keys stehen ausschließlich in `.env`. Diese Datei ist in `.gitignore` eingetragen und wird nie committet.

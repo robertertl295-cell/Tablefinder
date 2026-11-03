@@ -17,6 +17,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     icon: './assets/expo.icon',
     bundleIdentifier: 'de.tisch.app',
     supportsTablet: false,
+    // Nur Standard-HTTPS → keine Exportkontroll-Abfrage bei TestFlight/App Store.
+    config: { usesNonExemptEncryption: false },
   },
   android: {
     package: 'de.tisch.app',
@@ -60,6 +62,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
   ],
+  // Wird von `eas init` vergeben; bei dynamischer Konfiguration über die Umgebung setzen.
+  ...(process.env.EAS_PROJECT_ID
+    ? { extra: { ...config.extra, eas: { projectId: process.env.EAS_PROJECT_ID } } }
+    : {}),
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
