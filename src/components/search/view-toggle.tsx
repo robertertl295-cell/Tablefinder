@@ -29,6 +29,7 @@ export function ViewToggle({ value, onChange }: Props) {
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             accessibilityLabel={`Als ${o.label} anzeigen`}
+            hitSlop={{ top: 6, bottom: 6, left: 2, right: 2 }}
             style={[styles.option, selected && { backgroundColor: theme.background }]}>
             <Icon name={o.icon} size={14} color={color} />
             <ThemedText type="smallBold" style={{ color }}>

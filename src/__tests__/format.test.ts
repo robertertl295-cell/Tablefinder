@@ -39,3 +39,20 @@ describe('Formatierung', () => {
     expect(formatPriceLevel(4)).toBe('€€€€');
   });
 });
+
+describe('Entfernung in Meilen', () => {
+  it.each([
+    [30, '100 ft'],
+    [150, '490 ft'],
+    [800, '0,5 mi'],
+    [1609, '1,0 mi'],
+    [20_000, '12 mi'],
+  ])('%i m → %s', (m, expected) => {
+    expect(formatDistance(m, 'imperial')).toBe(expected);
+  });
+
+  it('für Screenreader ausgeschrieben', () => {
+    expect(spokenDistance(800, 'imperial')).toBe('0,5 Meilen');
+    expect(spokenDistance(30, 'imperial')).toBe('100 Fuß');
+  });
+});

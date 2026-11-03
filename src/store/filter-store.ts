@@ -3,6 +3,7 @@ import { persist, type PersistStorage } from 'zustand/middleware';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 import { persistStorage } from '@/services/storage';
+import { settingsStore } from '@/store/settings-store';
 import type { Filters } from '@/types/filters';
 import { createDefaultFilters, sanitizeFilters } from '@/utils/filters';
 
@@ -32,11 +33,12 @@ export function createFilterStore(
   store = createStore<FilterState>()(
     persist(
       (set) => ({
-        filters: createDefaultFilters(),
+        filters: createDefaultFilters(settingsStore.getState().defaultRadiusMeters),
         hydrated: false,
         setFilters: (filters) => set({ filters: sanitizeFilters(filters) }),
         // Radius bleibt beim Zurücksetzen auf dem Standard aus den Einstellungen.
-        reset: () => set({ filters: createDefaultFilters() }),
+        reset: () =>
+          set({ filters: createDefaultFilters(settingsStore.getState().defaultRadiusMeters) }),
       }),
       {
         name: FILTER_STORAGE_KEY,

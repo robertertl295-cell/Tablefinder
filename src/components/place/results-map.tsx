@@ -1,7 +1,8 @@
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
 import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/ui/icon';
@@ -34,6 +35,8 @@ export function ResultsMap({
 }: Props) {
   const theme = useTheme();
   const mapRef = useRef<MapView>(null);
+  const scheme = useColorScheme();
+  const reduceMotion = useReducedMotion();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Zuletzt sichtbarer Ausschnitt. Der Button erscheint nur, wenn er deutlich vom Suchkreis abweicht –
   // nach einer neuen Suche oder dem Schwenk zu einem Bezirk verschwindet er dadurch von selbst.
@@ -46,7 +49,7 @@ export function ResultsMap({
 
   // Bei neuem Suchmittelpunkt (z. B. anderer Bezirk) dorthin schwenken.
   useEffect(() => {
-    mapRef.current?.animateToRegion(regionForRadius(center, radiusMeters), 350);
+    mapRef.current?.animateToRegion(regionForRadius(center, radiusMeters), reduceMotion ? 0 : 350);
   }, [center.latitude, center.longitude, radiusMeters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -56,6 +59,7 @@ export function ResultsMap({
         style={StyleSheet.absoluteFill}
         initialRegion={regionForRadius(center, radiusMeters)}
         showsUserLocation={userLocation !== null}
+        userInterfaceStyle={scheme === 'dark' ? 'dark' : 'light'}
         showsPointsOfInterests={false}
         toolbarEnabled={false}
         onPress={() => setSelectedId(null)}

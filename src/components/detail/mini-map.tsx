@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 import { Radius } from '@/constants/theme';
@@ -9,6 +9,7 @@ import { regionForRadius } from '@/utils/map-region';
 /** Kleine, nicht bewegliche Karte; Antippen startet die Route. */
 export function MiniMap({ location, onPress }: { location: LatLng; onPress: () => void }) {
   const theme = useTheme();
+  const scheme = useColorScheme();
   return (
     <Pressable
       onPress={onPress}
@@ -19,6 +20,7 @@ export function MiniMap({ location, onPress }: { location: LatLng; onPress: () =
         style={StyleSheet.absoluteFill}
         initialRegion={regionForRadius(location, 250)}
         liteMode
+        userInterfaceStyle={scheme === 'dark' ? 'dark' : 'light'}
         scrollEnabled={false}
         zoomEnabled={false}
         rotateEnabled={false}

@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ResultsMap } from '@/components/place/results-map';
 import { ThemedText } from '@/components/themed-text';
+import { PLACES_ERROR_MESSAGE } from '@/services/places/errors';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
@@ -19,6 +20,7 @@ export default function MapScreen() {
   const insets = useSafeAreaInsets();
   const results = useSearch((s) => s.results);
   const status = useSearch((s) => s.status);
+  const error = useSearch((s) => s.error);
   const text = useSearch((s) => s.text.trim());
   const userLocation = useSearch((s) => s.userLocation);
   const label = useSearch(locationLabel);
@@ -45,8 +47,18 @@ export default function MapScreen() {
           <ThemedText type="smallBold" numberOfLines={1}>
             {title}
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {status === 'loading' ? 'Suche läuft …' : `${results.length} Treffer`}
+          <ThemedText
+            type="small"
+            themeColor="textSecondary"
+            style={status === 'error' && { color: theme.danger }}
+            accessibilityLiveRegion="polite">
+            {status === 'loading'
+              ? 'Suche läuft …'
+              : status === 'error' && error
+                ? PLACES_ERROR_MESSAGE[error.kind]
+                : results.length === 0
+                  ? 'Keine Treffer – verschiebe die Karte oder ändere die Filter.'
+                  : `${results.length} Treffer`}
           </ThemedText>
         </View>
         {status === 'loading' && <ActivityIndicator color={theme.accent} />}

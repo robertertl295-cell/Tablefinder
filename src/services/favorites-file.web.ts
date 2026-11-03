@@ -28,3 +28,7 @@ export function pickBackup(): Promise<ParseResult | null> {
     input.click();
   });
 }
+
+export function deleteBackupFiles(): void {
+  // Im Browser landen Sicherungen im Download-Ordner, nicht in der App.
+}

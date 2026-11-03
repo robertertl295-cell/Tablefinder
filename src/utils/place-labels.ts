@@ -1,6 +1,6 @@
 import type { BusinessStatus, PlaceSummary } from '@/types/place';
 
-import { formatCount, formatRating, PRICE_LEVEL_LABEL, spokenDistance } from './format';
+import { formatCount, formatRating, PRICE_LEVEL_LABEL, spokenDistance, type Units } from './format';
 import { RATING_CONFIDENCE_LABEL, ratingConfidence } from './rating';
 
 export type StatusTone = 'success' | 'neutral' | 'warning' | 'danger';
@@ -23,6 +23,7 @@ export function placeStatus(
 export function placeAccessibilityLabel(
   place: PlaceSummary,
   distanceMeters: number | null,
+  units: Units = 'metric',
 ): string {
   const parts = [place.name];
   if (place.typeLabel) parts.push(place.typeLabel);
@@ -35,7 +36,7 @@ export function placeAccessibilityLabel(
     parts.push(RATING_CONFIDENCE_LABEL.none);
   }
   if (place.priceLevel !== null) parts.push(`Preisniveau ${PRICE_LEVEL_LABEL[place.priceLevel]}`);
-  if (distanceMeters !== null) parts.push(`${spokenDistance(distanceMeters)} entfernt`);
+  if (distanceMeters !== null) parts.push(`${spokenDistance(distanceMeters, units)} entfernt`);
   const status = placeStatus(place.openNow, place.businessStatus);
   if (status) parts.push(status.label);
   return parts.join(', ');

@@ -1,6 +1,13 @@
 import { router } from 'expo-router';
 import type { ReactElement } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { DataAttribution } from '@/components/data-attribution';
 import { Spacing } from '@/constants/theme';
@@ -46,7 +53,9 @@ export function PlaceList({
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
       initialNumToRender={4}
+      maxToRenderPerBatch={6}
       windowSize={7}
+      removeClippedSubviews={Platform.OS === 'android'}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       refreshControl={

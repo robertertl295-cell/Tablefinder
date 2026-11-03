@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
 import { PixelRatio, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
 import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/ui/icon';
@@ -21,6 +22,7 @@ type Props = {
  */
 export function PlacePhoto({ photo, width, style }: Props) {
   const theme = useTheme();
+  const reduceMotion = useReducedMotion();
   const uri = photo
     ? placesProvider.getPhotoUrl(photo, PixelRatio.getPixelSizeForLayoutSize(width))
     : null;
@@ -33,7 +35,7 @@ export function PlacePhoto({ photo, width, style }: Props) {
           source={{ uri }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
-          transition={200}
+          transition={reduceMotion ? 0 : 200}
           cachePolicy={placesProvider.source === 'google' ? 'memory' : 'memory-disk'}
           recyclingKey={photo?.name}
           accessible={false}

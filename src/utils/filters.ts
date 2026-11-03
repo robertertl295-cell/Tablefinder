@@ -5,7 +5,7 @@ import { normalizeMinRating } from '@/services/places/query-filter';
 import type { AttributeKey, Filters, MealKey } from '@/types/filters';
 import type { PlaceCategory, PlaceSummary, PriceLevel } from '@/types/place';
 
-import { formatCount, formatDistance, formatPriceLevel, formatRating } from './format';
+import { formatCount, formatDistance, formatPriceLevel, formatRating, type Units } from './format';
 
 export const CATEGORY_OPTIONS: readonly PlaceCategory[] = [
   'restaurant',
@@ -103,7 +103,11 @@ export type FilterChip = { id: string; label: string; remove: (f: Filters) => Fi
 const without = <T>(list: readonly T[], item: T): T[] => list.filter((x) => x !== item);
 
 /** Aktive Filter als einzeln entfernbare Chips, in fester Reihenfolge. */
-export function activeFilterChips(f: Filters, defaultRadius = DEFAULT_RADIUS_METERS): FilterChip[] {
+export function activeFilterChips(
+  f: Filters,
+  defaultRadius = DEFAULT_RADIUS_METERS,
+  units: Units = 'metric',
+): FilterChip[] {
   const chips: FilterChip[] = [];
   for (const c of f.categories) {
     chips.push({
@@ -143,7 +147,7 @@ export function activeFilterChips(f: Filters, defaultRadius = DEFAULT_RADIUS_MET
   if (f.radiusMeters !== defaultRadius) {
     chips.push({
       id: 'radius',
-      label: `Umkreis ${formatDistance(f.radiusMeters)}`,
+      label: `Umkreis ${formatDistance(f.radiusMeters, units)}`,
       remove: (x) => ({ ...x, radiusMeters: defaultRadius }),
     });
   }

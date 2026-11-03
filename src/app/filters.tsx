@@ -8,6 +8,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_LABEL } from '@/services/places/place-types';
 import { filterStore } from '@/store/filter-store';
+import { settingsStore, useUnits } from '@/store/settings-store';
 import type { Filters } from '@/types/filters';
 import {
   ATTRIBUTE_LABEL,
@@ -37,6 +38,7 @@ import { LOW_DATA_THRESHOLD } from '@/utils/rating';
  */
 export default function FiltersSheet() {
   const theme = useTheme();
+  const units = useUnits();
   const [draft, setDraft] = useState<Filters>(() => filterStore.getState().filters);
   const draftRef = useRef(draft);
 
@@ -55,7 +57,9 @@ export default function FiltersSheet() {
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <View style={[styles.bar, { borderColor: theme.border }]}>
         <Pressable
-          onPress={() => setDraft(createDefaultFilters())}
+          onPress={() =>
+            setDraft(createDefaultFilters(settingsStore.getState().defaultRadiusMeters))
+          }
           accessibilityRole="button"
           accessibilityLabel="Alle Filter zurücksetzen"
           hitSlop={8}>
@@ -135,7 +139,7 @@ export default function FiltersSheet() {
 
         <FilterSection title="Umkreis">
           <MultiChoice
-            options={RADIUS_OPTIONS.map((r) => ({ value: r, label: formatDistance(r) }))}
+            options={RADIUS_OPTIONS.map((r) => ({ value: r, label: formatDistance(r, units) }))}
             values={[draft.radiusMeters]}
             onToggle={(radiusMeters) => update({ radiusMeters })}
           />

@@ -77,7 +77,7 @@ export function FavoriteCard({ favorite, entry, lists, userLocation }: Props) {
         ]}>
         {closed && (
           <View style={[styles.closedBanner, { backgroundColor: theme.danger }]}>
-            <ThemedText type="smallBold" style={styles.closedText}>
+            <ThemedText type="smallBold" style={{ color: theme.onDanger }}>
               Dauerhaft geschlossen
             </ThemedText>
           </View>
@@ -139,6 +139,5 @@ const styles = StyleSheet.create({
   ownRating: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   note: { fontStyle: 'italic' },
   closedBanner: { paddingHorizontal: Spacing.three, paddingVertical: Spacing.one },
-  closedText: { color: '#FFFFFF' },
   missing: { gap: Spacing.one },
 });

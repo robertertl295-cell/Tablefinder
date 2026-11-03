@@ -15,7 +15,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 | 4     | Filter mit Chips und Persistenz                        | ✅     |
 | 5     | Detailseite                                            | ✅     |
 | 6     | Favoriten und Listen, Export/Import                    | ✅     |
-| 7     | Feinschliff (Dark Mode, Barrierefreiheit, Performance) | offen  |
+| 7     | Feinschliff (Dark Mode, Barrierefreiheit, Performance) | ✅     |
 | 8     | Abschluss                                              | offen  |
 
 ## Schnellstart
@@ -187,6 +187,38 @@ placesProvider (index.ts)
   - „Zusammenführen“: Gleichnamige Listen werden vereint. Bei doppelten Favoriten gewinnt die neuere Bearbeitung, die Listen werden zusammengelegt.
   - „Ersetzen“ stellt die Sicherung exakt wieder her.
 - **Gespeichert** (`tisch.favorites`) werden nur `placeId`, Listen, Notiz, Besuchsstatus, eigene Bewertung und Zeitstempel. Name, Adresse, Fotos und Bewertungen von Google werden nie gespeichert. Ohne Internet zeigt die Liste deshalb nur die eigenen Angaben, nicht die Namen.
+
+## Einstellungen
+
+- **Suche:** Standard-Umkreis (500 m bis 5 km). Er gilt für neue Suchen und beim Zurücksetzen der Filter. Hat jemand den Umkreis im Filter nie geändert, übernimmt die Suche den neuen Standard sofort.
+- **Einheiten:** Kilometer oder Meilen. Gilt überall: Karten, Filter, Chips und Screenreader-Texte. Bei Meilen bleiben die Radius-Stufen metrisch und werden nur umgerechnet angezeigt (z. B. 0,9 mi).
+- **Sprache:** Deutsch. Die App ist nur deutsch, auch die Abfragen an Google laufen mit `languageCode: de`.
+- **Daten:**
+  - Link zu „Favoriten sichern oder wiederherstellen“.
+  - „Alle lokalen Daten löschen“ entfernt nach Rückfrage Favoriten, Listen, Notizen, Filter, Einstellungen, den Zwischenspeicher und erzeugte Sicherungsdateien.
+- **Datenschutz-Hinweis:** keine eigenen Server und kein Tracking. Suchbegriff und Suchort gehen an Google. Der Standort wird nur während der Nutzung abgefragt und nicht gespeichert.
+- Gespeichert wird unter `tisch.settings`, beim Laden wird geprüft.
+
+## Barrierefreiheit, Dunkelmodus, Performance
+
+- **Kontrast:** Ein Test prüft alle Text-/Hintergrund-Paare in Hell und Dunkel gegen WCAG AA (≥ 4,5 : 1), dazu Schrift auf Akzent- und Warnflächen. Dabei fiel auf, dass das „Dauerhaft geschlossen“-Banner im Dunkelmodus weiße Schrift auf Hellrot hatte. Behoben mit dem Token `onDanger`.
+- **Screenreader:**
+  - Jede Ergebniskarte hat ein vollständiges Label (Name, Typ, Sterne mit Anzahl, Datenbasis, Preis, Entfernung, Status).
+  - Icons sind für Screenreader ausgeblendet, Überschriften als `header` markiert, Auswahl-Chips melden ihren Zustand.
+  - Trefferzahlen werden angesagt: auf Android per Live-Region, auf iOS per `announceForAccessibility`.
+- **Bedienung:** Alle Bedienelemente haben mindestens 44 pt Trefferfläche, kleine über `hitSlop`. Die Schriftgröße folgt der Systemeinstellung, Layouts brechen um statt abzuschneiden.
+- **Bewegung reduzieren:** Kartenschwenks und Bild-Überblendungen entfallen, wenn die Systemeinstellung aktiv ist.
+- **Dunkelmodus:** Alle Farben kommen aus Tokens in `constants/theme.ts`. Die Karten (`react-native-maps`) schalten ebenfalls um, die Statusleiste passt sich an.
+- **Performance:**
+  - Suche verzögert um 400 ms, Ergebnisse 2 bzw. 5 Minuten im Speicher, gleichzeitige gleiche Anfragen gebündelt.
+  - Paginierung, virtualisierte Listen (auf Android werden Elemente außerhalb des Bildschirms ausgeblendet).
+  - Bilder werden über `expo-image` in passender Größe geladen. Karten-Pins ohne laufende Neuberechnung (`tracksViewChanges={false}`).
+  - Herz-Buttons beobachten nur ihren eigenen Favoriten, Komponenten werden über den React Compiler automatisch memoisiert.
+- **Leer- und Fehlerzustände:**
+  - Suche: kein Netz, Zeitüberschreitung, Anfragelimit, ungültiger Key, keine Treffer (mit „Filter zurücksetzen“, wenn Filter aktiv sind).
+  - Karten-Tab: Fehler und keine Treffer.
+  - Detailseite: Ort nicht gefunden, Ladefehler.
+  - Favoriten: keine Favoriten, leere Liste, Ort nicht mehr verfügbar, offline.
 
 ## Daten und Nutzungsbedingungen
 

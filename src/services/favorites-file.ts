@@ -1,5 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 import type { FavoritesBackup } from '@/types/favorites';
@@ -46,5 +46,16 @@ export async function pickBackup(): Promise<ParseResult | null> {
     return parseBackup(await new File(asset.uri).text());
   } catch {
     return { ok: false, error: 'Die Datei konnte nicht gelesen werden.' };
+  }
+}
+
+/** Entfernt erzeugte Sicherungsdateien aus dem Cache (beim Löschen aller Daten). */
+export function deleteBackupFiles(): void {
+  try {
+    for (const entry of new Directory(Paths.cache).list()) {
+      if (entry instanceof File && entry.name.startsWith('tisch-favoriten-')) entry.delete();
+    }
+  } catch {
+    // Cache nicht lesbar – nichts zu tun, das System räumt ihn ohnehin auf.
   }
 }

@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useEffect } from 'react';
+import { AccessibilityInfo, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActiveFilterChips } from '@/components/filters/active-filter-chips';
@@ -17,6 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { filterStore, useFilters } from '@/store/filter-store';
+import { useSettings } from '@/store/settings-store';
 import {
   locationLabel,
   searchCenter,
@@ -45,7 +47,22 @@ export default function SearchScreen() {
   const center = useSearch(searchCenter);
   const radius = useSearchRadius();
   const filters = useFilters((s) => s.filters);
-  const chips = activeFilterChips(filters);
+  const defaultRadius = useSettings((s) => s.defaultRadiusMeters);
+  const units = useSettings((s) => s.units);
+  const chips = activeFilterChips(filters, defaultRadius, units);
+
+  // Android liest die Trefferzeile über accessibilityLiveRegion vor, iOS braucht eine Ansage.
+  const resultCount = results.length;
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    if (status === 'success') {
+      AccessibilityInfo.announceForAccessibility(
+        resultCount === 0 ? 'Keine Treffer' : `${resultCount} Treffer`,
+      );
+    } else if (status === 'error') {
+      AccessibilityInfo.announceForAccessibility('Suche fehlgeschlagen');
+    }
+  }, [status, resultCount]);
 
   const isInitialLoading = (status === 'loading' || status === 'idle') && results.length === 0;
   const summary = isInitialLoading

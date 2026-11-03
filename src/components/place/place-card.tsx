@@ -4,6 +4,7 @@ import { FavoriteButton } from '@/components/favorites/favorite-button';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useUnits } from '@/store/settings-store';
 import type { PlaceSummary } from '@/types/place';
 import { formatDistance, formatPriceLevel } from '@/utils/format';
 import { placeAccessibilityLabel, placeStatus, type StatusTone } from '@/utils/place-labels';
@@ -33,6 +34,7 @@ export function PlaceCard({
 }: Props) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
+  const units = useUnits();
   const status = placeStatus(place.openNow, place.businessStatus);
   const toneColor: Record<StatusTone, string> = {
     success: theme.success,
@@ -43,7 +45,7 @@ export function PlaceCard({
   const meta = [
     place.typeLabel,
     place.priceLevel !== null ? formatPriceLevel(place.priceLevel) : null,
-    distanceMeters !== null ? formatDistance(distanceMeters) : null,
+    distanceMeters !== null ? formatDistance(distanceMeters, units) : null,
   ].filter(Boolean);
   const isClosed = place.businessStatus === 'closed_permanently';
 
@@ -52,7 +54,7 @@ export function PlaceCard({
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel={placeAccessibilityLabel(place, distanceMeters)}
+        accessibilityLabel={placeAccessibilityLabel(place, distanceMeters, units)}
         accessibilityHint="Öffnet die Details"
         style={({ pressed }) => [
           styles.card,
