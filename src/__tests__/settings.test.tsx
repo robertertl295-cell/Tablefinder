@@ -50,11 +50,21 @@ beforeEach(async () => {
 describe('Einstellungen-Store', () => {
   it('bereinigt ungültige Werte', () => {
     expect(
-      sanitizeSettings({ defaultRadiusMeters: 123, units: 'lichtjahre', resultSort: 'zufall' }),
+      sanitizeSettings({
+        defaultRadiusMeters: 123,
+        units: 'lichtjahre',
+        resultSort: 'zufall',
+        dataSource: 'bing',
+      }),
     ).toEqual(DEFAULT_SETTINGS);
     expect(
       sanitizeSettings({ defaultRadiusMeters: 3000, units: 'imperial', resultSort: 'trust' }),
-    ).toEqual({ defaultRadiusMeters: 3000, units: 'imperial', resultSort: 'trust' });
+    ).toEqual({
+      defaultRadiusMeters: 3000,
+      units: 'imperial',
+      resultSort: 'trust',
+      dataSource: 'auto',
+    });
     // Ältere gespeicherte Stände ohne Sortierung bekommen den Standard.
     expect(sanitizeSettings({ defaultRadiusMeters: 3000 }).resultSort).toBe('relevance');
   });
@@ -76,6 +86,7 @@ describe('Einstellungen-Store', () => {
       defaultRadiusMeters: 5000,
       units: 'imperial',
       resultSort: 'trust',
+      dataSource: 'auto',
     });
 
     const second = createSettingsStore(storage);

@@ -8,6 +8,8 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_LABEL } from '@/services/places/place-types';
 import { filterStore } from '@/store/filter-store';
+import { useActiveSource, useSourceCapabilities } from '@/hooks/use-active-source';
+import { SOURCE_LABEL } from '@/services/places/capabilities';
 import { settingsStore, useSettings, useUnits } from '@/store/settings-store';
 import type { Filters } from '@/types/filters';
 import {
@@ -31,7 +33,7 @@ import {
   PRICE_LEVEL_LABEL,
 } from '@/utils/format';
 import { LOW_DATA_THRESHOLD } from '@/utils/rating';
-import { RESULT_SORT_LABEL, RESULT_SORT_OPTIONS } from '@/utils/sort-places';
+import { availableSorts, effectiveSort, RESULT_SORT_LABEL } from '@/utils/sort-places';
 
 /**
  * Filter als Bottom Sheet. Änderungen werden erst beim Schließen übernommen
@@ -40,7 +42,12 @@ import { RESULT_SORT_LABEL, RESULT_SORT_OPTIONS } from '@/utils/sort-places';
 export default function FiltersSheet() {
   const theme = useTheme();
   const units = useUnits();
-  const resultSort = useSettings((s) => s.resultSort);
+  const caps = useSourceCapabilities();
+  const source = useActiveSource();
+  const resultSort = effectiveSort(
+    useSettings((s) => s.resultSort),
+    caps,
+  );
   const [draft, setDraft] = useState<Filters>(() => filterStore.getState().filters);
   const draftRef = useRef(draft);
 
@@ -82,11 +89,25 @@ export default function FiltersSheet() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {!caps.ratings && (
+          <ThemedText
+            type="small"
+            themeColor="textSecondary"
+            style={[styles.sourceNote, { backgroundColor: theme.backgroundElement }]}>
+            Datenquelle {SOURCE_LABEL[source]}: Bewertungen und Preise gibt es dort nicht, die
+            passenden Filter sind ausgeblendet. Deine Auswahl dafür bleibt gespeichert.
+          </ThemedText>
+        )}
+
         <FilterSection
           title="Sortieren nach"
-          hint="Der Vertrauensscore berücksichtigt, wie viele Bewertungen hinter dem Schnitt stehen.">
+          hint={
+            caps.ratings
+              ? 'Der Vertrauensscore berücksichtigt, wie viele Bewertungen hinter dem Schnitt stehen.'
+              : undefined
+          }>
           <MultiChoice
-            options={RESULT_SORT_OPTIONS.map((s) => ({ value: s, label: RESULT_SORT_LABEL[s] }))}
+            options={availableSorts(caps).map((s) => ({ value: s, label: RESULT_SORT_LABEL[s] }))}
             values={[resultSort]}
             onToggle={(s) => settingsStore.getState().setResultSort(s)}
           />
@@ -111,43 +132,49 @@ export default function FiltersSheet() {
           />
         </View>
 
-        <FilterSection title="Mindestbewertung">
-          <SingleChoice
-            options={RATING_OPTIONS.map((r) => ({
-              value: r,
-              label: `${formatRating(r)} ★`,
-              accessibilityLabel: `ab ${formatRating(r)} Sternen`,
-            }))}
-            value={draft.minRating}
-            onChange={(minRating) => update({ minRating })}
-          />
-        </FilterSection>
+        {caps.ratings && (
+          <>
+            <FilterSection title="Mindestbewertung">
+              <SingleChoice
+                options={RATING_OPTIONS.map((r) => ({
+                  value: r,
+                  label: `${formatRating(r)} ★`,
+                  accessibilityLabel: `ab ${formatRating(r)} Sternen`,
+                }))}
+                value={draft.minRating}
+                onChange={(minRating) => update({ minRating })}
+              />
+            </FilterSection>
 
-        <FilterSection
-          title="Mindestanzahl Bewertungen"
-          hint={`Unter ${LOW_DATA_THRESHOLD} Bewertungen ist die Datenbasis dünn – einzelne Stimmen verzerren den Schnitt stark.`}>
-          <SingleChoice
-            options={RATING_COUNT_OPTIONS.map((n) => ({
-              value: n,
-              label: `${formatCount(n)}+`,
-              accessibilityLabel: `mindestens ${formatCount(n)} Bewertungen`,
-            }))}
-            value={draft.minRatingCount}
-            onChange={(minRatingCount) => update({ minRatingCount })}
-          />
-        </FilterSection>
+            <FilterSection
+              title="Mindestanzahl Bewertungen"
+              hint={`Unter ${LOW_DATA_THRESHOLD} Bewertungen ist die Datenbasis dünn – einzelne Stimmen verzerren den Schnitt stark.`}>
+              <SingleChoice
+                options={RATING_COUNT_OPTIONS.map((n) => ({
+                  value: n,
+                  label: `${formatCount(n)}+`,
+                  accessibilityLabel: `mindestens ${formatCount(n)} Bewertungen`,
+                }))}
+                value={draft.minRatingCount}
+                onChange={(minRatingCount) => update({ minRatingCount })}
+              />
+            </FilterSection>
+          </>
+        )}
 
-        <FilterSection title="Preisniveau">
-          <MultiChoice
-            options={PRICE_OPTIONS.map((p) => ({
-              value: p,
-              label: formatPriceLevel(p),
-              accessibilityLabel: `Preisniveau ${PRICE_LEVEL_LABEL[p]}`,
-            }))}
-            values={draft.priceLevels}
-            onToggle={(p) => update({ priceLevels: toggle(draft.priceLevels, p) })}
-          />
-        </FilterSection>
+        {caps.priceLevels && (
+          <FilterSection title="Preisniveau">
+            <MultiChoice
+              options={PRICE_OPTIONS.map((p) => ({
+                value: p,
+                label: formatPriceLevel(p),
+                accessibilityLabel: `Preisniveau ${PRICE_LEVEL_LABEL[p]}`,
+              }))}
+              values={draft.priceLevels}
+              onToggle={(p) => update({ priceLevels: toggle(draft.priceLevels, p) })}
+            />
+          </FilterSection>
+        )}
 
         <FilterSection title="Umkreis">
           <MultiChoice
@@ -161,19 +188,24 @@ export default function FiltersSheet() {
           title="Angebot"
           hint="Zeigt nur Lokale, bei denen die Angabe ausdrücklich vorliegt.">
           <MultiChoice
-            options={ATTRIBUTE_OPTIONS.map((a) => ({ value: a, label: ATTRIBUTE_LABEL[a] }))}
+            options={ATTRIBUTE_OPTIONS.filter((a) => caps.attributes.includes(a)).map((a) => ({
+              value: a,
+              label: ATTRIBUTE_LABEL[a],
+            }))}
             values={draft.attributes}
             onToggle={(a) => update({ attributes: toggle(draft.attributes, a) })}
           />
         </FilterSection>
 
-        <FilterSection title="Mahlzeit">
-          <MultiChoice
-            options={MEAL_OPTIONS.map((m) => ({ value: m, label: MEAL_LABEL[m] }))}
-            values={draft.meals}
-            onToggle={(m) => update({ meals: toggle(draft.meals, m) })}
-          />
-        </FilterSection>
+        {caps.meals && (
+          <FilterSection title="Mahlzeit">
+            <MultiChoice
+              options={MEAL_OPTIONS.map((m) => ({ value: m, label: MEAL_LABEL[m] }))}
+              values={draft.meals}
+              onToggle={(m) => update({ meals: toggle(draft.meals, m) })}
+            />
+          </FilterSection>
+        )}
       </ScrollView>
     </View>
   );
@@ -193,5 +225,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 17 },
   done: { fontWeight: 700 },
   content: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.four },
+  sourceNote: { padding: Spacing.three, borderRadius: 12 },
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });

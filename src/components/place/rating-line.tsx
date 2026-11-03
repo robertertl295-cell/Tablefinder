@@ -4,15 +4,24 @@ import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import type { DataSource } from '@/types/place';
 import { formatCount, formatRating } from '@/utils/format';
 import { RATING_CONFIDENCE_LABEL, ratingConfidence } from '@/utils/rating';
 
-type Props = { rating: number | null; ratingCount: number };
+type Props = { rating: number | null; ratingCount: number; source?: DataSource };
 
 /** Sterne + Anzahl, immer zusammen; bei unter 30 Bewertungen ein deutlicher Hinweis. */
-export function RatingLine({ rating, ratingCount }: Props) {
+export function RatingLine({ rating, ratingCount, source }: Props) {
   const theme = useTheme();
   const confidence = ratingConfidence(ratingCount);
+
+  if (source === 'osm') {
+    return (
+      <ThemedText type="small" themeColor="textSecondary">
+        Keine Bewertungen (OpenStreetMap)
+      </ThemedText>
+    );
+  }
 
   if (rating === null || confidence === 'none') {
     return (

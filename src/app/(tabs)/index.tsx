@@ -18,6 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Chip } from '@/components/ui/chip';
 import { Icon } from '@/components/ui/icon';
 import { Spacing } from '@/constants/theme';
+import { useSourceCapabilities } from '@/hooks/use-active-source';
 import { useTheme } from '@/hooks/use-theme';
 import { filterStore, useFilters } from '@/store/filter-store';
 import { settingsStore, useSettings } from '@/store/settings-store';
@@ -28,8 +29,8 @@ import {
   useSearch,
   useSearchRadius,
 } from '@/store/search-store';
-import { activeFilterChips } from '@/utils/filters';
-import { RESULT_SORT_LABEL, sortPlaces } from '@/utils/sort-places';
+import { activeFilterChips, effectiveFilters } from '@/utils/filters';
+import { effectiveSort, RESULT_SORT_LABEL, sortPlaces } from '@/utils/sort-places';
 
 const actions = () => searchStore.getState();
 
@@ -52,7 +53,11 @@ export default function SearchScreen() {
   const filters = useFilters((s) => s.filters);
   const defaultRadius = useSettings((s) => s.defaultRadiusMeters);
   const units = useSettings((s) => s.units);
-  const resultSort = useSettings((s) => s.resultSort);
+  const caps = useSourceCapabilities();
+  const resultSort = effectiveSort(
+    useSettings((s) => s.resultSort),
+    caps,
+  );
   const sortedResults = useMemo(
     () => sortPlaces(results, resultSort, userLocation),
     [results, resultSort, userLocation],
@@ -63,7 +68,8 @@ export default function SearchScreen() {
       : resultSort === 'distance' && !userLocation
         ? 'Entfernung (Standort fehlt)'
         : `Nach ${RESULT_SORT_LABEL[resultSort]}`;
-  const chips = activeFilterChips(filters, defaultRadius, units);
+  // Chips nur für Filter, die die aktive Quelle auswerten kann; Entfernen wirkt auf die gespeicherten.
+  const chips = activeFilterChips(effectiveFilters(filters, caps), defaultRadius, units);
 
   // Android liest die Trefferzeile über accessibilityLiveRegion vor, iOS braucht eine Ansage.
   const resultCount = results.length;
@@ -81,7 +87,9 @@ export default function SearchScreen() {
   const isInitialLoading = (status === 'loading' || status === 'idle') && results.length === 0;
   const summary = isInitialLoading
     ? 'Suche läuft …'
-    : `${results.length}${hasMore ? '+' : ''} Treffer · ${label}`;
+    : status === 'error'
+      ? `Suche fehlgeschlagen · ${label}`
+      : `${results.length}${hasMore ? '+' : ''} Treffer · ${label}`;
 
   const empty = isInitialLoading ? (
     <View style={styles.skeletons}>

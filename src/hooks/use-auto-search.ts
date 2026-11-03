@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useFilters } from '@/store/filter-store';
 import { searchCenter, searchStore, useSearch } from '@/store/search-store';
+import { useSettings } from '@/store/settings-store';
 import { filtersKey } from '@/utils/filters';
 
 export const SEARCH_DEBOUNCE_MS = 400;
@@ -24,6 +25,8 @@ export function useAutoSearch() {
   );
   const filterKey = useFilters((s) => filtersKey(s.filters));
   const filtersReady = useFilters((s) => s.hydrated);
+  const settingsReady = useSettings((s) => s.hydrated);
+  const dataSource = useSettings((s) => s.dataSource);
   const locationSettled = useSearch(
     (s) => s.locationStatus !== 'unknown' && s.locationStatus !== 'requesting',
   );
@@ -34,6 +37,15 @@ export function useAutoSearch() {
 
   useEffect(() => {
     // Erst suchen, wenn Standort und gespeicherte Filter feststehen – spart unnötige Anfragen.
-    if (locationSettled && filtersReady) void searchStore.getState().search();
-  }, [debouncedText, centerKey, selectionKey, filterKey, locationSettled, filtersReady]);
+    if (locationSettled && filtersReady && settingsReady) void searchStore.getState().search();
+  }, [
+    debouncedText,
+    centerKey,
+    selectionKey,
+    filterKey,
+    dataSource,
+    locationSettled,
+    filtersReady,
+    settingsReady,
+  ]);
 }

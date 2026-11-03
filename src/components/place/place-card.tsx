@@ -73,11 +73,14 @@ export function PlaceCard({
             opacity: pressed ? 0.85 : 1,
           },
         ]}>
-        <PlacePhoto
-          photo={place.photo}
-          width={compact ? 96 : width}
-          style={[compact ? styles.photoCompact : styles.photo, isClosed && styles.dimmed]}
-        />
+        {/* OSM hat keine Fotos – dann keine leere Fläche zeigen. */}
+        {(place.photo || place.source !== 'osm') && (
+          <PlacePhoto
+            photo={place.photo}
+            width={compact ? 96 : width}
+            style={[compact ? styles.photoCompact : styles.photo, isClosed && styles.dimmed]}
+          />
+        )}
         <View style={[styles.body, compact && styles.bodyCompact]}>
           <ThemedText type="subtitle" numberOfLines={1} style={compact && styles.nameCompact}>
             {place.name}
@@ -87,7 +90,7 @@ export function PlaceCard({
               {meta.join(' · ')}
             </ThemedText>
           )}
-          <RatingLine rating={place.rating} ratingCount={place.ratingCount} />
+          <RatingLine rating={place.rating} ratingCount={place.ratingCount} source={place.source} />
           {score !== null && (
             <ThemedText type="small" themeColor="textSecondary">
               Vertrauensscore{' '}

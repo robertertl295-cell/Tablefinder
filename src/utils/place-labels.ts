@@ -27,7 +27,9 @@ export function placeAccessibilityLabel(
 ): string {
   const parts = [place.name];
   if (place.typeLabel) parts.push(place.typeLabel);
-  if (place.rating !== null && place.ratingCount > 0) {
+  if (place.source === 'osm') {
+    parts.push('keine Bewertungen in OpenStreetMap');
+  } else if (place.rating !== null && place.ratingCount > 0) {
     parts.push(
       `${formatRating(place.rating)} von 5 Sternen aus ${formatCount(place.ratingCount)} Bewertungen`,
     );

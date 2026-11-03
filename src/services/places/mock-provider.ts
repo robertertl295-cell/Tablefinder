@@ -1,4 +1,5 @@
 import type { PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
+import { normalizeText } from '@/utils/text';
 
 import { PlacesError } from './errors';
 import { MOCK_PLACES, type MockPlace } from './mock-data';
@@ -12,14 +13,12 @@ export type MockPlacesProviderOptions = {
   pageSize?: number;
 };
 
-/** Kleinbuchstaben, ohne Akzente: „Café“ → „cafe“. */
-export function normalizeText(value: string): string {
-  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-}
+export { normalizeText } from '@/utils/text';
 
 function toSummary(p: MockPlace): PlaceSummary {
   return {
     id: p.id,
+    source: p.source,
     name: p.name,
     primaryType: p.primaryType,
     typeLabel: p.typeLabel,

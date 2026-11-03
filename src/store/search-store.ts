@@ -10,7 +10,13 @@ import type { PlacesProvider, SearchQuery, SearchResult } from '@/services/place
 import { filterStore, useFilters } from '@/store/filter-store';
 import type { Filters } from '@/types/filters';
 import type { LatLng, PlaceSummary } from '@/types/place';
-import { createDefaultFilters, filtersToQuery, matchesFilters } from '@/utils/filters';
+import { SOURCE_CAPABILITIES } from '@/services/places/capabilities';
+import {
+  createDefaultFilters,
+  effectiveFilters,
+  filtersToQuery,
+  matchesFilters,
+} from '@/utils/filters';
 
 export type LocationSelection =
   | { mode: 'current' }
@@ -122,7 +128,8 @@ export function createSearchStore(deps: SearchStoreDeps): StoreApi<SearchState> 
       pageToken: string | undefined,
       minResults: number,
     ): Promise<SearchResult> => {
-      const filters = getFilters();
+      // Nur Filter anwenden, die die aktive Quelle auswerten kann.
+      const filters = effectiveFilters(getFilters(), SOURCE_CAPABILITIES[deps.provider.source]);
       const places: PlaceSummary[] = [];
       let token = pageToken;
       for (let page = 0; page < MAX_PAGES_PER_FETCH; page++) {

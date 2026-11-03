@@ -1,8 +1,11 @@
 import { MOCK_PLACES } from '@/services/places/mock-data';
 import type { Filters } from '@/types/filters';
 import type { PlaceSummary } from '@/types/place';
+import { SOURCE_CAPABILITIES } from '@/services/places/capabilities';
+import { availableSorts, effectiveSort } from '@/utils/sort-places';
 import {
   activeFilterChips,
+  effectiveFilters,
   createDefaultFilters,
   filtersKey,
   filtersToQuery,
@@ -162,7 +165,7 @@ describe('sanitizeFilters', () => {
           priceLevels: [1, 9],
           openNow: 'ja',
           radiusMeters: 123,
-          attributes: ['vegan'],
+          attributes: ['kinderwagen'],
           meals: null,
         },
         1500,
@@ -173,5 +176,42 @@ describe('sanitizeFilters', () => {
   it('verkraftet fehlende oder kaputte Daten', () => {
     expect(sanitizeFilters(undefined, 1500)).toEqual(DEFAULT);
     expect(sanitizeFilters('Unsinn', 1500)).toEqual(DEFAULT);
+  });
+});
+
+describe('Filter je Datenquelle', () => {
+  const all = with_({
+    minRating: 4,
+    minRatingCount: 100,
+    priceLevels: [1],
+    attributes: ['vegan', 'vegetarian', 'goodForGroups'],
+    meals: ['lunch'],
+    openNow: true,
+    categories: ['cafe'],
+  });
+
+  it('OpenStreetMap: Bewertung, Preis, Mahlzeiten und Gruppen entfallen, vegan bleibt', () => {
+    expect(effectiveFilters(all, SOURCE_CAPABILITIES.osm)).toEqual({
+      ...all,
+      minRating: null,
+      minRatingCount: null,
+      priceLevels: [],
+      attributes: ['vegan', 'vegetarian'],
+      meals: [],
+    });
+  });
+
+  it('Google: alles außer vegan', () => {
+    expect(effectiveFilters(all, SOURCE_CAPABILITIES.google).attributes).toEqual([
+      'vegetarian',
+      'goodForGroups',
+    ]);
+    expect(effectiveFilters(all, SOURCE_CAPABILITIES.google).minRating).toBe(4);
+  });
+
+  it('Vertrauensscore nur mit Bewertungen', () => {
+    expect(availableSorts(SOURCE_CAPABILITIES.osm)).toEqual(['relevance', 'distance']);
+    expect(effectiveSort('trust', SOURCE_CAPABILITIES.osm)).toBe('relevance');
+    expect(effectiveSort('trust', SOURCE_CAPABILITIES.google)).toBe('trust');
   });
 });

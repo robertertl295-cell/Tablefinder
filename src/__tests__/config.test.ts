@@ -1,18 +1,33 @@
+import { resolveSource } from '@/services/places';
 import { readConfig } from '@/services/config';
 
 describe('readConfig', () => {
-  it('nutzt Mock-Daten ohne API-Key', () => {
-    expect(readConfig({})).toEqual({ placesApiKey: null, dataSource: 'mock' });
+  it('ohne Key: kein Schlüssel', () => {
+    expect(readConfig({})).toEqual({ placesApiKey: null });
   });
 
   it('behandelt einen leeren Key wie keinen Key', () => {
-    expect(readConfig({ EXPO_PUBLIC_PLACES_API_KEY: '   ' }).dataSource).toBe('mock');
+    expect(readConfig({ EXPO_PUBLIC_PLACES_API_KEY: '   ' }).placesApiKey).toBeNull();
   });
 
-  it('nutzt Google mit gesetztem Key', () => {
-    expect(readConfig({ EXPO_PUBLIC_PLACES_API_KEY: 'abc' })).toEqual({
-      placesApiKey: 'abc',
-      dataSource: 'google',
-    });
+  it('übernimmt einen gesetzten Key', () => {
+    expect(readConfig({ EXPO_PUBLIC_PLACES_API_KEY: ' abc ' })).toEqual({ placesApiKey: 'abc' });
+  });
+});
+
+describe('resolveSource', () => {
+  it('Automatisch: Google mit Key, sonst OpenStreetMap', () => {
+    expect(resolveSource('auto', true)).toBe('google');
+    expect(resolveSource('auto', false)).toBe('osm');
+  });
+
+  it('Google ohne Key fällt auf OpenStreetMap zurück', () => {
+    expect(resolveSource('google', false)).toBe('osm');
+    expect(resolveSource('google', true)).toBe('google');
+  });
+
+  it('OSM und Beispieldaten gelten immer', () => {
+    expect(resolveSource('osm', true)).toBe('osm');
+    expect(resolveSource('mock', true)).toBe('mock');
   });
 });

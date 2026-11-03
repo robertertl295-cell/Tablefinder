@@ -10,11 +10,16 @@ import { RESULT_SORT_OPTIONS, type ResultSort } from '@/utils/sort-places';
 
 export const RADIUS_SETTING_OPTIONS = RADIUS_OPTIONS;
 
+/** Gewünschte Datenquelle; „auto“ = Google mit API-Schlüssel, sonst OpenStreetMap. */
+export type SourcePreference = 'auto' | 'google' | 'osm' | 'mock';
+export const SOURCE_PREFERENCES: readonly SourcePreference[] = ['auto', 'google', 'osm', 'mock'];
+
 export type Settings = {
   defaultRadiusMeters: number;
   units: Units;
   /** Sortierung der Suchtreffer. */
   resultSort: ResultSort;
+  dataSource: SourcePreference;
 };
 
 export type SettingsState = Settings & {
@@ -22,6 +27,7 @@ export type SettingsState = Settings & {
   setDefaultRadius: (meters: number) => void;
   setUnits: (units: Units) => void;
   setResultSort: (sort: ResultSort) => void;
+  setDataSource: (source: SourcePreference) => void;
   reset: () => void;
 };
 
@@ -29,6 +35,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultRadiusMeters: DEFAULT_RADIUS_METERS,
   units: 'metric',
   resultSort: 'relevance',
+  dataSource: 'auto',
 };
 
 export const SETTINGS_STORAGE_KEY = 'tisch.settings';
@@ -45,6 +52,9 @@ export function sanitizeSettings(input: unknown): Settings {
     resultSort: RESULT_SORT_OPTIONS.includes(raw.resultSort as ResultSort)
       ? (raw.resultSort as ResultSort)
       : DEFAULT_SETTINGS.resultSort,
+    dataSource: SOURCE_PREFERENCES.includes(raw.dataSource as SourcePreference)
+      ? (raw.dataSource as SourcePreference)
+      : DEFAULT_SETTINGS.dataSource,
   };
 }
 
@@ -69,6 +79,8 @@ export function createSettingsStore(
               .defaultRadiusMeters,
           }),
         setUnits: (units) => set({ units: units === 'imperial' ? 'imperial' : 'metric' }),
+        setDataSource: (dataSource) =>
+          set({ dataSource: sanitizeSettings({ dataSource }).dataSource }),
         setResultSort: (resultSort) =>
           set({ resultSort: sanitizeSettings({ resultSort }).resultSort }),
         reset: () => set(DEFAULT_SETTINGS),
@@ -81,6 +93,7 @@ export function createSettingsStore(
           defaultRadiusMeters: s.defaultRadiusMeters,
           units: s.units,
           resultSort: s.resultSort,
+          dataSource: s.dataSource,
         }),
         merge: (persisted, current) => ({ ...current, ...sanitizeSettings(persisted) }),
         onRehydrateStorage: () => (_state, error) => {

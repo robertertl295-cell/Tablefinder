@@ -1,8 +1,8 @@
 import type { PlaceCategory, PriceLevel } from './place';
 
-/** Angebots-Merkmale, nach denen gefiltert werden kann (alle von der Places API geliefert). */
+/** Angebots-Merkmale, nach denen gefiltert werden kann. Welche verfügbar sind, hängt von der Quelle ab. */
 export type AttributeKey =
-  'vegetarian' | 'outdoorSeating' | 'dogsAllowed' | 'goodForGroups' | 'goodForChildren';
+  'vegetarian' | 'vegan' | 'outdoorSeating' | 'dogsAllowed' | 'goodForGroups' | 'goodForChildren';
 
 export type MealKey = 'breakfast' | 'lunch' | 'dinner';
 

@@ -8,12 +8,34 @@ import { ThemedText } from '@/components/themed-text';
 import { Chip } from '@/components/ui/chip';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
+import { useActiveSource } from '@/hooks/use-active-source';
 import { useTheme } from '@/hooks/use-theme';
 import { config } from '@/services/config';
+import { SOURCE_LABEL } from '@/services/places/capabilities';
 import { deleteAllLocalData } from '@/services/local-data';
 import { filterStore } from '@/store/filter-store';
-import { RADIUS_SETTING_OPTIONS, settingsStore, useSettings } from '@/store/settings-store';
+import {
+  RADIUS_SETTING_OPTIONS,
+  settingsStore,
+  useSettings,
+  type SourcePreference,
+} from '@/store/settings-store';
+import type { DataSource } from '@/types/place';
 import { formatDistance, type Units } from '@/utils/format';
+
+const SOURCE_OPTIONS: { value: SourcePreference; label: string }[] = [
+  { value: 'auto', label: 'Automatisch' },
+  { value: 'google', label: 'Google Places' },
+  { value: 'osm', label: 'OpenStreetMap' },
+  { value: 'mock', label: 'Beispieldaten' },
+];
+
+const SOURCE_DESCRIPTION: Record<DataSource, string> = {
+  google:
+    'Mit Bewertungen, Fotos, Rezensionen und Preisen. Kostenpflichtig nach Nutzung, braucht einen API-Schlüssel.',
+  osm: 'Kostenlos und ohne Schlüssel, von Freiwilligen gepflegt. Kennt vegane Angebote, aber keine Bewertungen, Preise oder Fotos. Daten © OpenStreetMap-Mitwirkende (ODbL).',
+  mock: '18 erfundene Berliner Lokale zum Ausprobieren, ohne Internet.',
+};
 
 const UNIT_OPTIONS: { value: Units; label: string }[] = [
   { value: 'metric', label: 'Kilometer' },
@@ -25,6 +47,9 @@ export default function SettingsScreen() {
   const radius = useSettings((s) => s.defaultRadiusMeters);
   const units = useSettings((s) => s.units);
   const version = Constants.expoConfig?.version ?? '–';
+  const dataSource = useSettings((s) => s.dataSource);
+  const activeSource = useActiveSource();
+  const hasGoogleKey = config.placesApiKey !== null;
 
   const changeRadius = (next: number) => {
     const previous = settingsStore.getState().defaultRadiusMeters;
@@ -97,6 +122,37 @@ export default function SettingsScreen() {
           </ThemedText>
         </Section>
 
+        <Section title="Datenquelle">
+          <View style={styles.wrap}>
+            {SOURCE_OPTIONS.map((o) => (
+              <Chip
+                key={o.value}
+                label={o.label}
+                selected={dataSource === o.value}
+                accessibilityHint={
+                  o.value === 'google' && !hasGoogleKey ? 'Benötigt einen API-Schlüssel' : undefined
+                }
+                onPress={() => {
+                  if (o.value === 'google' && !hasGoogleKey) {
+                    Alert.alert(
+                      'Kein API-Schlüssel',
+                      'Für Google Places muss EXPO_PUBLIC_PLACES_API_KEY in der .env-Datei gesetzt sein (siehe README). Bis dahin sucht die App mit OpenStreetMap.',
+                    );
+                    return;
+                  }
+                  settingsStore.getState().setDataSource(o.value);
+                }}
+              />
+            ))}
+          </View>
+          <ThemedText type="smallBold">Aktiv: {SOURCE_LABEL[activeSource]}</ThemedText>
+          <Paragraph>{SOURCE_DESCRIPTION[activeSource]}</Paragraph>
+          <Paragraph>
+            Favoriten aus allen Quellen bleiben erhalten und werden jeweils aus ihrer Quelle
+            geladen.
+          </Paragraph>
+        </Section>
+
         <Section title="Daten">
           <Row
             icon="share"
@@ -117,8 +173,11 @@ export default function SettingsScreen() {
             Notizen, Filter und Einstellungen bleiben ausschließlich auf diesem Gerät.
           </Paragraph>
           <Paragraph>
-            Für die Suche werden Suchbegriff und Suchort (dein Standort oder der gewählte Bezirk)
-            direkt an Google Places übertragen. Es gelten die Datenschutzbestimmungen von Google.
+            Für die Suche wird der Suchort (dein Standort oder der gewählte Bezirk) an die gewählte
+            Datenquelle übertragen: bei Google Places zusammen mit dem Suchbegriff, bei
+            OpenStreetMap an einen öffentlichen Overpass-Server (overpass-api.de) – dort ohne
+            Suchbegriff, weil die App den Text selbst auswertet. Es gelten die Bestimmungen des
+            jeweiligen Dienstes.
           </Paragraph>
           <Paragraph>
             Der Standort wird nur abgefragt, während du die App benutzt, und nicht gespeichert.
@@ -130,14 +189,16 @@ export default function SettingsScreen() {
             label="Datenschutzerklärung von Google"
             onPress={() => void Linking.openURL('https://policies.google.com/privacy?hl=de')}
           />
+          <Row
+            icon="external"
+            label="Datenschutz der OpenStreetMap Foundation"
+            onPress={() => void Linking.openURL('https://osmfoundation.org/wiki/Privacy_Policy')}
+          />
         </Section>
 
         <Section title="Über">
           <Paragraph>
-            Datenquelle:{' '}
-            {config.dataSource === 'google'
-              ? 'Google Places (API-Schlüssel hinterlegt)'
-              : 'Beispieldaten – kein API-Schlüssel hinterlegt'}
+            Google-API-Schlüssel: {hasGoogleKey ? 'hinterlegt' : 'nicht hinterlegt'}
           </Paragraph>
           <Paragraph>Version {version}</Paragraph>
         </Section>

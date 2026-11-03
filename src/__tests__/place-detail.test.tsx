@@ -54,7 +54,7 @@ describe('Detailseite', () => {
     // Rezensionen mit Quellenangabe
     expect(screen.getByText('Beispielrezensionen (Mock-Daten)')).toBeOnTheScreen();
     expect(screen.getByText('Mara K.')).toBeOnTheScreen();
-    expect(screen.getByText('Beispieldaten – kein API-Schlüssel hinterlegt')).toBeOnTheScreen();
+    expect(screen.getByText('Beispieldaten – keine echte Datenquelle')).toBeOnTheScreen();
   });
 
   it('öffnet Route und Telefon über die System-Apps', async () => {

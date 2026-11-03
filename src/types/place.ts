@@ -3,7 +3,7 @@
  * Fehlende Angaben sind `null` (Wert unbekannt), nie geraten.
  */
 
-export type DataSource = 'google' | 'mock';
+export type DataSource = 'google' | 'osm' | 'mock';
 
 export type LatLng = {
   latitude: number;
@@ -35,6 +35,8 @@ export type PhotoRef = {
 /** Angebots-Merkmale. `null` = Anbieter hat keine Angabe. */
 export type PlaceAttributes = {
   vegetarian: boolean | null;
+  /** Nur OpenStreetMap kennt diese Angabe (`diet:vegan`). */
+  vegan: boolean | null;
   outdoorSeating: boolean | null;
   dogsAllowed: boolean | null;
   goodForGroups: boolean | null;
@@ -46,6 +48,8 @@ export type PlaceAttributes = {
 
 export type PlaceSummary = {
   id: string;
+  /** Woher der Ort stammt (bestimmt Quellenangabe und verfügbare Angaben). */
+  source: DataSource;
   name: string;
   /** Technischer Typ, z. B. `ramen_restaurant`. */
   primaryType: string | null;
@@ -96,7 +100,6 @@ export type Review = {
 };
 
 export type PlaceDetails = PlaceSummary & {
-  source: DataSource;
   formattedAddress: string | null;
   phone: string | null;
   internationalPhone: string | null;
@@ -109,6 +112,7 @@ export type PlaceDetails = PlaceSummary & {
 
 export const EMPTY_ATTRIBUTES: PlaceAttributes = {
   vegetarian: null,
+  vegan: null,
   outdoorSeating: null,
   dogsAllowed: null,
   goodForGroups: null,

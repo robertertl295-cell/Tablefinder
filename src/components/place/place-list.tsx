@@ -75,7 +75,7 @@ export function PlaceList({
                 accessibilityLabel="Weitere Treffer werden geladen"
               />
             )}
-            <DataAttribution />
+            <DataAttribution source={places[0]?.source ?? 'mock'} />
           </View>
         ) : undefined
       }

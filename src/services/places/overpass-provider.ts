@@ -1,0 +1,232 @@
+import type { PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
+import { distanceMeters } from '@/utils/geo';
+import { describeOpenState } from '@/utils/opening-hours';
+import { searchTokens } from '@/utils/text';
+
+import { TtlCache } from './cache';
+import { PlacesError, type PlacesErrorKind } from './errors';
+import {
+  mapOsmElement,
+  OSM_AMENITIES,
+  osmSearchText,
+  parseOsmId,
+  withoutPlaceWords,
+} from './osm-mapping';
+import type { OverpassElement, OverpassResponse } from './osm-types';
+import type { PlacesProvider, SearchQuery, SearchResult } from './provider';
+import { matchesQuery } from './query-filter';
+
+export const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+
+/** Größere Umkreise würden in Berlin Tausende Lokale laden. */
+export const OSM_MAX_RADIUS_METERS = 5000;
+
+export type OverpassProviderOptions = {
+  endpoint?: string;
+  fetchFn?: typeof fetch;
+  timeoutMs?: number;
+  /** Wie lange ein geladenes Gebiet wiederverwendet wird. */
+  areaTtlMs?: number;
+  pageSize?: number;
+  now?: () => Date;
+};
+
+type OsmEntry = { place: PlaceDetails; text: string };
+
+/** Overpass-Abfrage für alle Gastronomie-Orte mit Namen im Umkreis. */
+export function buildAreaQuery(lat: number, lon: number, radiusMeters: number): string {
+  const around = `(around:${Math.round(radiusMeters)},${lat.toFixed(6)},${lon.toFixed(6)})`;
+  return [
+    '[out:json][timeout:25];',
+    '(',
+    `  nwr["amenity"~"^(${OSM_AMENITIES.join('|')})$"]["name"]${around};`,
+    `  nwr["shop"="bakery"]["name"]${around};`,
+    ');',
+    'out center tags;',
+  ].join('\n');
+}
+
+export function buildElementQuery(type: OverpassElement['type'], id: number): string {
+  return `[out:json][timeout:25];\n${type}(${id});\nout center tags;`;
+}
+
+/**
+ * OpenStreetMap über die Overpass API. Liefert keine Bewertungen, Preise, Fotos oder
+ * Rezensionen – dafür u. a. vegane Angebote. Daten unter ODbL, Quellenangabe Pflicht.
+ */
+export class OverpassPlacesProvider implements PlacesProvider {
+  readonly source = 'osm' as const;
+
+  private readonly endpoint: string;
+  private readonly fetchFn: typeof fetch;
+  private readonly timeoutMs: number;
+  private readonly pageSize: number;
+  private readonly now: () => Date;
+  private readonly areas: TtlCache<OsmEntry[]>;
+  private readonly areaRequests = new Map<string, Promise<OsmEntry[]>>();
+  /** Zuletzt gesehene Orte – Details ohne erneute Abfrage. */
+  private readonly known = new Map<string, PlaceDetails>();
+
+  constructor(options: OverpassProviderOptions = {}) {
+    this.endpoint = options.endpoint ?? OVERPASS_ENDPOINT;
+    this.fetchFn = options.fetchFn ?? fetch.bind(globalThis);
+    this.timeoutMs = options.timeoutMs ?? 30_000;
+    this.pageSize = options.pageSize ?? 20;
+    this.now = options.now ?? (() => new Date());
+    this.areas = new TtlCache(options.areaTtlMs ?? 10 * 60_000, 20);
+  }
+
+  async search(query: SearchQuery): Promise<SearchResult> {
+    const radius = Math.min(query.radiusMeters, OSM_MAX_RADIUS_METERS);
+    const entries = await this.loadArea(query.center.latitude, query.center.longitude, radius);
+    const tokens = withoutPlaceWords(searchTokens(query.text));
+    // Bewertungen und Preise gibt es in OSM nicht – diese Bedingungen nie anwenden.
+    const conditions: SearchQuery = {
+      ...query,
+      radiusMeters: radius,
+      minRating: undefined,
+      priceLevels: undefined,
+    };
+
+    const matches = entries
+      .filter((e) => tokens.every((t) => e.text.includes(t)))
+      .map((e) => this.withOpenNow(e.place))
+      .filter((p) => matchesQuery(p, conditions))
+      // OSM kennt keine Relevanz → nach Entfernung zum Suchmittelpunkt.
+      .map((p) => ({ p, d: distanceMeters(query.center, p.location) }))
+      .sort((a, b) => a.d - b.d)
+      .map(({ p }) => p);
+
+    const offset = query.pageToken ? Number.parseInt(query.pageToken, 10) || 0 : 0;
+    const next = offset + this.pageSize;
+    return {
+      places: matches.slice(offset, next).map(toSummary),
+      nextPageToken: next < matches.length ? String(next) : null,
+    };
+  }
+
+  async getDetails(id: string): Promise<PlaceDetails> {
+    const known = this.known.get(id);
+    if (known) return this.withOpenNow(known);
+    const ref = parseOsmId(id);
+    if (!ref) throw new PlacesError('not_found', `Keine OSM-ID: ${id}`);
+    const response = await this.request(buildElementQuery(ref.type, ref.id));
+    const place = (response.elements ?? []).map(mapOsmElement).find((p) => p?.id === id);
+    if (!place) throw new PlacesError('not_found', `OSM-Ort nicht gefunden: ${id}`, 404);
+    this.remember(place);
+    return this.withOpenNow(place);
+  }
+
+  async getSummary(id: string): Promise<PlaceSummary> {
+    return toSummary(await this.getDetails(id));
+  }
+
+  getPhotoUrl(_photo: PhotoRef, _maxWidthPx: number): string | null {
+    return null; // OSM hat keine Fotos
+  }
+
+  private loadArea(lat: number, lon: number, radius: number): Promise<OsmEntry[]> {
+    // ~10 m Raster, damit kleine GPS-Schwankungen dasselbe Gebiet treffen.
+    const key = `${lat.toFixed(4)},${lon.toFixed(4)},${radius}`;
+    const cached = this.areas.get(key);
+    if (cached) return Promise.resolve(cached);
+    const pending = this.areaRequests.get(key);
+    if (pending) return pending;
+
+    const promise = this.request(buildAreaQuery(lat, lon, radius))
+      .then((response) => {
+        const entries: OsmEntry[] = [];
+        for (const el of response.elements ?? []) {
+          const place = mapOsmElement(el);
+          if (!place) continue;
+          this.remember(place);
+          entries.push({ place, text: osmSearchText(place, el) });
+        }
+        this.areas.set(key, entries);
+        return entries;
+      })
+      .finally(() => this.areaRequests.delete(key));
+    this.areaRequests.set(key, promise);
+    return promise;
+  }
+
+  private remember(place: PlaceDetails) {
+    if (this.known.size > 5000) this.known.clear();
+    this.known.set(place.id, place);
+  }
+
+  /** Öffnungsstatus immer zum aktuellen Zeitpunkt berechnen (Daten sind bis 10 Min. alt). */
+  private withOpenNow(place: PlaceDetails): PlaceDetails {
+    if (!place.openingHours) return place;
+    const openNow = describeOpenState(place.openingHours.periods, this.now())?.open ?? null;
+    return { ...place, openNow, openingHours: { ...place.openingHours, openNow } };
+  }
+
+  private async request(query: string): Promise<OverpassResponse> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    let response: Response;
+    try {
+      response = await this.fetchFn(this.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          Accept: 'application/json',
+        },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new PlacesError('timeout', 'Zeitüberschreitung bei der Overpass-Anfrage');
+      }
+      throw new PlacesError('network', error instanceof Error ? error.message : 'Netzwerkfehler');
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (!response.ok) {
+      const kind: PlacesErrorKind =
+        response.status === 429
+          ? 'quota'
+          : response.status === 504
+            ? 'timeout'
+            : response.status >= 500
+              ? 'server'
+              : 'invalid_request';
+      throw new PlacesError(kind, `Overpass HTTP ${response.status}`, response.status);
+    }
+
+    let data: OverpassResponse;
+    try {
+      data = (await response.json()) as OverpassResponse;
+    } catch {
+      throw new PlacesError('server', 'Overpass-Antwort konnte nicht gelesen werden');
+    }
+    // Laufzeitfehler meldet Overpass mit HTTP 200 und einem Hinweis.
+    if (data.remark && /error|timed out/i.test(data.remark) && !data.elements?.length) {
+      throw new PlacesError('timeout', data.remark);
+    }
+    return data;
+  }
+}
+
+function toSummary(p: PlaceDetails): PlaceSummary {
+  return {
+    id: p.id,
+    source: p.source,
+    name: p.name,
+    primaryType: p.primaryType,
+    typeLabel: p.typeLabel,
+    types: p.types,
+    location: p.location,
+    shortAddress: p.shortAddress,
+    rating: p.rating,
+    ratingCount: p.ratingCount,
+    priceLevel: p.priceLevel,
+    openNow: p.openNow,
+    businessStatus: p.businessStatus,
+    photo: p.photo,
+    attributes: p.attributes,
+  };
+}

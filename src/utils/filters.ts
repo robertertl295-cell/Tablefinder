@@ -1,4 +1,5 @@
 import { DEFAULT_RADIUS_METERS } from '@/services/config';
+import type { SourceCapabilities } from '@/services/places/capabilities';
 import { CATEGORY_LABEL, categoryOf } from '@/services/places/place-types';
 import type { SearchQuery } from '@/services/places/provider';
 import { normalizeMinRating } from '@/services/places/query-filter';
@@ -21,6 +22,7 @@ export const PRICE_OPTIONS: readonly PriceLevel[] = [1, 2, 3, 4];
 export const RADIUS_OPTIONS = [500, 1000, 1500, 3000, 5000] as const;
 export const ATTRIBUTE_OPTIONS: readonly AttributeKey[] = [
   'vegetarian',
+  'vegan',
   'outdoorSeating',
   'dogsAllowed',
   'goodForGroups',
@@ -30,6 +32,7 @@ export const MEAL_OPTIONS: readonly MealKey[] = ['breakfast', 'lunch', 'dinner']
 
 export const ATTRIBUTE_LABEL: Record<AttributeKey, string> = {
   vegetarian: 'Vegetarisch',
+  vegan: 'Vegan',
   outdoorSeating: 'Außenplätze',
   dogsAllowed: 'Hundefreundlich',
   goodForGroups: 'Gut für Gruppen',
@@ -52,6 +55,22 @@ export function createDefaultFilters(radiusMeters = DEFAULT_RADIUS_METERS): Filt
     radiusMeters,
     attributes: [],
     meals: [],
+  };
+}
+
+/**
+ * Filter, die die aktive Datenquelle nicht auswerten kann, werden neutralisiert –
+ * sonst würde z. B. „ab 4 ★“ bei OpenStreetMap (keine Bewertungen) alles ausschließen.
+ * Die gespeicherten Filter bleiben unverändert, falls die Quelle zurückgewechselt wird.
+ */
+export function effectiveFilters(f: Filters, caps: SourceCapabilities): Filters {
+  return {
+    ...f,
+    minRating: caps.ratings ? f.minRating : null,
+    minRatingCount: caps.ratings ? f.minRatingCount : null,
+    priceLevels: caps.priceLevels ? f.priceLevels : [],
+    attributes: f.attributes.filter((a) => caps.attributes.includes(a)),
+    meals: caps.meals ? f.meals : [],
   };
 }
 

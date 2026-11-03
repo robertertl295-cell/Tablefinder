@@ -10,6 +10,7 @@ import type { DataSource, Review } from '@/types/place';
 const SOURCE_LABEL: Record<DataSource, string> = {
   google: 'Rezensionen von Google-Nutzern · neueste zuerst',
   mock: 'Beispielrezensionen (Mock-Daten)',
+  osm: 'OpenStreetMap enthält keine Rezensionen.',
 };
 
 /** Die neuesten Rezensionen mit Autor und Quellenangabe. */

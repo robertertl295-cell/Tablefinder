@@ -71,6 +71,7 @@ export function mapPhoto(photo: GPhoto): PhotoRef {
 function mapAttributes(p: GPlace): PlaceAttributes {
   return {
     vegetarian: bool(p.servesVegetarianFood),
+    vegan: null, // kennt die Places API nicht
     outdoorSeating: bool(p.outdoorSeating),
     dogsAllowed: bool(p.allowsDogs),
     goodForGroups: bool(p.goodForGroups),
@@ -91,6 +92,7 @@ export function mapPlaceSummary(p: GPlace): PlaceSummary {
   const firstPhoto = p.photos?.[0];
   return {
     id: p.id,
+    source: 'google',
     name: str(p.displayName?.text) ?? 'Unbenannter Ort',
     primaryType: str(p.primaryType),
     typeLabel: str(p.primaryTypeDisplayName?.text),
@@ -164,7 +166,6 @@ export function mapPlaceDetails(p: GPlace): PlaceDetails {
   return {
     ...summary,
     openNow: hours?.openNow ?? summary.openNow,
-    source: 'google',
     formattedAddress: str(p.formattedAddress),
     phone: str(p.nationalPhoneNumber),
     internationalPhone: str(p.internationalPhoneNumber),

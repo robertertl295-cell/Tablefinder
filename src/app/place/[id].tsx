@@ -78,7 +78,12 @@ export default function PlaceDetailScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.five }}>
-        <PhotoGallery photos={details?.photos ?? (place.photo ? [place.photo] : [])} />
+        {place.source === 'osm' && !place.photo ? (
+          // Keine Fotos in OSM: nur Platz für die schwebenden Buttons.
+          <View style={{ height: insets.top + Spacing.six }} />
+        ) : (
+          <PhotoGallery photos={details?.photos ?? (place.photo ? [place.photo] : [])} />
+        )}
         <Header place={place} details={details} now={now} />
 
         {state.status === 'error' && <SearchError error={state.error} onRetry={state.retry} />}
@@ -92,7 +97,7 @@ export default function PlaceDetailScreen() {
           </ThemedText>
         )}
         {details && <DetailSections details={details} now={now} />}
-        {details && <DataAttribution />}
+        {details && <DataAttribution source={details.source} />}
       </ScrollView>
       {backButton}
       <View style={[styles.favorite, { top: insets.top + Spacing.two }]}>
@@ -209,7 +214,14 @@ function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) 
       </Section>
 
       <Section title="Bewertung">
-        <RatingSummary rating={details.rating} ratingCount={details.ratingCount} />
+        {details.source === 'osm' ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            OpenStreetMap enthält keine Bewertungen. Deshalb gibt es hier weder Sterne noch
+            Vertrauensscore – mit Google Places als Datenquelle (Einstellungen) schon.
+          </ThemedText>
+        ) : (
+          <RatingSummary rating={details.rating} ratingCount={details.ratingCount} />
+        )}
       </Section>
 
       <Section title="Öffnungszeiten">
@@ -245,15 +257,30 @@ function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) 
         <MiniMap location={details.location} onPress={route} />
       </Section>
 
-      <Section title="Neueste Rezensionen">
-        <ReviewList reviews={details.reviews} source={details.source} />
-        {details.mapsUri && (
-          <ExternalLinkRow
-            label="Alle Rezensionen in Google Maps"
-            onPress={() => void Linking.openURL(details.mapsUri!)}
-          />
-        )}
-      </Section>
+      {details.source === 'osm' ? (
+        <Section title="OpenStreetMap">
+          <ThemedText type="small" themeColor="textSecondary">
+            Die Angaben stammen von Freiwilligen und können veraltet sein. Fehlt etwas oder stimmt
+            etwas nicht, lässt es sich direkt auf OpenStreetMap korrigieren.
+          </ThemedText>
+          {details.mapsUri && (
+            <ExternalLinkRow
+              label="Auf OpenStreetMap ansehen"
+              onPress={() => void Linking.openURL(details.mapsUri!)}
+            />
+          )}
+        </Section>
+      ) : (
+        <Section title="Neueste Rezensionen">
+          <ReviewList reviews={details.reviews} source={details.source} />
+          {details.mapsUri && (
+            <ExternalLinkRow
+              label="Alle Rezensionen in Google Maps"
+              onPress={() => void Linking.openURL(details.mapsUri!)}
+            />
+          )}
+        </Section>
+      )}
     </View>
   );
 }

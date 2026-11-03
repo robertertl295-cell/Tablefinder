@@ -36,7 +36,8 @@ export function PlacePhoto({ photo, width, style }: Props) {
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           transition={reduceMotion ? 0 : 200}
-          cachePolicy={placesProvider.source === 'google' ? 'memory' : 'memory-disk'}
+          // Google-Fotos nie auf dem Gerät speichern (Nutzungsbedingungen).
+          cachePolicy={photo?.name.startsWith('mock/') ? 'memory-disk' : 'memory'}
           recyclingKey={photo?.name}
           accessible={false}
         />

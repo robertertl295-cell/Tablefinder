@@ -13,6 +13,8 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 2. **Feine Filter:** Art, Mindestbewertung, Mindestanzahl Bewertungen, Preis, Umkreis, jetzt geöffnet, vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder, Frühstück, Mittag- und Abendessen.
 3. **Schnelle Favoriten:** eigene Listen, Notiz, „besucht“, eigene Bewertung und eine Sicherung als JSON-Datei.
 
+**Zwei Datenquellen:** Google Places (mit Bewertungen und Fotos, API-Key nötig) oder kostenlos OpenStreetMap (ohne Key, mit Vegan-Filter).
+
 ## Stand
 
 Alle acht Phasen aus dem Auftrag sind umgesetzt.
@@ -30,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 250 Tests laufen ohne Fehler.
+- Typecheck, Lint und 311 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -49,7 +51,7 @@ cp .env.example .env     # Keys optional, siehe unten
 npm start                # danach i (iOS), a (Android) oder QR-Code mit Expo Go scannen
 ```
 
-Ohne API-Key läuft die App mit 18 erfundenen Berliner Lokalen als Mock-Daten.
+Ohne API-Key sucht die App mit **OpenStreetMap** (kostenlos, Internet nötig). In den Einstellungen lässt sich auf 18 erfundene Berliner Lokale (Beispieldaten, ohne Internet) umstellen. Siehe [Datenquellen](#datenquellen).
 
 **Expo Go oder Development Build:** Alle nativen Module stammen aus dem Expo SDK 58: Maps, SQLite, Location, Image, Sharing, Document Picker, File System. Sie sollten daher in Expo Go laufen. Für einen eigenen Google-Maps-Key auf Android und für Produktions-Builds braucht es einen Development Build:
 
@@ -62,10 +64,10 @@ npx expo run:android
 
 Keys stehen ausschließlich in `.env`. Diese Datei ist in `.gitignore` eingetragen und wird nie committet.
 
-| Variable                      | Wofür                                                                        | Pflicht                     |
-| ----------------------------- | ---------------------------------------------------------------------------- | --------------------------- |
-| `EXPO_PUBLIC_PLACES_API_KEY`  | Google Places API (New): Text Search, Nearby Search, Place Details, Fotos    | nein (ohne Key: Mock-Daten) |
-| `GOOGLE_MAPS_ANDROID_API_KEY` | Google Maps SDK for Android, wird beim Build über `app.config.ts` eingesetzt | nur für Android-Builds      |
+| Variable                      | Wofür                                                                        | Pflicht                        |
+| ----------------------------- | ---------------------------------------------------------------------------- | ------------------------------ |
+| `EXPO_PUBLIC_PLACES_API_KEY`  | Google Places API (New): Text Search, Nearby Search, Place Details, Fotos    | nein (ohne Key: OpenStreetMap) |
+| `GOOGLE_MAPS_ANDROID_API_KEY` | Google Maps SDK for Android, wird beim Build über `app.config.ts` eingesetzt | nur für Android-Builds         |
 
 So legst du den Places-Key an:
 
@@ -125,7 +127,7 @@ jest.setup.ts                Test-Ersatz für Karte und SQLite
 
 ## Datenschicht
 
-Alles liegt unter `src/services/places/`. Die Oberfläche spricht nur das Interface `PlacesProvider` an und bekommt eigene Typen aus `src/types/place.ts`. Google-Formate dringen nicht nach außen. Eine zweite Datenquelle (z. B. OpenStreetMap) braucht nur eine weitere Implementierung.
+Alles liegt unter `src/services/places/`. Die Oberfläche spricht nur das Interface `PlacesProvider` an und bekommt eigene Typen aus `src/types/place.ts`. Google- und OSM-Formate dringen nicht nach außen.
 
 ```ts
 interface PlacesProvider {
@@ -138,22 +140,53 @@ interface PlacesProvider {
 
 ```
 placesProvider (index.ts)
-└── CachedPlacesProvider        Speicher: Suche 2 Min., Details/Kurzdaten 5 Min.; bündelt gleichzeitige Anfragen
-    ├── GooglePlacesProvider    wenn EXPO_PUBLIC_PLACES_API_KEY gesetzt ist
-    └── MockPlacesProvider      sonst: 18 erfundene Berliner Lokale
+└── RoutingPlacesProvider       Suche → aktive Quelle (Einstellung); Details/Favoriten → Quelle der ID
+    ├── CachedPlacesProvider → GooglePlacesProvider     nur mit EXPO_PUBLIC_PLACES_API_KEY
+    ├── CachedPlacesProvider → OverpassPlacesProvider   OpenStreetMap, IDs „osm:node:123“
+    └── CachedPlacesProvider → MockPlacesProvider       18 erfundene Lokale, IDs „mock-…“
+
+CachedPlacesProvider: Suche 2 Min., Details/Kurzdaten 5 Min.; bündelt gleichzeitige Anfragen
 ```
 
-| Datei                | Aufgabe                                                                                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `google-provider.ts` | Text Search (mit Suchbegriff), Nearby Search (ohne Suchbegriff), Place Details, Foto-URLs, Timeout nach 10 s                                                  |
-| `field-masks.ts`     | Feldmasken. Angebots-Merkmale (vegetarisch, Außenplätze …) werden nur mit `includeAttributes: true` geladen, weil sie eine teurere Abrechnungsstufe auslösen. |
-| `mapping.ts`         | Wandelt Google-Formate in eigene Typen um. Fehlende Angaben werden `null`, nie geraten. Rezensionen werden nach Datum sortiert.                               |
-| `place-types.ts`     | Welche Typen als Gastronomie gelten. Maßgeblich ist der Haupttyp, so fliegt z. B. ein Hotel mit Restaurant raus.                                              |
-| `query-filter.ts`    | Gemeinsame Prüfung (Gastronomie, Radius, Kategorie, Bewertung, Preis, geöffnet) für alle Anbieter                                                             |
-| `errors.ts`          | `PlacesError` mit `kind` (`network`, `timeout`, `quota`, `auth`, `not_found` …) und deutschen Meldungen für die Oberfläche                                    |
-| `mock-data.ts`       | Beispieldaten mit Sonderfällen: wenige oder keine Bewertungen, vorübergehend oder dauerhaft geschlossen, ein Hotel als Negativbeispiel                        |
+| Datei                  | Aufgabe                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `google-provider.ts`   | Text Search (mit Suchbegriff), Nearby Search (ohne Suchbegriff), Place Details, Foto-URLs, Timeout nach 10 s                                                  |
+| `field-masks.ts`       | Feldmasken. Angebots-Merkmale (vegetarisch, Außenplätze …) werden nur mit `includeAttributes: true` geladen, weil sie eine teurere Abrechnungsstufe auslösen. |
+| `mapping.ts`           | Wandelt Google-Formate in eigene Typen um. Fehlende Angaben werden `null`, nie geraten. Rezensionen werden nach Datum sortiert.                               |
+| `place-types.ts`       | Welche Typen als Gastronomie gelten. Maßgeblich ist der Haupttyp, so fliegt z. B. ein Hotel mit Restaurant raus.                                              |
+| `query-filter.ts`      | Gemeinsame Prüfung (Gastronomie, Radius, Kategorie, Bewertung, Preis, geöffnet) für alle Anbieter                                                             |
+| `errors.ts`            | `PlacesError` mit `kind` (`network`, `timeout`, `quota`, `auth`, `not_found` …) und deutschen Meldungen für die Oberfläche                                    |
+| `overpass-provider.ts` | OpenStreetMap über die Overpass API: eine Abfrage pro Gebiet (10 Min. wiederverwendet), Suche, Filter und Seiten lokal, Sortierung nach Entfernung            |
+| `osm-mapping.ts`       | OSM-Tags → App-Modell: Art und Küche auf Deutsch, Adresse, `diet:vegan`/`diet:vegetarian`, `outdoor_seating`, `dog`, Öffnungszeiten                           |
+| `routing-provider.ts`  | Wählt pro Anfrage die richtige Quelle                                                                                                                         |
+| `capabilities.ts`      | Was jede Quelle kann (Bewertungen, Preise, Fotos, Merkmale) – steuert Filter und Anzeige                                                                      |
+| `mock-data.ts`         | Beispieldaten mit Sonderfällen: wenige oder keine Bewertungen, vorübergehend oder dauerhaft geschlossen, ein Hotel als Negativbeispiel                        |
 
 **Mock-Daten:** Die Suche prüft, ob alle Wörter vorkommen, unabhängig von Groß-/Kleinschreibung und Akzenten. „vegan Kreuzberg“ findet also nur Lokale, die zu beiden Wörtern passen. Fotos sind neutrale Platzhalterbilder von picsum.photos und brauchen eine Internetverbindung.
+
+## Datenquellen
+
+Einstellbar unter Einstellungen → Datenquelle. „Automatisch“ nimmt Google, wenn ein API-Schlüssel gesetzt ist, sonst OpenStreetMap.
+
+|                                  | Google Places              | OpenStreetMap         | Beispieldaten    |
+| -------------------------------- | -------------------------- | --------------------- | ---------------- |
+| Kosten / Schlüssel               | kostenpflichtig, Key nötig | kostenlos, ohne Key   | –                |
+| Bewertungen, Vertrauensscore     | ✅                         | –                     | ✅               |
+| Preise, Fotos, Rezensionen       | ✅                         | –                     | ✅               |
+| Öffnungszeiten, Kontakt, Adresse | ✅                         | ✅ (wenn eingetragen) | ✅               |
+| Vegetarisch, Außenplätze, Hunde  | ✅                         | ✅ (wenn eingetragen) | ✅               |
+| **Vegan**                        | –                          | ✅ (`diet:vegan`)     | –                |
+| Gruppen, Kinder, Mahlzeiten      | ✅                         | –                     | ✅               |
+| Relevanz-Reihenfolge             | von Google                 | nach Entfernung       | Datenreihenfolge |
+
+- **Filter je Quelle:** Filter und Sortierungen, die die aktive Quelle nicht kann, sind im Filter-Sheet ausgeblendet, tauchen nicht als Chip auf und werden bei der Suche ignoriert. Sonst würde z. B. „ab 4 ★“ bei OSM alles ausschließen. Gespeichert bleiben sie trotzdem, beim Zurückwechseln sind sie wieder aktiv.
+- **Favoriten aus mehreren Quellen:** Sie funktionieren nebeneinander. Jede ID trägt ihre Quelle (`osm:…`, `mock-…`, sonst Google), Details kommen immer aus der Ursprungsquelle. Google-Favoriten brauchen dafür den Key.
+- **OpenStreetMap im Detail:**
+  - **Abfrage:** Eine Overpass-Abfrage holt alle Gastronomie-Orte mit Namen im Umkreis (höchstens 5 km): `amenity` = restaurant, cafe, bar, pub, biergarten, fast_food, food_court, ice_cream sowie `shop=bakery`. Das Ergebnis wird 10 Minuten wiederverwendet. Suchtext, Filter und Seiten laufen lokal, das schont die öffentlichen Server.
+  - **Freitext:** Er sucht in Name, Art, Küche (auch deutsch: „Döner“, „japanisch“, „Kaffee“), Diät-Angaben und Straße. Ortsnamen („vegan Kreuzberg“) werden ignoriert, weil sie selten am Lokal stehen. Den Ort wählt man über die Bezirks-Chips.
+  - **Öffnungszeiten:** Ein eigener Parser versteht die übliche Teilmenge des OSM-Formats (`Mo-Fr 08:00-18:00; Sa 10:00-02:00; PH off`, `24/7`). Exotische Angaben gelten als unbekannt, nicht als geschlossen.
+  - **Anzeige:** keine leeren Foto- und Sternflächen, stattdessen „Keine Bewertungen (OpenStreetMap)“. Die Detailseite verlinkt den Ort auf openstreetmap.org, dort lassen sich falsche Angaben korrigieren.
+  - **Lizenz:** Die Daten stehen unter ODbL. Die Quellenangabe „© OpenStreetMap-Mitwirkende“ mit Link zur Lizenz steht unter Listen und Details.
 
 ## Suche
 
@@ -202,6 +235,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 | Jetzt geöffnet                                             | API (Text Search) und App                                     |
 | Umkreis (500 m bis 5 km)                                   | API                                                           |
 | Vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder | App, Felder werden nur dann von Google geladen                |
+| Vegan                                                      | App, nur mit OpenStreetMap                                    |
 | Frühstück / Mittagessen / Abendessen                       | App, Felder werden nur dann von Google geladen                |
 
 - **Fehlende Angaben:** Bei Merkmalen und Mahlzeiten gilt nur ein ausdrückliches „ja“. Fehlt die Angabe, fällt das Lokal heraus. Lieber ein Treffer zu wenig als ein Lokal, das sich vor Ort als unpassend herausstellt.
@@ -209,6 +243,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **Nachladen beim Filtern:** Filtert die App selbst, lädt sie automatisch weitere Seiten, bis mindestens 8 Treffer da sind. Pro Suche sind es höchstens 3 Seiten (Kostenbremse).
 - **Bedienung:** Aktive Filter stehen als Chips unter der Suche, ein Tipp entfernt sie. Ab zwei Filtern gibt es „Zurücksetzen“, im Leerzustand „Filter zurücksetzen“.
 - **Speicherung:** unter `tisch.filters`, beim Laden wird geprüft.
+- **Je Datenquelle:** Welche Filter angeboten werden, hängt von der Quelle ab (siehe [Datenquellen](#datenquellen)).
 
 ## Detailseite
 
@@ -277,17 +312,18 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Tests
 
-250 Tests in 28 Dateien (`npm test`):
+311 Tests in 33 Dateien (`npm test`):
 
-| Bereich                         | Was geprüft wird                                                                                                      |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Datenschicht                    | Mapping, Feldmasken, Gastro-Typen, Google-Anfragen und Fehlerzuordnung (mit simulierten Antworten), Mock, Cache       |
-| Filterlogik (Auftrag)           | Jeder Filter einzeln, API- vs. App-Teil, Chips, Bereinigung gespeicherter Filter, Persistenz                          |
-| Favoriten-Store (Auftrag)       | Hinzufügen/Entfernen, Listen, eigene Angaben, Persistenz, nur eigene Daten gespeichert, Export/Import, Zusammenführen |
-| Such-Flow (Smoke-Test, Auftrag) | Start ohne Standort → Treffer in Mitte → Suchbegriff ohne Treffer → Bezirk wechseln → Details öffnen                  |
-| Oberflächen                     | Filter-Chips, Detailseite, Herz-Button, Notizen, Favoriten-Tab, Verwalten-Sheet, Einstellungen                        |
-| Vertrauensscore                 | Berechnung, Grenzfälle, Umkehr der Reihenfolge, Sortierung, Anzeige auf Karten und Detailseite                        |
-| Logik                           | Öffnungszeiten (über Mitternacht, Wochenende), Entfernung, Einheiten, Links, Kartenausschnitt, Kontrast (WCAG)        |
+| Bereich                         | Was geprüft wird                                                                                                                                                     |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Datenschicht                    | Mapping, Feldmasken, Gastro-Typen, Google-Anfragen und Fehlerzuordnung (mit simulierten Antworten), Mock, Cache                                                      |
+| Filterlogik (Auftrag)           | Jeder Filter einzeln, API- vs. App-Teil, Chips, Bereinigung gespeicherter Filter, Persistenz                                                                         |
+| Favoriten-Store (Auftrag)       | Hinzufügen/Entfernen, Listen, eigene Angaben, Persistenz, nur eigene Daten gespeichert, Export/Import, Zusammenführen                                                |
+| Such-Flow (Smoke-Test, Auftrag) | Start ohne Standort → Treffer in Mitte → Suchbegriff ohne Treffer → Bezirk wechseln → Details öffnen                                                                 |
+| Oberflächen                     | Filter-Chips, Detailseite, Herz-Button, Notizen, Favoriten-Tab, Verwalten-Sheet, Einstellungen                                                                       |
+| OpenStreetMap                   | Öffnungszeiten-Parser (Mitternacht, Wochenende, Überschreiben, Unbekanntes), Mapping, Overpass-Anfragen, Suche, Cache, Fehler, Routing, Filter je Quelle, Oberfläche |
+| Vertrauensscore                 | Berechnung, Grenzfälle, Umkehr der Reihenfolge, Sortierung, Anzeige auf Karten und Detailseite                                                                       |
+| Logik                           | Öffnungszeiten (über Mitternacht, Wochenende), Entfernung, Einheiten, Links, Kartenausschnitt, Kontrast (WCAG)                                                       |
 
 ## Getroffene Entscheidungen
 
@@ -309,11 +345,15 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 ## Datenschutz und Nutzungsbedingungen
 
 - **Kein Tracking:** Tisch hat keine eigenen Server, keine Konten und kein Tracking.
-- **Was an Google geht:** Suchbegriff und Suchort (eigener Standort oder gewählter Bezirk) gehen direkt an Google Places.
+- **Was übertragen wird:**
+  - **Google Places:** Suchbegriff und Suchort (eigener Standort oder gewählter Bezirk).
+  - **OpenStreetMap:** nur der Suchort, an den öffentlichen Overpass-Server `overpass-api.de` (OpenStreetMap-Umfeld). Der Suchbegriff bleibt auf dem Gerät.
 - **Standort:** Er wird nur während der Nutzung abgefragt und nicht gespeichert.
 - **Was lokal bleibt:** nur `place_id`s und eigene Daten (Listen, Notizen, Status, eigene Bewertung, Filter, Einstellungen). Ein Test stellt sicher, dass keine Ortsdaten von Google gespeichert werden.
 - **Inhalte von Google:** Bewertungen, Rezensionen und Fotos liegen nur wenige Minuten im Arbeitsspeicher, Fotos werden nicht auf dem Gerät gecacht.
-- **Quellenangabe:** „Daten: Google Maps“ unter Listen, Fotograf auf Fotos, Autor und Quelle bei Rezensionen.
+- **Quellenangabe:**
+  - Google: „Daten: Google Maps“ unter Listen, Fotograf auf Fotos, Autor und Quelle bei Rezensionen.
+  - OSM: „© OpenStreetMap-Mitwirkende (ODbL)“ mit Link zur Lizenz.
 - **Feldmasken:** Anfragen holen nur die benötigten Felder.
 
 ## Bekannte Einschränkungen
@@ -322,6 +362,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 - **Gerät:** Die App lief noch auf keinem echten Gerät und in keinem Simulator. Geprüft sind Tests, Bundles und eine Browser-Vorschau. Offen sind vor allem Karten, Bottom Sheets, Teilen-Menü, Dateiauswahl, Standortabfrage, Screenreader und große Schrift.
 - **Echte API:** Der Google-Anbieter ist nur gegen die dokumentierten API-Formate getestet, mit simulierten Antworten. Feldnamen und Typ-Listen sollten beim ersten Lauf mit echtem Key geprüft werden.
+- **OpenStreetMap live:** Die Overpass API war aus der Bau-Umgebung gesperrt. Anbieter, Mapping und Öffnungszeiten-Parser sind gegen das dokumentierte Format getestet, mit nachgebauten Antworten (`src/__tests__/fixtures/overpass.ts`). Beim ersten echten Lauf sind Antwortzeiten, Datenmenge bei 5 km und die tatsächliche Abdeckung von `diet:vegan` und `opening_hours` in Berlin zu prüfen.
 - **`expo-doctor`:** 18 von 20 Prüfungen sind bestanden. Die beiden übrigen brauchen die Expo-Server, die beim Bau nicht erreichbar waren.
 
 **Grenzen der Places API**
@@ -332,9 +373,17 @@ Vertrauensscore = (k · m + n · r) / (k + n)
   - Die Umgebungssuche (ohne Begriff) liefert höchstens 20 Treffer und kein Nachladen.
   - Die Textsuche liefert bis zu 60 Treffer.
   - Die Textsuche lässt sich nur auf ein Rechteck begrenzen. Treffer außerhalb des Kreises filtert die App heraus, Seiten können daher kürzer sein.
-- **Vegan:** Einen eigenen Filter gibt es nicht, die API kennt nur „vegetarisch“.
+- **Vegan:** Google kennt nur „vegetarisch“. Den Vegan-Filter gibt es daher nur mit OpenStreetMap.
 - **Mindestbewertung:** Sie wird wie bei Google auf halbe Sterne abgerundet (4,7 → 4,5).
 - **Teure Filter:** Merkmal-Filter (vegetarisch, Außenplätze …) lösen bei Google eine teurere Abrechnungsstufe aus.
+
+**Grenzen von OpenStreetMap**
+
+- **Datenqualität:** Die Daten pflegen Freiwillige. Öffnungszeiten, Diät-Angaben und geschlossene Lokale sind nicht immer aktuell, viele Lokale haben solche Angaben gar nicht.
+- **Keine Bewertungen:** Bei OSM gibt es keine Bewertungen, Preise, Fotos oder Rezensionen, damit entfallen auch Vertrauensscore und Bewertungsfilter.
+- **Öffentliche Overpass-Server:** Sie sind kostenlos, aber begrenzt (Fair Use). Bei Überlastung erscheint „Anfragelimit erreicht“ bzw. eine Zeitüberschreitung. Für viele Nutzer bräuchte es einen eigenen Overpass-Server.
+- **Radius und Suche:** höchstens 5 km Umkreis. Die Suche findet nur Lokale mit Namen und erkennt „Prenzlauer Berg“ & Co. nicht im Suchtext.
+- **Keine Kombination:** Google und OSM werden nicht zusammengeführt, die Suche läuft immer über eine Quelle.
 
 **Folgen der Nutzungsbedingungen**
 
@@ -358,14 +407,15 @@ Nach Priorität:
    - Development Build mit `npx expo run:ios` / `run:android` oder EAS (`eas.json` anlegen).
    - Einmal alle Abläufe durchgehen, VoiceOver/TalkBack und große Schrift prüfen.
    - Ersten Lauf gegen die echte Places API beobachten: Feldnamen, Typen, Kosten pro Suche in der Cloud Console.
-2. **API-Key aus der App nehmen**, sobald die App nicht mehr nur privat genutzt wird. Ein kleiner Proxy (z. B. Cloudflare Worker) hält den Key, setzt Feldmasken serverseitig und begrenzt Anfragen pro Gerät. Die App ändert dafür nur die Basis-URL im `GooglePlacesProvider`. Für den persönlichen Gebrauch nicht nötig.
-3. **Ende-zu-Ende-Tests** mit Maestro für die Hauptabläufe auf Simulator/Emulator.
+2. **OpenStreetMap live prüfen:** `overpass-api.de` in den Netzwerkeinstellungen der Cloud-Umgebung freigeben oder direkt auf dem Gerät testen.
+3. **API-Key aus der App nehmen**, sobald die App nicht mehr nur privat genutzt wird. Ein kleiner Proxy (z. B. Cloudflare Worker) hält den Key, setzt Feldmasken serverseitig und begrenzt Anfragen pro Gerät. Die App ändert dafür nur die Basis-URL im `GooglePlacesProvider`. Für den persönlichen Gebrauch nicht nötig.
+4. **Ende-zu-Ende-Tests** mit Maestro für die Hauptabläufe auf Simulator/Emulator.
 
 ### Ideen aus dem Auftrag (bewertet)
 
 | Idee                               | Einschätzung                                                                                                                                                                                                                                                    |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Zweite Datenquelle (OpenStreetMap) | Gut vorbereitet: ein `OverpassPlacesProvider` hinter demselben Interface. OSM hat keine Bewertungen und keine Fotos, liefert aber oft `diet:vegan`, `outdoor_seating`, `dog` – sinnvoll als Ergänzung, z. B. für einen echten Vegan-Filter.                     |
+| Zweite Datenquelle (OpenStreetMap) | ✅ Umgesetzt (siehe [Datenquellen](#datenquellen)). Nächster Schritt wäre die Kombination: Google-Treffer mit OSM-Angaben (vegan) anreichern, über Name und Entfernung abgeglichen.                                                                             |
 | Gerichte-Suche                     | Die Places API hat keine Speisekarten. Möglich ist nur die Freitextsuche („Ramen“), die schon funktioniert. Mehr bräuchte eine eigene Datenquelle.                                                                                                              |
 | Vertrauensscore für Bewertungen    | ✅ Umgesetzt (siehe [Vertrauensscore](#vertrauensscore)).                                                                                                                                                                                                       |
 | Teilen von Listen                  | Ohne Backend über die vorhandene JSON-Sicherung oder einen Deep Link mit `place_id`s (`tisch://liste?…`). Es dürfen keine Google-Inhalte mitgeschickt werden, die IDs schon.                                                                                    |

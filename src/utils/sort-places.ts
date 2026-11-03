@@ -1,3 +1,4 @@
+import type { SourceCapabilities } from '@/services/places/capabilities';
 import type { LatLng, PlaceSummary } from '@/types/place';
 
 import { distanceMeters } from './geo';
@@ -12,6 +13,15 @@ export const RESULT_SORT_LABEL: Record<ResultSort, string> = {
   trust: 'Vertrauensscore',
   distance: 'Entfernung',
 };
+
+/** Ohne Bewertungen in der Quelle gibt es keinen Vertrauensscore → Relevanz. */
+export function effectiveSort(sort: ResultSort, caps: SourceCapabilities): ResultSort {
+  return sort === 'trust' && !caps.ratings ? 'relevance' : sort;
+}
+
+export function availableSorts(caps: SourceCapabilities): ResultSort[] {
+  return RESULT_SORT_OPTIONS.filter((s) => s !== 'trust' || caps.ratings);
+}
 
 /**
  * Sortiert Treffer clientseitig. „Relevanz“ = Reihenfolge der Datenquelle.
