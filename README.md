@@ -1,5 +1,7 @@
 # Tisch
 
+[![CI](https://github.com/robertertl295-cell/Tablefinder/actions/workflows/ci.yml/badge.svg)](https://github.com/robertertl295-cell/Tablefinder/actions/workflows/ci.yml)
+
 Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckereien und Imbissen in Berlin. Für den persönlichen Gebrauch.
 
 **Funktionen:** Suche, feine Filter, Detailansicht, Favoriten mit eigenen Listen und Notizen.
@@ -86,6 +88,8 @@ So legst du den Places-Key an:
 | `npm run format`    | Code mit Prettier formatieren                |
 | `npm test`          | Jest-Tests                                   |
 | `npm run check`     | Typecheck, Lint und Tests in einem Durchlauf |
+
+**CI:** Die GitHub Action `.github/workflows/ci.yml` läuft bei jedem Push auf `main`, bei jedem Pull Request und auf Knopfdruck. Sie führt Typecheck, Lint, Formatprüfung und Tests aus (Node 22, `npm ci`). Ein neuer Push bricht einen noch laufenden Durchlauf für denselben Branch ab.
 
 ## Projektstruktur
 
@@ -322,9 +326,8 @@ Nach Priorität:
    - Development Build mit `npx expo run:ios` / `run:android` oder EAS (`eas.json` anlegen).
    - Einmal alle Abläufe durchgehen, VoiceOver/TalkBack und große Schrift prüfen.
    - Ersten Lauf gegen die echte Places API beobachten: Feldnamen, Typen, Kosten pro Suche in der Cloud Console.
-2. **CI:** Eine GitHub Action, die bei jedem Push `npm run check` ausführt.
-3. **API-Key aus der App nehmen**, sobald die App nicht mehr nur privat genutzt wird. Ein kleiner Proxy (z. B. Cloudflare Worker) hält den Key, setzt Feldmasken serverseitig und begrenzt Anfragen pro Gerät. Die App ändert dafür nur die Basis-URL im `GooglePlacesProvider`. Für den persönlichen Gebrauch nicht nötig.
-4. **Ende-zu-Ende-Tests** mit Maestro für die Hauptabläufe auf Simulator/Emulator.
+2. **API-Key aus der App nehmen**, sobald die App nicht mehr nur privat genutzt wird. Ein kleiner Proxy (z. B. Cloudflare Worker) hält den Key, setzt Feldmasken serverseitig und begrenzt Anfragen pro Gerät. Die App ändert dafür nur die Basis-URL im `GooglePlacesProvider`. Für den persönlichen Gebrauch nicht nötig.
+3. **Ende-zu-Ende-Tests** mit Maestro für die Hauptabläufe auf Simulator/Emulator.
 
 ### Ideen aus dem Auftrag (bewertet)
 
