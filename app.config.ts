@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'tisch',
   userInterfaceStyle: 'automatic',
   ios: {
-    icon: './assets/expo.icon',
+    icon: './assets/images/icon.png',
     bundleIdentifier: 'de.tisch.app',
     supportsTablet: false,
     // Nur Standard-HTTPS → keine Exportkontroll-Abfrage bei TestFlight/App Store.
@@ -23,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: 'de.tisch.app',
     adaptiveIcon: {
-      backgroundColor: '#F4EFE9',
+      backgroundColor: '#B5432A',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -56,9 +56,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#F4EFE9',
+        backgroundColor: '#B5432A',
         image: './assets/images/splash-icon.png',
-        imageWidth: 76,
+        imageWidth: 180,
       },
     ],
   ],
@@ -67,6 +67,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ? { extra: { ...config.extra, eas: { projectId: process.env.EAS_PROJECT_ID } } }
     : {}),
   experiments: {
+    // Web-Version unter einem Unterpfad (GitHub Pages: /Tablefinder); sonst Wurzel.
+    ...(process.env.EXPO_BASE_URL ? { baseUrl: process.env.EXPO_BASE_URL } : {}),
     typedRoutes: true,
     reactCompiler: true,
   },

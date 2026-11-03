@@ -1,4 +1,4 @@
-import { directionsUrl, displayUrl, phoneUrl } from '@/utils/links';
+import { directionsUrl, displayUrl, mapsPlatform, phoneUrl } from '@/utils/links';
 
 const LOC = { latitude: 52.5009, longitude: 13.4186 };
 
@@ -29,5 +29,24 @@ describe('phoneUrl / displayUrl', () => {
   it('kürzt URLs für die Anzeige', () => {
     expect(displayUrl('https://www.example.com/')).toBe('example.com');
     expect(displayUrl('http://example.com/karte')).toBe('example.com/karte');
+  });
+});
+
+describe('mapsPlatform', () => {
+  const IPHONE =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148';
+  it('nativ: Betriebssystem', () => {
+    expect(mapsPlatform('ios', '')).toBe('ios');
+    expect(mapsPlatform('android', '')).toBe('android');
+  });
+  it('Web-App auf dem iPhone öffnet Apple Maps', () => {
+    expect(mapsPlatform('web', IPHONE)).toBe('ios');
+    expect(
+      directionsUrl(mapsPlatform('web', IPHONE), { latitude: 1, longitude: 2 }, 'X'),
+    ).toContain('maps.apple.com');
+  });
+  it('Web auf Android bzw. Desktop', () => {
+    expect(mapsPlatform('web', 'Mozilla/5.0 (Linux; Android 15)')).toBe('android');
+    expect(mapsPlatform('web', 'Mozilla/5.0 (X11; Linux x86_64)')).toBe('web');
   });
 });

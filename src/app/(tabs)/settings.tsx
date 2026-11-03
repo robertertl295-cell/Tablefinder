@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Section } from '@/components/detail/section';
@@ -22,6 +22,7 @@ import {
 } from '@/store/settings-store';
 import type { DataSource } from '@/types/place';
 import { formatDistance, type Units } from '@/utils/format';
+import { showDialog } from '@/utils/dialog';
 
 const SOURCE_OPTIONS: { value: SourcePreference; label: string }[] = [
   { value: 'auto', label: 'Automatisch' },
@@ -60,7 +61,7 @@ export default function SettingsScreen() {
   };
 
   const confirmDelete = () =>
-    Alert.alert(
+    showDialog(
       'Alle lokalen Daten löschen?',
       'Favoriten, Listen, Notizen, eigene Bewertungen, Filter und Einstellungen werden ' +
         'unwiderruflich gelöscht. Erstelle vorher eine Sicherung, wenn du sie behalten möchtest.',
@@ -71,7 +72,7 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: () => {
             deleteAllLocalData();
-            Alert.alert('Gelöscht', 'Alle lokalen Daten wurden entfernt.');
+            showDialog('Gelöscht', 'Alle lokalen Daten wurden entfernt.');
           },
         },
       ],
@@ -134,7 +135,7 @@ export default function SettingsScreen() {
                 }
                 onPress={() => {
                   if (o.value === 'google' && !hasGoogleKey) {
-                    Alert.alert(
+                    showDialog(
                       'Kein API-Schlüssel',
                       'Für Google Places muss EXPO_PUBLIC_PLACES_API_KEY in der .env-Datei gesetzt sein (siehe README). Bis dahin sucht die App mit OpenStreetMap.',
                     );

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#B5432A"/><g transform="translate(512 512) scale(1) translate(-512 -512)"><g fill="none" stroke="#FFF6F0" stroke-linecap="round">
+  <!-- Teller -->
+  <circle cx="512" cy="512" r="236" stroke-width="40"/>
+  <circle cx="512" cy="512" r="150" stroke-width="16" opacity="0.5"/>
+</g>
+<g fill="#FFF6F0">
+  <!-- Gabel -->
+  <rect x="130" y="236" width="20" height="180" rx="10"/>
+  <rect x="164" y="236" width="20" height="180" rx="10"/>
+  <rect x="198" y="236" width="20" height="180" rx="10"/>
+  <path d="M130 396 h88 v24 a44 44 0 0 1 -44 44 a44 44 0 0 1 -44 -44 z"/>
+  <rect x="158" y="440" width="32" height="352" rx="16"/>
+  <!-- Messer -->
+  <path d="M842 236 C 906 282 914 420 876 520 L 842 520 Z"/>
+  <rect x="842" y="500" width="34" height="292" rx="17"/>
+</g>
+</g></svg>

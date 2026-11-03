@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DataAttribution } from '@/components/data-attribution';
@@ -25,7 +25,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useSearch } from '@/store/search-store';
 import type { PlaceDetails, PlaceSummary } from '@/types/place';
 import { formatPriceLevel } from '@/utils/format';
-import { directionsUrl, displayUrl, phoneUrl } from '@/utils/links';
+import { directionsUrl, displayUrl, mapsPlatform, phoneUrl } from '@/utils/links';
 import { describeOpenState } from '@/utils/opening-hours';
 import { placeStatus, type StatusTone } from '@/utils/place-labels';
 
@@ -170,7 +170,7 @@ function Header({
 
 function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) {
   const route = () =>
-    void Linking.openURL(directionsUrl(Platform.OS, details.location, details.name));
+    void Linking.openURL(directionsUrl(mapsPlatform(), details.location, details.name));
   const phone = details.internationalPhone ?? details.phone;
 
   const actions: Action[] = [

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { Section } from '@/components/detail/section';
 import { ThemedText } from '@/components/themed-text';
@@ -11,6 +11,7 @@ import { pickBackup, shareBackup } from '@/services/favorites-file';
 import { favoritesStore, useFavorites } from '@/store/favorites-store';
 import type { FavoriteList, FavoritesBackup } from '@/types/favorites';
 import { LIST_NAME_SUGGESTIONS, MAX_LIST_NAME_LENGTH } from '@/utils/favorites';
+import { showDialog } from '@/utils/dialog';
 
 /** Listen anlegen, umbenennen, löschen sowie Favoriten sichern und wiederherstellen. */
 export default function FavoritesManageSheet() {
@@ -114,7 +115,7 @@ function ListRow({ list }: { list: FavoriteList }) {
     else setName(list.name);
   };
   const remove = () =>
-    Alert.alert(
+    showDialog(
       `Liste „${list.name}“ löschen?`,
       count > 0
         ? `Die ${count} Favoriten darin bleiben erhalten, nur die Liste verschwindet.`
@@ -189,10 +190,10 @@ async function exportFavorites() {
   try {
     const result = await shareBackup(favoritesStore.getState().exportBackup());
     if (result === 'unavailable') {
-      Alert.alert('Teilen nicht möglich', 'Auf diesem Gerät ist kein Teilen-Menü verfügbar.');
+      showDialog('Teilen nicht möglich', 'Auf diesem Gerät ist kein Teilen-Menü verfügbar.');
     }
   } catch {
-    Alert.alert('Export fehlgeschlagen', 'Die Sicherungsdatei konnte nicht erstellt werden.');
+    showDialog('Export fehlgeschlagen', 'Die Sicherungsdatei konnte nicht erstellt werden.');
   }
 }
 
@@ -200,15 +201,15 @@ async function importFavorites() {
   const result = await pickBackup();
   if (!result) return;
   if (!result.ok) {
-    Alert.alert('Import nicht möglich', result.error);
+    showDialog('Import nicht möglich', result.error);
     return;
   }
   const { backup, skipped } = result;
   const apply = (mode: 'merge' | 'replace') => {
     const { added, updated } = favoritesStore.getState().importBackup(backup, mode);
-    Alert.alert('Import abgeschlossen', importSummary(backup, added, updated, skipped, mode));
+    showDialog('Import abgeschlossen', importSummary(backup, added, updated, skipped, mode));
   };
-  Alert.alert(
+  showDialog(
     'Favoriten importieren',
     `${backup.favorites.length} Favoriten und ${backup.lists.length} Listen gefunden. ` +
       '„Zusammenführen“ behält deine aktuellen Favoriten, „Ersetzen“ löscht sie vorher.',

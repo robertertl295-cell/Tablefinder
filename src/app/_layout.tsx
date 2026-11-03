@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
+import { DialogHost } from '@/components/dialog-host';
 import { Colors } from '@/constants/theme';
 
 export default function RootLayout() {
@@ -51,6 +52,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <DialogHost />
     </ThemeProvider>
   );
 }

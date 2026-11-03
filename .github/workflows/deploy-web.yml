@@ -1,0 +1,63 @@
+name: Web-App veröffentlichen
+
+# Baut die Web-App (PWA) und veröffentlicht sie auf GitHub Pages:
+# https://<besitzer>.github.io/<repository>/ – auf dem iPhone in Safari öffnen
+# und „Teilen → Zum Home-Bildschirm“ wählen.
+# Einmalig nötig: Settings → Pages → Build and deployment → Source: „GitHub Actions“.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nur eine Veröffentlichung gleichzeitig; laufende nicht abbrechen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Web-App bauen
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci --no-audit --no-fund
+
+      - name: Web-App bauen
+        # Kein Google-Key: Die Seite ist öffentlich, der Key wäre für alle auslesbar.
+        # Die Web-App sucht daher mit OpenStreetMap.
+        run: npm run build:web
+        env:
+          BASE_URL: /${{ github.event.repository.name }}
+
+      - name: Ergebnis hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Auf GitHub Pages veröffentlichen
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4

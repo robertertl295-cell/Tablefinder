@@ -1,0 +1,22 @@
+{
+  "name": "Tisch – Restaurants in Berlin",
+  "short_name": "Tisch",
+  "description": "Restaurants, Cafés und Bars in Berlin finden, filtern und merken.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#B5432A",
+  "theme_color": "#B5432A",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

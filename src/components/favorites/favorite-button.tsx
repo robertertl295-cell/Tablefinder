@@ -1,9 +1,10 @@
-import { Alert, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { favoritesStore, useIsFavorite } from '@/store/favorites-store';
+import { showDialog } from '@/utils/dialog';
 
 type Props = {
   placeId: string;
@@ -31,7 +32,7 @@ export function FavoriteButton({ placeId, placeName, variant = 'overlay', size =
       store.removeFavorite(placeId);
       return;
     }
-    Alert.alert(
+    showDialog(
       'Aus Favoriten entfernen?',
       `Deine Notiz, Bewertung und Listen zu „${placeName}“ werden gelöscht.`,
       [

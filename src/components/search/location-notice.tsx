@@ -1,4 +1,4 @@
-import { Linking, Pressable, StyleSheet } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/ui/icon';
@@ -10,6 +10,20 @@ import type { LocationStatus } from '@/store/search-store';
 export function LocationNotice({ status }: { status: LocationStatus }) {
   const theme = useTheme();
   if (status !== 'denied' && status !== 'unavailable') return null;
+
+  // Im Browser gibt es keinen Sprung in die Einstellungen – stattdessen der Weg dorthin.
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[styles.notice, { backgroundColor: theme.backgroundElement }]}>
+        <Icon name="location" size={14} color={theme.textSecondary} />
+        <ThemedText type="small" themeColor="textSecondary" style={styles.text}>
+          {status === 'denied'
+            ? 'Standort nicht freigegeben – wir suchen in Berlin-Mitte. Freigeben unter Einstellungen › Datenschutz & Sicherheit › Ortungsdienste › Safari-Websites.'
+            : 'Standort nicht verfügbar – wir suchen in Berlin-Mitte.'}
+        </ThemedText>
+      </View>
+    );
+  }
 
   const denied = status === 'denied';
   const message = denied

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActiveFilterChips } from '@/components/filters/active-filter-chips';
 import { FilterButton } from '@/components/filters/filter-button';
+import { InstallHint } from '@/components/install-hint';
 import { PlaceCardSkeleton } from '@/components/place/place-card-skeleton';
 import { PlaceList } from '@/components/place/place-list';
 import { ResultsMap } from '@/components/place/results-map';
@@ -119,6 +120,7 @@ export default function SearchScreen() {
           onSubmit={() => void actions().search()}
         />
       </View>
+      <InstallHint />
       <LocationPicker
         selection={selection}
         onSelectCurrent={actions().selectCurrentLocation}

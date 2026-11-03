@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 311 Tests laufen ohne Fehler.
+- Typecheck, Lint und 317 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -62,7 +62,20 @@ npx expo run:android
 
 ## Auf dem iPhone nutzen
 
-**Weg 1 – Expo Go (sofort, kostenlos, ohne Apple-Konto):**
+**Weg 1 – Web-App auf dem Home-Bildschirm (empfohlen, kostenlos, ohne App Store):**
+
+Wie bei AGNES der HU Berlin: Tisch läuft als Website, startet aber vom Home-Bildschirm mit eigenem Symbol, im Vollbild und ohne Browserleiste.
+
+1. Auf dem iPhone in **Safari** öffnen: **https://robertertl295-cell.github.io/Tablefinder/**
+2. Unten auf **Teilen** (Quadrat mit Pfeil) tippen → **„Zum Home-Bildschirm“** → **Hinzufügen**.
+3. Tisch über das neue Symbol starten. Beim ersten Mal nach dem Standort fragen lassen und „Erlauben“ wählen.
+
+- **Updates:** Jeder Push auf `main` veröffentlicht automatisch eine neue Version (`.github/workflows/deploy-web.yml`). Die App holt sie beim nächsten Start.
+- **Daten:** Die Web-App sucht mit OpenStreetMap. Einen Google-Key bekommt sie bewusst nicht, weil er auf einer öffentlichen Seite für alle auslesbar wäre.
+- **Speicher:** Favoriten liegen im Speicher dieser Web-App auf dem iPhone. Wer in Safari die Website-Daten löscht, löscht sie mit. Zur Sicherheit gibt es den JSON-Export unter Favoriten → Verwalten.
+- **Einmalig einrichten:** Im Repository unter **Settings → Pages → Build and deployment → Source** auf **„GitHub Actions“** stellen. Danach unter **Actions → „Web-App veröffentlichen“ → Run workflow** starten, oder einfach den nächsten Push abwarten.
+
+**Weg 2 – Expo Go (zum Entwickeln, mit Rechner):**
 
 1. Auf dem iPhone die App **Expo Go** aus dem App Store installieren.
 2. Auf einem Rechner (Mac, Windows oder Linux mit Node.js 20+) das Projekt klonen und starten:
@@ -77,7 +90,7 @@ npx expo run:android
 - **WLAN:** iPhone und Rechner müssen im selben WLAN sein. Klappt das nicht: `npx expo start --tunnel`.
 - **Nur mit Rechner:** Die App läuft nur, solange der Rechner den Dev-Server bereitstellt. Gut zum Ausprobieren, nicht für den Alltag.
 
-**Weg 2 – eigene App auf dem iPhone (dauerhaft, ohne Rechner):** über EAS Build, den Cloud-Build-Dienst von Expo. Man braucht dafür:
+**Weg 3 – native App über den App-Store-Weg (dauerhaft, kostenpflichtig):** über EAS Build, den Cloud-Build-Dienst von Expo. Man braucht dafür:
 
 - ein kostenloses Expo-Konto
 - das **Apple Developer Program** (99 €/Jahr), um die App für echte Geräte zu signieren
@@ -125,16 +138,39 @@ So legst du den Places-Key an:
 
 > ⚠️ Variablen mit `EXPO_PUBLIC_` werden ins App-Paket eingebaut und lassen sich daraus auslesen. Auch die Foto-URLs enthalten den Key. Die Einschränkungen und das Tageskontingent sind deshalb Pflicht. Für mehr als den persönlichen Gebrauch: siehe Proxy unter [Nächste Schritte](#nächste-schritte).
 
+## Web-App (PWA)
+
+Dieselbe Codebasis läuft im Browser. Für die Nutzung als App vom Home-Bildschirm gibt es dort eigene Varianten, die Expo über die Endung `.web.tsx`/`.web.ts` automatisch wählt:
+
+| Baustein   | Web-Variante                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------------ |
+| Tab-Leiste | `(tabs)/_layout.web.tsx`: unten wie in iOS, mit Abstand zum Home-Indikator                                   |
+| Karte      | `results-map.web.tsx`, `mini-map.web.tsx`: Leaflet mit OpenStreetMap-Kacheln, dunkle Kacheln im Dunkelmodus  |
+| Dialoge    | `dialog.web.ts` + `dialog-host.web.tsx`: eigener Dialog im App-Stil, weil `Alert` im Browser wirkungslos ist |
+| Speicher   | `storage.web.ts`: `localStorage` statt SQLite                                                                |
+| Sicherung  | `favorites-file.web.ts`: Download bzw. Dateiauswahl statt Teilen-Menü                                        |
+| Hinweis    | `install-hint.web.tsx`: „Zum Home-Bildschirm“, nur in Safari auf iPhone/iPad, schließbar                     |
+
+**Build:** `npm run build:web` (Skript `scripts/build-web.mjs`)
+
+- `expo export --platform web` mit optionalem Unterpfad (`BASE_URL=/Tablefinder` für GitHub Pages).
+- Web-App-Angaben im `<head>`: Manifest, `apple-touch-icon`, Vollbild (`apple-mobile-web-app-capable`), Statusleiste, `viewport-fit=cover` für Notch und Home-Indikator, Theme-Farben hell/dunkel.
+- `404.html` als Kopie von `index.html`, damit direkte Links (z. B. `/Tablefinder/place/…`) funktionieren.
+- Manifest und Icons liegen in `public/`. Das App-Symbol stammt aus `assets/images/icon-source.svg`.
+
+**Routen:** „Route“ öffnet auf dem iPhone auch aus der Web-App heraus Apple Maps.
+
 ## Skripte
 
-| Befehl              | Zweck                                        |
-| ------------------- | -------------------------------------------- |
-| `npm start`         | Dev-Server starten                           |
-| `npm run typecheck` | TypeScript prüfen (strict)                   |
-| `npm run lint`      | ESLint (Expo-Konfiguration + Prettier)       |
-| `npm run format`    | Code mit Prettier formatieren                |
-| `npm test`          | Jest-Tests                                   |
-| `npm run check`     | Typecheck, Lint und Tests in einem Durchlauf |
+| Befehl              | Zweck                                                                      |
+| ------------------- | -------------------------------------------------------------------------- |
+| `npm start`         | Dev-Server starten                                                         |
+| `npm run typecheck` | TypeScript prüfen (strict)                                                 |
+| `npm run lint`      | ESLint (Expo-Konfiguration + Prettier)                                     |
+| `npm run format`    | Code mit Prettier formatieren                                              |
+| `npm test`          | Jest-Tests                                                                 |
+| `npm run check`     | Typecheck, Lint und Tests in einem Durchlauf                               |
+| `npm run build:web` | Web-App (PWA) nach `dist/` bauen; `BASE_URL=/Tablefinder` für GitHub Pages |
 
 **CI:** Die GitHub Action `.github/workflows/ci.yml` läuft bei jedem Push auf `main`, bei jedem Pull Request und auf Knopfdruck. Sie führt Typecheck, Lint, Formatprüfung und Tests aus (Node 22, `npm ci`). Ein neuer Push bricht einen noch laufenden Durchlauf für denselben Branch ab.
 
@@ -161,11 +197,15 @@ src/
     location.ts              Standortfreigabe und Position
     storage.ts               Dauerhafter Speicher (SQLite-KV); Web-Variante: localStorage
     favorites-file.ts        Sicherungsdatei teilen und importieren
+    *.web.ts(x)              Web-Varianten (Karte, Dialoge, Speicher, Sicherung, Tab-Leiste)
     local-data.ts            „Alle lokalen Daten löschen“
   store/                     Zustand-Stores: Suche, Filter, Favoriten, Einstellungen
   types/                     Domänentypen: Ort, Filter, Favoriten
   utils/                     Reine, getestete Logik: Filter, Favoriten, Öffnungszeiten, Format, Geo, Kontrast …
   __tests__/                 Jest-Tests
+public/                      Manifest und Icons der Web-App
+scripts/build-web.mjs        Build der Web-App (PWA)
+eas.json                     Build-Profile für die native iOS-App
 app.config.ts                Expo-Konfiguration, liest Keys aus der Umgebung
 jest.setup.ts                Test-Ersatz für Karte und SQLite
 ```
@@ -357,7 +397,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Tests
 
-311 Tests in 33 Dateien (`npm test`):
+317 Tests in 34 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -382,9 +422,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
   - SF Symbols auf iOS, Material Symbols auf Android.
   - Material Symbols zeichnet expo-symbols nur als Umriss. Gefüllte Sterne und das gemerkte Herz sind dort deshalb Textzeichen (★, ♥︎).
 - **Farbe:** ein Akzentton, Terrakotta (`#B5432A` hell, `#F0876B` dunkel).
-- **Web:** Kein Ziel der App, nur als schnelle Vorschau gedacht.
-  - Statt der Karte erscheint dort ein Hinweis.
-  - Gespeichert wird in `localStorage` (Dateien `*.web.ts(x)`).
+- **Web:** vollwertige Web-App für den Home-Bildschirm (siehe [Web-App (PWA)](#web-app-pwa)), veröffentlicht über GitHub Pages.
 - **Bewusst nicht umgesetzt:** Mehrsprachigkeit, eigenes Backend, Konten.
 
 ## Datenschutz und Nutzungsbedingungen
@@ -440,7 +478,12 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **API-Key in der App:** Der Key steckt im App-Paket und in Foto-URLs. Für den persönlichen Gebrauch reichen Einschränkung und Kontingent.
 - **Gerätezeit:** Öffnungszeiten-Hinweise („schließt um …“) rechnen mit der Gerätezeit, nicht mit Berliner Zeit.
 - **Meilen:** Die Umkreis-Stufen sind metrisch und werden nur umgerechnet angezeigt (0,3 / 0,6 / 0,9 / 1,9 / 3,1 mi).
-- **Web-Vorschau:** Tab-Leiste oben, keine Karten. Sie ist nicht für den Gebrauch gedacht.
+- **Web-App gegenüber nativer App:**
+  - Die Tab-Leiste ist nachgebaut, nicht das iOS-System-Element.
+  - Kein Offline-Modus (ohne Internet ist die Suche ohnehin nicht möglich).
+  - Favoriten verschwinden, wenn man in Safari die Website-Daten löscht.
+  - Die Web-App lief nur in einer iPhone-Emulation (Chromium), noch nicht in echtem Safari auf einem iPhone.
+- **Kartenkacheln:** Sie kommen von den öffentlichen OSM-Servern (`tile.openstreetmap.org`), deren Nutzungsrichtlinie für private, geringe Nutzung passt. Bei vielen Nutzern bräuchte es einen eigenen Kachel-Anbieter.
 - **Sortierung:** Nach Vertrauensscore oder Entfernung wird in der App sortiert, nur über die bereits geladenen Treffer. Beim Nachladen ordnen sich neue Treffer ein. Google kann nicht nach Bewertung sortieren.
 - **Annahme im Vertrauensscore:** Der Durchschnitt 4,3 ist fest angenommen, nicht aus echten Daten ermittelt. Mit echtem Key lohnt es sich, ihn anhand eigener Suchergebnisse zu prüfen.
 
