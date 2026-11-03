@@ -1,5 +1,5 @@
 import { SymbolView, type AndroidSymbol, type SFSymbol } from 'expo-symbols';
-import type { ColorValue } from 'react-native';
+import { Platform, Text, type ColorValue } from 'react-native';
 
 /** Feste Icon-Auswahl: SF Symbols auf iOS, Material Symbols auf Android/Web. */
 const ICONS = {
@@ -24,13 +24,50 @@ const ICONS = {
   clock: { ios: 'clock', android: 'schedule' },
   pin: { ios: 'mappin.and.ellipse', android: 'location_on' },
   external: { ios: 'arrow.up.right.square', android: 'open_in_new' },
+  heart: { ios: 'heart', android: 'favorite' },
+  heartFill: { ios: 'heart.fill', android: 'favorite' },
+  trash: { ios: 'trash', android: 'delete' },
+  share: { ios: 'square.and.arrow.up', android: 'share' },
+  import: { ios: 'square.and.arrow.down', android: 'download' },
+  plus: { ios: 'plus', android: 'add' },
+  sort: { ios: 'arrow.up.arrow.down', android: 'sort' },
+  note: { ios: 'text.alignleft', android: 'notes' },
 } as const satisfies Record<string, { ios: SFSymbol; android: AndroidSymbol }>;
 
 export type IconName = keyof typeof ICONS;
 
+/**
+ * Material Symbols werden von expo-symbols nur als Umriss gezeichnet. Für Icons, die gefüllt
+ * sein müssen (Sterne, gemerktes Herz), außerhalb von iOS ein Textzeichen verwenden.
+ * U+FE0E erzwingt die Text- statt der Emoji-Darstellung.
+ */
+const FILLED_GLYPH: Partial<Record<IconName, string>> = {
+  star: '\u2605',
+  heartFill: '\u2665\uFE0E',
+};
+
 type Props = { name: IconName; size?: number; color: ColorValue };
 
 export function Icon({ name, size = 20, color }: Props) {
+  const glyph = Platform.OS === 'ios' ? undefined : FILLED_GLYPH[name];
+  if (glyph) {
+    return (
+      <Text
+        accessible={false}
+        importantForAccessibility="no"
+        allowFontScaling={false}
+        style={{
+          color,
+          fontSize: size,
+          lineHeight: size * 1.15,
+          width: size,
+          textAlign: 'center',
+          includeFontPadding: false,
+        }}>
+        {glyph}
+      </Text>
+    );
+  }
   const icon = ICONS[name];
   return (
     <SymbolView

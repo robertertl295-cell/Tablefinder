@@ -144,6 +144,19 @@ describe('GooglePlacesProvider.getDetails', () => {
   });
 });
 
+describe('GooglePlacesProvider.getSummary', () => {
+  it('lädt nur die Kartenfelder (keine Rezensionen, kein Kontakt)', async () => {
+    const { provider, calls, header } = setup(() => jsonResponse(FULL_PLACE));
+    const summary = await provider.getSummary('ChIJabc');
+    expect(calls[0]?.url).toContain('/places/ChIJabc?');
+    expect(header('X-Goog-FieldMask')).toContain('businessStatus');
+    expect(header('X-Goog-FieldMask')).not.toContain('reviews');
+    expect(header('X-Goog-FieldMask')).not.toContain('websiteUri');
+    expect(summary).not.toHaveProperty('reviews');
+    expect(summary.name).toBe('Testlokal');
+  });
+});
+
 describe('Fehlerbehandlung', () => {
   const kindFor = async (responder: Parameters<typeof setup>[0]) => {
     const { provider } = setup(responder);

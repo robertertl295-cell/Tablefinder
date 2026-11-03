@@ -18,7 +18,8 @@ type Props = {
   center: LatLng;
   radiusMeters: number;
   userLocation: LatLng | null;
-  onSearchArea: (center: LatLng, radiusMeters: number) => void;
+  /** Ohne Angabe gibt es keinen „In diesem Bereich suchen“-Button. */
+  onSearchArea?: (center: LatLng, radiusMeters: number) => void;
   /** Abstand der schwebenden Elemente vom oberen Rand (z. B. unter einer Kopfzeile). */
   topInset?: number;
 };
@@ -76,7 +77,7 @@ export function ResultsMap({
         ))}
       </MapView>
 
-      {pendingRegion && (
+      {pendingRegion && onSearchArea && (
         <View style={[styles.topOverlay, { top: topInset }]} pointerEvents="box-none">
           <Pressable
             onPress={() => {

@@ -2,7 +2,7 @@ import type { PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
 import { boundingBox } from '@/utils/geo';
 
 import { PlacesError, type PlacesErrorKind } from './errors';
-import { detailsFieldMask, searchFieldMask } from './field-masks';
+import { detailsFieldMask, searchFieldMask, summaryFieldMask } from './field-masks';
 import type { GErrorBody, GPlace, GSearchResponse } from './google-types';
 import { mapPlaceDetails, mapPlaceSummary, PRICE_LEVEL_TO_GOOGLE } from './mapping';
 import { CATEGORY_TO_GOOGLE_TYPE, NEARBY_INCLUDED_TYPES } from './place-types';
@@ -88,6 +88,18 @@ export class GooglePlacesProvider implements PlacesProvider {
       { method: 'GET', fieldMask: detailsFieldMask() },
     );
     return mapPlaceDetails(raw);
+  }
+
+  async getSummary(id: string): Promise<PlaceSummary> {
+    const params = new URLSearchParams({
+      languageCode: this.languageCode,
+      regionCode: this.regionCode,
+    });
+    const raw = await this.request<GPlace>(
+      `/places/${encodeURIComponent(id)}?${params.toString()}`,
+      { method: 'GET', fieldMask: summaryFieldMask() },
+    );
+    return mapPlaceSummary(raw);
   }
 
   getPhotoUrl(photo: PhotoRef, maxWidthPx: number): string | null {

@@ -39,6 +39,7 @@ function controllableProvider() {
     source: 'mock',
     search: () => new Promise((resolve, reject) => pending.push({ resolve, reject })),
     getDetails: () => Promise.reject(new Error('nicht benötigt')),
+    getSummary: () => Promise.reject(new Error('nicht benötigt')),
     getPhotoUrl: () => null,
   };
   return { provider, pending };

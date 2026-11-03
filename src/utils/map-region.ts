@@ -36,3 +36,19 @@ export function regionDiffersFromSearch(
   const ratio = radiusForRegion(region) / radiusMeters;
   return moved || ratio > 1.6 || ratio < 0.6;
 }
+
+/** Mittelpunkt und Radius, die alle Orte umfassen (z. B. Favoriten auf der Karte). */
+export function circleAround(
+  points: LatLng[],
+  fallback: LatLng,
+): { center: LatLng; radiusMeters: number } {
+  if (points.length === 0) return { center: fallback, radiusMeters: 1500 };
+  const lats = points.map((p) => p.latitude);
+  const lngs = points.map((p) => p.longitude);
+  const center = {
+    latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
+    longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2,
+  };
+  const farthest = Math.max(...points.map((p) => distanceMeters(center, p)));
+  return { center, radiusMeters: Math.max(800, Math.round(farthest * 1.15)) };
+}

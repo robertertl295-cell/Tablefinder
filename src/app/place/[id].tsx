@@ -8,6 +8,8 @@ import { DataAttribution } from '@/components/data-attribution';
 import { ActionButtons, type Action } from '@/components/detail/action-buttons';
 import { AttributeList } from '@/components/detail/attribute-list';
 import { MiniMap } from '@/components/detail/mini-map';
+import { FavoriteButton } from '@/components/favorites/favorite-button';
+import { FavoriteEditor } from '@/components/favorites/favorite-editor';
 import { OpeningHoursList } from '@/components/detail/opening-hours-list';
 import { PhotoGallery } from '@/components/detail/photo-gallery';
 import { RatingSummary } from '@/components/detail/rating-summary';
@@ -93,6 +95,9 @@ export default function PlaceDetailScreen() {
         {details && <DataAttribution />}
       </ScrollView>
       {backButton}
+      <View style={[styles.favorite, { top: insets.top + Spacing.two }]}>
+        <FavoriteButton placeId={place.id} placeName={place.name} />
+      </View>
     </View>
   );
 }
@@ -199,6 +204,10 @@ function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) 
         <ActionButtons actions={actions} />
       </View>
 
+      <Section title="Meine Notizen">
+        <FavoriteEditor placeId={details.id} />
+      </Section>
+
       <Section title="Bewertung">
         <RatingSummary rating={details.rating} ratingCount={details.ratingCount} />
       </Section>
@@ -266,6 +275,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
+  favorite: { position: 'absolute', right: Spacing.three },
   header: { padding: Spacing.three, paddingTop: Spacing.four, gap: Spacing.one },
   name: { fontSize: 28, lineHeight: 34 },
   banner: {

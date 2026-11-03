@@ -13,7 +13,7 @@ import {
   useSearchRadius,
 } from '@/store/search-store';
 
-/** Vollbild-Karte mit den Treffern der aktuellen Suche (Favoriten folgen in Phase 6). */
+/** Vollbild-Karte mit den Treffern der aktuellen Suche (Favoriten haben eine eigene Kartenansicht). */
 export default function MapScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();

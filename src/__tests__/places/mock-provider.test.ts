@@ -81,6 +81,13 @@ describe('MockPlacesProvider', () => {
     expect(d).not.toHaveProperty('district');
   });
 
+  it('liefert Kurzdaten ohne Detailfelder', async () => {
+    const s = await provider.getSummary('mock-closed-moabit');
+    expect(s.businessStatus).toBe('closed_permanently');
+    expect(s).not.toHaveProperty('reviews');
+    await expect(provider.getSummary('x')).rejects.toMatchObject({ kind: 'not_found' });
+  });
+
   it('wirft not_found für unbekannte IDs', async () => {
     await expect(provider.getDetails('gibt-es-nicht')).rejects.toBeInstanceOf(PlacesError);
     await expect(provider.getDetails('gibt-es-nicht')).rejects.toMatchObject({ kind: 'not_found' });

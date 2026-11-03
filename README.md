@@ -14,7 +14,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 | 3     | Suche, Liste und Karte, Standort                       | ✅     |
 | 4     | Filter mit Chips und Persistenz                        | ✅     |
 | 5     | Detailseite                                            | ✅     |
-| 6     | Favoriten und Listen, Export/Import                    | offen  |
+| 6     | Favoriten und Listen, Export/Import                    | ✅     |
 | 7     | Feinschliff (Dark Mode, Barrierefreiheit, Performance) | offen  |
 | 8     | Abschluss                                              | offen  |
 
@@ -98,6 +98,7 @@ app.config.ts           Expo-Konfiguration, liest Keys aus der Umgebung
 - **Karten:** `react-native-maps`. iOS nutzt Apple Maps (kein Key nötig), Android Google Maps.
 - **Persistenz:** Zustand mit `persist`. Als Speicher dient `expo-sqlite/kv-store`, ein AsyncStorage-kompatibler Key-Value-Speicher auf SQLite-Basis. So ist keine weitere native Abhängigkeit nötig.
 - **Standard-Standort:** Berlin-Mitte (Alexanderplatz), wenn keine Standortfreigabe vorliegt. Die App fragt nur „Beim Verwenden der App“ nach dem Standort, nie im Hintergrund.
+- **Icons:** Material Symbols zeichnet expo-symbols nur als Umriss. Gefüllte Sterne und das gemerkte Herz sind auf Android und im Web deshalb Textzeichen (★, ♥︎ in Text-Darstellung). iOS nutzt gefüllte SF Symbols.
 - **Akzentfarbe:** Terrakotta (`#B5432A` hell, `#F0876B` dunkel). Alle Text-/Hintergrund-Kombinationen erreichen mindestens WCAG AA.
 - **Web:** Kein Ziel der App. Die Web-Konfiguration bleibt nur für eine schnelle Vorschau im Browser. Die Karte zeigt dort einen Hinweis (`results-map.web.tsx`), weil `react-native-maps` im Browser nicht läuft. Gespeichert wird dort in `localStorage` (`storage.web.ts`), weil expo-sqlite im Browser eine eigene WebAssembly-Konfiguration bräuchte.
 - **Suche:** Sie startet automatisch 400 ms nach der letzten Eingabe sowie bei jedem Wechsel von Ort oder Radius. Die erste Suche wartet, bis feststeht, ob ein Standort vorliegt, damit keine überflüssige Anfrage für Berlin-Mitte rausgeht. Antworten älterer Suchen werden verworfen.
@@ -165,6 +166,28 @@ placesProvider (index.ts)
 - **Rezensionen:** Google liefert höchstens 5, nach Relevanz ausgewählt. Die App zeigt sie nach Datum sortiert, neueste zuerst, mit Autor (verlinkt) und Quellenangabe. Dazu kommt ein Link zu allen Rezensionen in Google Maps.
 - **Dauerhaft geschlossen:** Solche Lokale bekommen einen deutlichen Hinweis.
 
+## Favoriten
+
+- **Merken:** Das Herz sitzt auf jeder Ergebniskarte, auf der Kartenansicht und auf der Detailseite. Hat ein Favorit schon eigene Angaben (Notiz, Bewertung, Listen, besucht), fragt die App vor dem Entfernen nach.
+- **Meine Notizen** auf der Detailseite:
+  - Zuordnung zu eigenen Listen; ein Lokal kann in mehreren Listen stehen
+  - „Schon besucht“, eigene Bewertung (1–5, erneutes Tippen löscht sie) und eine Notiz
+  - Die Notiz wird verzögert gespeichert, nicht bei jedem Tastendruck.
+- **Favoriten-Tab:**
+  - Filter nach Liste und Besuchsstatus, Sortierung nach zuletzt hinzugefügt, Name, eigener Bewertung, Google-Bewertung oder Entfernung
+  - Als Liste oder Karte
+- **Aktuelle Ortsdaten:** Sie werden beim Öffnen frisch geladen (`getSummary`, nur Kartenfelder ohne Rezensionen, höchstens 4 Anfragen gleichzeitig, 5 Minuten im Speicher).
+  - Dauerhaft geschlossene Lokale bekommen einen roten Rahmen und ein Banner.
+  - Kennt Google eine ID nicht mehr, erscheint „Ort nicht mehr verfügbar“ mit der Möglichkeit, den Eintrag zu entfernen.
+- **Verwalten:** Listen anlegen (mit Vorschlägen), umbenennen und löschen. Beim Löschen einer Liste bleiben die Favoriten erhalten.
+- **Sicherung als JSON:**
+  - Export über das Teilen-Menü (`expo-sharing`), Import über die Dateiauswahl (`expo-document-picker`).
+  - Format: `{ app: "tisch", format: "favorites", version: 1, exportedAt, lists, favorites }`.
+  - Beim Import wird jeder Eintrag geprüft. Ungültige Einträge werden übersprungen und gezählt, Dateien aus neueren App-Versionen abgelehnt.
+  - „Zusammenführen“: Gleichnamige Listen werden vereint. Bei doppelten Favoriten gewinnt die neuere Bearbeitung, die Listen werden zusammengelegt.
+  - „Ersetzen“ stellt die Sicherung exakt wieder her.
+- **Gespeichert** (`tisch.favorites`) werden nur `placeId`, Listen, Notiz, Besuchsstatus, eigene Bewertung und Zeitstempel. Name, Adresse, Fotos und Bewertungen von Google werden nie gespeichert. Ohne Internet zeigt die Liste deshalb nur die eigenen Angaben, nicht die Namen.
+
 ## Daten und Nutzungsbedingungen
 
 - Lokal gespeichert werden nur `place_id`s und eigene Daten (Listen, Notizen, Status, eigene Bewertung).
@@ -180,6 +203,7 @@ Diese Liste wird bis Phase 8 fortlaufend ergänzt.
 - Nearby Search liefert höchstens 20 Treffer und kein Nachladen. Text Search liefert bis zu 60 Treffer über ein Seiten-Token.
 - Einen eigenen Filter „vegan“ gibt es nicht, die API kennt nur `servesVegetarianFood`.
 - Text Search lässt sich nur auf ein Rechteck begrenzen. Treffer in den Ecken außerhalb des Radius filtert die App danach heraus, sodass eine Seite auch weniger als 20 Treffer enthalten kann.
+- Favoriten zeigen ohne Internetverbindung keine Namen, weil Ortsdaten laut den Google-Nutzungsbedingungen nicht dauerhaft gespeichert werden dürfen.
 - Die Mindestbewertung wird wie bei Google auf 0,5er-Schritte abgerundet (4,7 → 4,5).
 - Foto-URLs enthalten den API-Key. Das ist bei der Places API so vorgesehen und ein weiterer Grund für die Key-Einschränkung.
 - Es gibt keine Sterneverteilung, und Google liefert höchstens 5 Rezensionen pro Ort (nach Relevanz, die App sortiert sie nach Datum).

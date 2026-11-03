@@ -1,4 +1,4 @@
-import type { PhotoRef, PlaceDetails } from '@/types/place';
+import type { PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
 
 import { TtlCache } from './cache';
 import type { PlacesProvider, SearchQuery, SearchResult } from './provider';
@@ -36,6 +36,7 @@ export function searchCacheKey(q: SearchQuery): string {
 export class CachedPlacesProvider implements PlacesProvider {
   private readonly searchCache: TtlCache<SearchResult>;
   private readonly detailsCache: TtlCache<PlaceDetails>;
+  private readonly summaryCache: TtlCache<PlaceSummary>;
   private readonly inFlight = new Map<string, Promise<unknown>>();
 
   constructor(
@@ -44,6 +45,7 @@ export class CachedPlacesProvider implements PlacesProvider {
   ) {
     this.searchCache = new TtlCache(options.searchTtlMs ?? 2 * 60_000, 50, options.now);
     this.detailsCache = new TtlCache(options.detailsTtlMs ?? 5 * 60_000, 100, options.now);
+    this.summaryCache = new TtlCache(options.detailsTtlMs ?? 5 * 60_000, 300, options.now);
   }
 
   get source() {
@@ -59,6 +61,13 @@ export class CachedPlacesProvider implements PlacesProvider {
     return this.cached(`d:${id}`, this.detailsCache, id, () => this.inner.getDetails(id));
   }
 
+  getSummary(id: string): Promise<PlaceSummary> {
+    // Frische Details enthalten alles, was eine Karte braucht – dann keine zweite Anfrage.
+    const details = this.detailsCache.get(id);
+    if (details) return Promise.resolve(details);
+    return this.cached(`m:${id}`, this.summaryCache, id, () => this.inner.getSummary(id));
+  }
+
   getPhotoUrl(photo: PhotoRef, maxWidthPx: number): string | null {
     return this.inner.getPhotoUrl(photo, maxWidthPx);
   }
@@ -67,6 +76,7 @@ export class CachedPlacesProvider implements PlacesProvider {
   clear(): void {
     this.searchCache.clear();
     this.detailsCache.clear();
+    this.summaryCache.clear();
   }
 
   private cached<V>(

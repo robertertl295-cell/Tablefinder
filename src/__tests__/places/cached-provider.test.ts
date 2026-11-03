@@ -2,7 +2,7 @@ import { TtlCache } from '@/services/places/cache';
 import { CachedPlacesProvider, searchCacheKey } from '@/services/places/cached-provider';
 import { PlacesError } from '@/services/places/errors';
 import type { PlacesProvider, SearchQuery } from '@/services/places/provider';
-import type { PlaceDetails } from '@/types/place';
+import type { PlaceDetails, PlaceSummary } from '@/types/place';
 
 const QUERY: SearchQuery = {
   text: 'ramen',
@@ -15,6 +15,7 @@ function fakeProvider() {
     source: 'mock' as const,
     search: jest.fn(async () => ({ places: [], nextPageToken: null })),
     getDetails: jest.fn(async (id: string) => ({ id }) as PlaceDetails),
+    getSummary: jest.fn(async (id: string) => ({ id, name: 'kurz' }) as PlaceSummary),
     getPhotoUrl: jest.fn(() => 'url'),
   } satisfies PlacesProvider;
   let time = 0;
@@ -101,5 +102,21 @@ describe('CachedPlacesProvider', () => {
     expect(
       cached.getPhotoUrl({ name: 'p', widthPx: null, heightPx: null, attributions: [] }, 100),
     ).toBe('url');
+  });
+});
+
+describe('CachedPlacesProvider.getSummary', () => {
+  it('cacht Kurzdaten und bündelt parallele Anfragen', async () => {
+    const { inner, cached } = fakeProvider();
+    await Promise.all([cached.getSummary('a'), cached.getSummary('a')]);
+    await cached.getSummary('a');
+    expect(inner.getSummary).toHaveBeenCalledTimes(1);
+  });
+
+  it('nutzt frisch geladene Details statt einer zweiten Anfrage', async () => {
+    const { inner, cached } = fakeProvider();
+    await cached.getDetails('a');
+    await expect(cached.getSummary('a')).resolves.toEqual({ id: 'a' });
+    expect(inner.getSummary).not.toHaveBeenCalled();
   });
 });

@@ -90,6 +90,7 @@ export default function FiltersSheet() {
             value={draft.openNow}
             onValueChange={(openNow) => update({ openNow })}
             trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+            thumbColor="#FFFFFF"
             accessibilityLabel="Nur jetzt geöffnete Lokale"
           />
         </View>

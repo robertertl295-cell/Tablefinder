@@ -92,6 +92,13 @@ export class MockPlacesProvider implements PlacesProvider {
     return toDetails(found);
   }
 
+  async getSummary(id: string): Promise<PlaceSummary> {
+    await wait(this.latencyMs);
+    const found = this.places.find((p) => p.id === id);
+    if (!found) throw new PlacesError('not_found', `Unbekannte ID: ${id}`, 404);
+    return toSummary(found);
+  }
+
   getPhotoUrl(photo: PhotoRef, maxWidthPx: number): string | null {
     // Neutrale Platzhalterbilder; `seed` sorgt für stabile Bilder je Foto.
     const width = Math.round(maxWidthPx);

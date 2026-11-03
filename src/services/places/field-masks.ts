@@ -61,3 +61,8 @@ export function detailsFieldMask(): string {
   const summary = SUMMARY_FIELDS.filter((f) => f !== 'currentOpeningHours.openNow');
   return [...summary, ...ATTRIBUTE_FIELDS, ...DETAIL_ONLY_FIELDS].join(',');
 }
+
+/** Feldmaske für einen einzelnen Ort in Kartenform (Place Details ohne Rezensionen/Kontakt). */
+export function summaryFieldMask(): string {
+  return SUMMARY_FIELDS.join(',');
+}

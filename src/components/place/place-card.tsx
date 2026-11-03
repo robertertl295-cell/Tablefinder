@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
+import { FavoriteButton } from '@/components/favorites/favorite-button';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -16,9 +17,20 @@ type Props = {
   onPress: () => void;
   /** Kompakte Variante (Foto links) für die Kartenansicht. */
   compact?: boolean;
+  /** Ohne Rahmen (wenn die Karte in einem anderen Rahmen steckt). */
+  flat?: boolean;
+  /** Herz zum Merken anzeigen (Standard: ja). */
+  showFavorite?: boolean;
 };
 
-export function PlaceCard({ place, distanceMeters, onPress, compact = false }: Props) {
+export function PlaceCard({
+  place,
+  distanceMeters,
+  onPress,
+  compact = false,
+  flat = false,
+  showFavorite = true,
+}: Props) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const status = placeStatus(place.openNow, place.businessStatus);
@@ -36,42 +48,53 @@ export function PlaceCard({ place, distanceMeters, onPress, compact = false }: P
   const isClosed = place.businessStatus === 'closed_permanently';
 
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={placeAccessibilityLabel(place, distanceMeters)}
-      accessibilityHint="Öffnet die Details"
-      style={({ pressed }) => [
-        styles.card,
-        compact && styles.compact,
-        {
-          backgroundColor: theme.background,
-          borderColor: theme.border,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}>
-      <PlacePhoto
-        photo={place.photo}
-        width={compact ? 96 : width}
-        style={[compact ? styles.photoCompact : styles.photo, isClosed && styles.dimmed]}
-      />
-      <View style={[styles.body, compact && styles.bodyCompact]}>
-        <ThemedText type="subtitle" numberOfLines={1} style={compact && styles.nameCompact}>
-          {place.name}
-        </ThemedText>
-        {meta.length > 0 && (
-          <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-            {meta.join(' · ')}
+    <View>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={placeAccessibilityLabel(place, distanceMeters)}
+        accessibilityHint="Öffnet die Details"
+        style={({ pressed }) => [
+          styles.card,
+          compact && styles.compact,
+          {
+            backgroundColor: theme.background,
+            borderColor: theme.border,
+            opacity: pressed ? 0.85 : 1,
+          },
+        ]}>
+        <PlacePhoto
+          photo={place.photo}
+          width={compact ? 96 : width}
+          style={[compact ? styles.photoCompact : styles.photo, isClosed && styles.dimmed]}
+        />
+        <View style={[styles.body, compact && styles.bodyCompact]}>
+          <ThemedText type="subtitle" numberOfLines={1} style={compact && styles.nameCompact}>
+            {place.name}
           </ThemedText>
-        )}
-        <RatingLine rating={place.rating} ratingCount={place.ratingCount} />
-        {status && (
-          <ThemedText type="smallBold" style={{ color: toneColor[status.tone] }}>
-            {status.label}
-          </ThemedText>
-        )}
-      </View>
-    </Pressable>
+          {meta.length > 0 && (
+            <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+              {meta.join(' · ')}
+            </ThemedText>
+          )}
+          <RatingLine rating={place.rating} ratingCount={place.ratingCount} />
+          {status && (
+            <ThemedText type="smallBold" style={{ color: toneColor[status.tone] }}>
+              {status.label}
+            </ThemedText>
+          )}
+        </View>
+      </Pressable>
+      {showFavorite && (
+        <View style={compact ? styles.heartCompact : styles.heart}>
+          <FavoriteButton
+            placeId={place.id}
+            placeName={place.name}
+            variant={compact ? 'plain' : 'overlay'}
+          />
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -82,10 +105,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   compact: { flexDirection: 'row', borderRadius: Radius.medium },
+  flat: { borderWidth: 0, borderRadius: 0 },
+  heart: { position: 'absolute', top: Spacing.three, right: Spacing.three },
+  heartCompact: { position: 'absolute', top: Spacing.two + Spacing.one, right: Spacing.three },
   photo: { height: 168 },
   photoCompact: { width: 96, alignSelf: 'stretch', minHeight: 104 },
   dimmed: { opacity: 0.4 },
   body: { padding: Spacing.three, gap: Spacing.one },
-  bodyCompact: { flex: 1, padding: Spacing.two + Spacing.one },
+  // Platz rechts für das Herz.
+  bodyCompact: { flex: 1, padding: Spacing.two + Spacing.one, paddingRight: Spacing.six },
   nameCompact: { fontSize: 17, lineHeight: 22 },
 });

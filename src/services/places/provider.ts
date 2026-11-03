@@ -41,6 +41,8 @@ export interface PlacesProvider {
   readonly source: DataSource;
   search(query: SearchQuery): Promise<SearchResult>;
   getDetails(id: string): Promise<PlaceDetails>;
+  /** Nur die Felder einer Ergebniskarte – günstiger als Details (z. B. für Favoritenlisten). */
+  getSummary(id: string): Promise<PlaceSummary>;
   /** Direkt ladbare Bild-URL oder `null`, wenn keine verfügbar ist. */
   getPhotoUrl(photo: PhotoRef, maxWidthPx: number): string | null;
 }
