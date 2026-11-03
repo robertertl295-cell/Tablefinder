@@ -15,6 +15,15 @@ const ICONS = {
   photo: { ios: 'photo', android: 'image' },
   refresh: { ios: 'arrow.clockwise', android: 'refresh' },
   filter: { ios: 'line.3.horizontal.decrease', android: 'filter_list' },
+  back: { ios: 'chevron.left', android: 'arrow_back' },
+  phone: { ios: 'phone.fill', android: 'call' },
+  website: { ios: 'globe', android: 'language' },
+  directions: { ios: 'arrow.triangle.turn.up.right.diamond.fill', android: 'directions' },
+  check: { ios: 'checkmark', android: 'check' },
+  cross: { ios: 'xmark', android: 'close' },
+  clock: { ios: 'clock', android: 'schedule' },
+  pin: { ios: 'mappin.and.ellipse', android: 'location_on' },
+  external: { ios: 'arrow.up.right.square', android: 'open_in_new' },
 } as const satisfies Record<string, { ios: SFSymbol; android: AndroidSymbol }>;
 
 export type IconName = keyof typeof ICONS;

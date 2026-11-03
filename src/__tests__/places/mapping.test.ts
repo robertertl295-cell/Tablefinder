@@ -1,4 +1,10 @@
-import { mapPlaceDetails, mapPlaceSummary, mapPriceLevel } from '@/services/places/mapping';
+import {
+  mapPlaceDetails,
+  mapPlaceSummary,
+  mapPriceLevel,
+  sortReviewsNewestFirst,
+} from '@/services/places/mapping';
+import type { Review } from '@/types/place';
 
 import { FULL_PLACE } from '../fixtures/google-place';
 
@@ -108,5 +114,40 @@ describe('mapPlaceDetails', () => {
     expect(d.openingHours?.periods).toEqual([
       { open: { day: 0, hour: 0, minute: 0 }, close: null },
     ]);
+  });
+});
+
+describe('sortReviewsNewestFirst', () => {
+  const r = (id: string, publishTime: string | null): Review => ({
+    id,
+    authorName: id,
+    authorUri: null,
+    authorPhotoUri: null,
+    rating: 5,
+    text: null,
+    relativeTime: null,
+    publishTime,
+  });
+
+  it('sortiert nach Datum, Einträge ohne Datum ans Ende in Originalreihenfolge', () => {
+    const sorted = sortReviewsNewestFirst([
+      r('alt', '2025-01-01T00:00:00Z'),
+      r('ohne1', null),
+      r('neu', '2026-10-01T00:00:00Z'),
+      r('ohne2', null),
+      r('mittel', '2026-03-01T00:00:00Z'),
+    ]);
+    expect(sorted.map((x) => x.id)).toEqual(['neu', 'mittel', 'alt', 'ohne1', 'ohne2']);
+  });
+
+  it('wird beim Mapping der Details angewendet', () => {
+    const d = mapPlaceDetails({
+      ...FULL_PLACE,
+      reviews: [
+        { name: 'a', publishTime: '2024-01-01T00:00:00Z' },
+        { name: 'b', publishTime: '2026-01-01T00:00:00Z' },
+      ],
+    });
+    expect(d.reviews.map((x) => x.id)).toEqual(['b', 'a']);
   });
 });

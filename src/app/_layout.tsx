@@ -27,7 +27,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="place/[id]"
-          options={{ title: '', headerBackTitle: 'Zurück', headerTransparent: true }}
+          // Eigener Zurück-Button über dem Foto (gut lesbar auf jedem Bild).
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="filters"

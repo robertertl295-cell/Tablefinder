@@ -139,6 +139,24 @@ function mapReview(r: GReview, index: number): Review {
   };
 }
 
+/**
+ * Neueste zuerst. Google liefert bis zu 5 Rezensionen nach Relevanz;
+ * ohne Datum bleiben sie in der gelieferten Reihenfolge am Ende.
+ */
+export function sortReviewsNewestFirst(reviews: Review[]): Review[] {
+  const time = (r: Review) => (r.publishTime ? Date.parse(r.publishTime) : Number.NaN);
+  return reviews
+    .map((r, i) => ({ r, i, t: time(r) }))
+    .sort((a, b) => {
+      const aHas = !Number.isNaN(a.t);
+      const bHas = !Number.isNaN(b.t);
+      if (aHas && bHas && a.t !== b.t) return b.t - a.t;
+      if (aHas !== bHas) return aHas ? -1 : 1;
+      return a.i - b.i;
+    })
+    .map(({ r }) => r);
+}
+
 export function mapPlaceDetails(p: GPlace): PlaceDetails {
   const summary = mapPlaceSummary(p);
   // currentOpeningHours enthält Sonderöffnungszeiten der nächsten 7 Tage, regular ist der Fallback.
@@ -154,6 +172,6 @@ export function mapPlaceDetails(p: GPlace): PlaceDetails {
     mapsUri: str(p.googleMapsUri),
     openingHours: hours,
     photos: (p.photos ?? []).map(mapPhoto),
-    reviews: (p.reviews ?? []).map(mapReview),
+    reviews: sortReviewsNewestFirst((p.reviews ?? []).map(mapReview)),
   };
 }

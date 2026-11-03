@@ -13,7 +13,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 | 2     | Datenschicht (`PlacesProvider`, Mock-Daten, Tests)     | ✅     |
 | 3     | Suche, Liste und Karte, Standort                       | ✅     |
 | 4     | Filter mit Chips und Persistenz                        | ✅     |
-| 5     | Detailseite                                            | offen  |
+| 5     | Detailseite                                            | ✅     |
 | 6     | Favoriten und Listen, Export/Import                    | offen  |
 | 7     | Feinschliff (Dark Mode, Barrierefreiheit, Performance) | offen  |
 | 8     | Abschluss                                              | offen  |
@@ -148,6 +148,23 @@ placesProvider (index.ts)
 - **Speicherung:** Die Filter werden in SQLite gespeichert (`tisch.filters`, Format-Version 1) und beim Laden geprüft. Ungültige Werte, etwa nach einem Update, werden auf den Standard zurückgesetzt. Die erste Suche wartet, bis die gespeicherten Filter geladen sind.
 - **Bedienung:** Aktive Filter stehen als Chips direkt unter der Suche, ein Tipp entfernt sie. Ab zwei aktiven Filtern gibt es zusätzlich „Zurücksetzen“, im Leerzustand „Filter zurücksetzen“.
 
+## Detailseite
+
+- **Laden:** Beim Öffnen werden die Details frisch geladen oder aus dem 5-Minuten-Speicher geholt. Name und Foto aus der Trefferliste erscheinen sofort.
+- **Status:**
+  - „Jetzt geöffnet · Schließt um 22:30“ bzw. „Geschlossen · Öffnet morgen um 12:00“. Berechnet aus den Öffnungszeiträumen, auch über Mitternacht und das Wochenende hinweg.
+  - Gilt laut Google gerade eine Sonderöffnungszeit, die der Berechnung widerspricht (z. B. Feiertag), wird nur der Status ohne Uhrzeit gezeigt.
+  - Grundlage ist die Gerätezeit.
+- **Aktionen:**
+  - Route öffnet Apple Maps (iOS) bzw. die Auswahl der Karten-Apps über `geo:` (Android).
+  - Anrufen startet `tel:`.
+  - Website öffnet im In-App-Browser.
+- **Bewertung:** Schnitt, Sterne, Anzahl und eine Skala der Datenbasis (unter 30 / 30–199 / ab 200) mit Erklärung. Eine Verteilung nach Sternen liefert die Places API nicht.
+- **Öffnungszeiten:** Wochenübersicht, der heutige Tag ist hervorgehoben.
+- **Angebot:** Bekannte Merkmale mit ✓ / ✗, fehlende Angaben werden weggelassen.
+- **Rezensionen:** Google liefert höchstens 5, nach Relevanz ausgewählt. Die App zeigt sie nach Datum sortiert, neueste zuerst, mit Autor (verlinkt) und Quellenangabe. Dazu kommt ein Link zu allen Rezensionen in Google Maps.
+- **Dauerhaft geschlossen:** Solche Lokale bekommen einen deutlichen Hinweis.
+
 ## Daten und Nutzungsbedingungen
 
 - Lokal gespeichert werden nur `place_id`s und eigene Daten (Listen, Notizen, Status, eigene Bewertung).
@@ -165,4 +182,5 @@ Diese Liste wird bis Phase 8 fortlaufend ergänzt.
 - Text Search lässt sich nur auf ein Rechteck begrenzen. Treffer in den Ecken außerhalb des Radius filtert die App danach heraus, sodass eine Seite auch weniger als 20 Treffer enthalten kann.
 - Die Mindestbewertung wird wie bei Google auf 0,5er-Schritte abgerundet (4,7 → 4,5).
 - Foto-URLs enthalten den API-Key. Das ist bei der Places API so vorgesehen und ein weiterer Grund für die Key-Einschränkung.
+- Es gibt keine Sterneverteilung, und Google liefert höchstens 5 Rezensionen pro Ort (nach Relevanz, die App sortiert sie nach Datum).
 - Der Google-Anbieter ist bisher nur gegen die dokumentierten API-Formate getestet (mit simulierten Antworten), noch nicht gegen die echte API.
