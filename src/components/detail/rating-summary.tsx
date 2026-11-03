@@ -6,6 +6,12 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatCount, formatRating } from '@/utils/format';
 import {
+  TRUST_PRIOR_MEAN,
+  TRUST_PRIOR_WEIGHT,
+  trustExplanation,
+  trustScore,
+} from '@/utils/trust-score';
+import {
   BROAD_DATA_THRESHOLD,
   LOW_DATA_THRESHOLD,
   RATING_CONFIDENCE_LABEL,
@@ -40,6 +46,7 @@ export function RatingSummary({
 }) {
   const theme = useTheme();
   const confidence = ratingConfidence(ratingCount);
+  const score = trustScore(rating, ratingCount);
   const levelColor = confidence === 'low' ? theme.warning : theme.accent;
 
   return (
@@ -96,6 +103,28 @@ export function RatingSummary({
           {EXPLANATION[confidence]}
         </ThemedText>
       </View>
+
+      {rating !== null && score !== null && (
+        <View
+          style={[styles.trust, { backgroundColor: theme.backgroundElement }]}
+          accessible
+          accessibilityLabel={`Vertrauensscore ${formatRating(score)} von 5. ${trustExplanation(rating, ratingCount, score)}`}>
+          <View style={styles.trustRow}>
+            <ThemedText type="smallBold">Vertrauensscore</ThemedText>
+            <ThemedText style={[styles.trustValue, { color: theme.accent }]}>
+              {formatRating(score)}
+            </ThemedText>
+          </View>
+          <ThemedText type="small" themeColor="textSecondary">
+            {trustExplanation(rating, ratingCount, score)}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.trustMethod}>
+            Berechnung: Der Google-Schnitt wird um {TRUST_PRIOR_WEIGHT} gedachte Bewertungen mit dem
+            Berliner Durchschnitt ({formatRating(TRUST_PRIOR_MEAN)} ★) ergänzt. Bei vielen
+            Bewertungen ändert das kaum etwas, bei wenigen viel.
+          </ThemedText>
+        </View>
+      )}
     </View>
   );
 }
@@ -111,4 +140,8 @@ const styles = StyleSheet.create({
   bar: { height: 8, borderRadius: Radius.pill },
   segmentLabel: { fontSize: 12, lineHeight: 16 },
   current: { fontWeight: 700 },
+  trust: { gap: Spacing.one, padding: Spacing.three, borderRadius: Radius.medium },
+  trustRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  trustValue: { fontSize: 24, lineHeight: 30, fontWeight: 700 },
+  trustMethod: { fontSize: 12, lineHeight: 17, marginTop: Spacing.one },
 });

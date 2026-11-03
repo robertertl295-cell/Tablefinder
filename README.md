@@ -9,7 +9,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 
 **Was Tisch von anderen Apps unterscheidet:**
 
-1. **Bewertungen ehrlich darstellen:** Sterne stehen immer zusammen mit der Anzahl der Bewertungen. Unter 30 Bewertungen erscheint deutlich „Wenig Datenbasis“. Die Detailseite zeigt eine Skala, wie belastbar der Schnitt ist.
+1. **Bewertungen ehrlich darstellen:** Sterne stehen immer zusammen mit der Anzahl der Bewertungen. Unter 30 Bewertungen erscheint deutlich „Wenig Datenbasis“. Die Detailseite zeigt, wie belastbar der Schnitt ist, und einen **Vertrauensscore**, nach dem sich die Treffer auch sortieren lassen.
 2. **Feine Filter:** Art, Mindestbewertung, Mindestanzahl Bewertungen, Preis, Umkreis, jetzt geöffnet, vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder, Frühstück, Mittag- und Abendessen.
 3. **Schnelle Favoriten:** eigene Listen, Notiz, „besucht“, eigene Bewertung und eine Sicherung als JSON-Datei.
 
@@ -30,7 +30,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 238 Tests laufen ohne Fehler.
+- Typecheck, Lint und 250 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -162,6 +162,35 @@ placesProvider (index.ts)
 - **Ergebniskarte:** Foto (mit Fotograf), Name, Typ, Preisniveau und Entfernung (nur bei bekanntem Standort). Dazu Sterne mit Anzahl, „Wenig Datenbasis“ unter 30 Bewertungen, Öffnungs- bzw. Betriebsstatus und das Herz.
 - **Karte:** Ein Tipp auf einen Pin zeigt eine kompakte Karte des Lokals, ein Tipp darauf die Details.
 
+## Vertrauensscore
+
+Ein bereinigter Bewertungsschnitt (Bayes), der berücksichtigt, wie viele Bewertungen hinter einem Schnitt stehen:
+
+```
+Vertrauensscore = (k · m + n · r) / (k + n)
+```
+
+- `r` ist der Google-Schnitt, `n` die Anzahl der Bewertungen.
+- `m = 4,3` ist der angenommene Durchschnitt Berliner Gastronomie.
+- `k = 25` ist das Gewicht dieser Annahme, also 25 gedachte Durchschnittsbewertungen.
+- Beide Werte stehen in `src/utils/trust-score.ts`.
+
+**Wirkung:** Wenige Bewertungen ziehen den Score Richtung Durchschnitt, bei vielen ändert sich kaum etwas.
+
+| Google        | Vertrauensscore |
+| ------------- | --------------- |
+| 4,6 aus 1.284 | 4,6             |
+| 4,8 aus 22    | 4,5             |
+| 4,9 aus 12    | 4,5             |
+| 5,0 aus 3     | 4,4             |
+| 2,0 aus 4     | 4,0             |
+
+**Wo er erscheint:**
+
+- **Detailseite:** Der Score mit einem Satz Erklärung zu genau diesem Lokal und der offengelegten Berechnung.
+- **Suche:** Die Sortierung „Relevanz“, „Vertrauensscore“ oder „Entfernung“ wählst du im Filter-Sheet. Sie wird gespeichert (`tisch.settings`) und löst keine neue Anfrage aus. Die aktive Sortierung steht als Chip neben dem Filter-Button, ein Tipp stellt zurück auf Relevanz. Beim Sortieren nach Vertrauensscore zeigt jede Karte ihren Score, damit die Reihenfolge nachvollziehbar ist.
+- **Favoriten:** zusätzliche Sortierung „Vertrauensscore“ neben „Google-Bewertung“.
+
 ## Filter
 
 | Filter                                                     | Wo ausgewertet                                                |
@@ -248,7 +277,7 @@ placesProvider (index.ts)
 
 ## Tests
 
-238 Tests in 26 Dateien (`npm test`):
+250 Tests in 28 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                      |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -257,6 +286,7 @@ placesProvider (index.ts)
 | Favoriten-Store (Auftrag)       | Hinzufügen/Entfernen, Listen, eigene Angaben, Persistenz, nur eigene Daten gespeichert, Export/Import, Zusammenführen |
 | Such-Flow (Smoke-Test, Auftrag) | Start ohne Standort → Treffer in Mitte → Suchbegriff ohne Treffer → Bezirk wechseln → Details öffnen                  |
 | Oberflächen                     | Filter-Chips, Detailseite, Herz-Button, Notizen, Favoriten-Tab, Verwalten-Sheet, Einstellungen                        |
+| Vertrauensscore                 | Berechnung, Grenzfälle, Umkehr der Reihenfolge, Sortierung, Anzeige auf Karten und Detailseite                        |
 | Logik                           | Öffnungszeiten (über Mitternacht, Wochenende), Entfernung, Einheiten, Links, Kartenausschnitt, Kontrast (WCAG)        |
 
 ## Getroffene Entscheidungen
@@ -317,6 +347,8 @@ placesProvider (index.ts)
 - **Gerätezeit:** Öffnungszeiten-Hinweise („schließt um …“) rechnen mit der Gerätezeit, nicht mit Berliner Zeit.
 - **Meilen:** Die Umkreis-Stufen sind metrisch und werden nur umgerechnet angezeigt (0,3 / 0,6 / 0,9 / 1,9 / 3,1 mi).
 - **Web-Vorschau:** Tab-Leiste oben, keine Karten. Sie ist nicht für den Gebrauch gedacht.
+- **Sortierung:** Nach Vertrauensscore oder Entfernung wird in der App sortiert, nur über die bereits geladenen Treffer. Beim Nachladen ordnen sich neue Treffer ein. Google kann nicht nach Bewertung sortieren.
+- **Annahme im Vertrauensscore:** Der Durchschnitt 4,3 ist fest angenommen, nicht aus echten Daten ermittelt. Mit echtem Key lohnt es sich, ihn anhand eigener Suchergebnisse zu prüfen.
 
 ## Nächste Schritte
 
@@ -335,6 +367,6 @@ Nach Priorität:
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Zweite Datenquelle (OpenStreetMap) | Gut vorbereitet: ein `OverpassPlacesProvider` hinter demselben Interface. OSM hat keine Bewertungen und keine Fotos, liefert aber oft `diet:vegan`, `outdoor_seating`, `dog` – sinnvoll als Ergänzung, z. B. für einen echten Vegan-Filter.                     |
 | Gerichte-Suche                     | Die Places API hat keine Speisekarten. Möglich ist nur die Freitextsuche („Ramen“), die schon funktioniert. Mehr bräuchte eine eigene Datenquelle.                                                                                                              |
-| Vertrauensscore für Bewertungen    | Gut machbar auf Basis von Anzahl und Schnitt (z. B. Bayes-Mittel: Schnitt zieht bei wenigen Bewertungen Richtung Stadtdurchschnitt). Passt zur Datenbasis-Skala und wäre als Sortierung sehr nützlich.                                                          |
+| Vertrauensscore für Bewertungen    | ✅ Umgesetzt (siehe [Vertrauensscore](#vertrauensscore)).                                                                                                                                                                                                       |
 | Teilen von Listen                  | Ohne Backend über die vorhandene JSON-Sicherung oder einen Deep Link mit `place_id`s (`tisch://liste?…`). Es dürfen keine Google-Inhalte mitgeschickt werden, die IDs schon.                                                                                    |
 | Widget „Was esse ich heute?“       | Machbar mit `expo-widgets` (für SDK 58 verfügbar, nicht ausprobiert) bzw. einem nativen Widget-Target. Zufallsvorschlag aus „Noch ausprobieren“, der jetzt geöffnet ist. Braucht einen Development Build und frische Daten beim Antippen (Nutzungsbedingungen). |

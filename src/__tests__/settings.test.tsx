@@ -49,13 +49,14 @@ beforeEach(async () => {
 
 describe('Einstellungen-Store', () => {
   it('bereinigt ungültige Werte', () => {
-    expect(sanitizeSettings({ defaultRadiusMeters: 123, units: 'lichtjahre' })).toEqual(
-      DEFAULT_SETTINGS,
-    );
-    expect(sanitizeSettings({ defaultRadiusMeters: 3000, units: 'imperial' })).toEqual({
-      defaultRadiusMeters: 3000,
-      units: 'imperial',
-    });
+    expect(
+      sanitizeSettings({ defaultRadiusMeters: 123, units: 'lichtjahre', resultSort: 'zufall' }),
+    ).toEqual(DEFAULT_SETTINGS);
+    expect(
+      sanitizeSettings({ defaultRadiusMeters: 3000, units: 'imperial', resultSort: 'trust' }),
+    ).toEqual({ defaultRadiusMeters: 3000, units: 'imperial', resultSort: 'trust' });
+    // Ältere gespeicherte Stände ohne Sortierung bekommen den Standard.
+    expect(sanitizeSettings({ defaultRadiusMeters: 3000 }).resultSort).toBe('relevance');
   });
 
   it('speichert und lädt Einstellungen', async () => {
@@ -69,17 +70,23 @@ describe('Einstellungen-Store', () => {
     await new Promise((r) => setTimeout(r, 0));
     first.getState().setUnits('imperial');
     first.getState().setDefaultRadius(5000);
+    first.getState().setResultSort('trust');
     await new Promise((r) => setTimeout(r, 0));
     expect(JSON.parse(data.get(SETTINGS_STORAGE_KEY)!).state).toEqual({
       defaultRadiusMeters: 5000,
       units: 'imperial',
+      resultSort: 'trust',
     });
 
     const second = createSettingsStore(storage);
     for (let i = 0; i < 10 && !second.getState().hydrated; i++) {
       await new Promise((r) => setTimeout(r, 0));
     }
-    expect(second.getState()).toMatchObject({ defaultRadiusMeters: 5000, units: 'imperial' });
+    expect(second.getState()).toMatchObject({
+      defaultRadiusMeters: 5000,
+      units: 'imperial',
+      resultSort: 'trust',
+    });
   });
 });
 

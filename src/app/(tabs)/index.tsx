@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { AccessibilityInfo, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,10 +15,12 @@ import { ViewToggle } from '@/components/search/view-toggle';
 import { SearchError } from '@/components/state/search-error';
 import { StateMessage } from '@/components/state/state-message';
 import { ThemedText } from '@/components/themed-text';
+import { Chip } from '@/components/ui/chip';
+import { Icon } from '@/components/ui/icon';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { filterStore, useFilters } from '@/store/filter-store';
-import { useSettings } from '@/store/settings-store';
+import { settingsStore, useSettings } from '@/store/settings-store';
 import {
   locationLabel,
   searchCenter,
@@ -27,6 +29,7 @@ import {
   useSearchRadius,
 } from '@/store/search-store';
 import { activeFilterChips } from '@/utils/filters';
+import { RESULT_SORT_LABEL, sortPlaces } from '@/utils/sort-places';
 
 const actions = () => searchStore.getState();
 
@@ -49,6 +52,17 @@ export default function SearchScreen() {
   const filters = useFilters((s) => s.filters);
   const defaultRadius = useSettings((s) => s.defaultRadiusMeters);
   const units = useSettings((s) => s.units);
+  const resultSort = useSettings((s) => s.resultSort);
+  const sortedResults = useMemo(
+    () => sortPlaces(results, resultSort, userLocation),
+    [results, resultSort, userLocation],
+  );
+  const sortLabel =
+    resultSort === 'relevance'
+      ? null
+      : resultSort === 'distance' && !userLocation
+        ? 'Entfernung (Standort fehlt)'
+        : `Nach ${RESULT_SORT_LABEL[resultSort]}`;
   const chips = activeFilterChips(filters, defaultRadius, units);
 
   // Android liest die Trefferzeile über accessibilityLiveRegion vor, iOS braucht eine Ansage.
@@ -116,7 +130,18 @@ export default function SearchScreen() {
       </View>
       <ActiveFilterChips
         leading={
-          <FilterButton activeCount={chips.length} onPress={() => router.push('/filters')} />
+          <>
+            <FilterButton activeCount={chips.length} onPress={() => router.push('/filters')} />
+            {sortLabel && (
+              <Chip
+                label={sortLabel}
+                selected
+                onPress={() => settingsStore.getState().setResultSort('relevance')}
+                accessibilityLabel={`Sortierung ${sortLabel}. Zurück zu Relevanz`}
+                trailing={<Icon name="close" size={14} color={theme.onAccent} />}
+              />
+            )}
+          </>
         }
         chips={chips}
         filters={filters}
@@ -137,8 +162,9 @@ export default function SearchScreen() {
           />
         ) : (
           <PlaceList
-            places={results}
+            places={sortedResults}
             userLocation={userLocation}
+            showTrustScore={resultSort === 'trust'}
             isLoadingMore={isLoadingMore}
             isRefreshing={isRefreshing}
             onEndReached={() => void actions().loadMore()}

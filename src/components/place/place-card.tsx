@@ -6,8 +6,9 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useUnits } from '@/store/settings-store';
 import type { PlaceSummary } from '@/types/place';
-import { formatDistance, formatPriceLevel } from '@/utils/format';
+import { formatDistance, formatPriceLevel, formatRating } from '@/utils/format';
 import { placeAccessibilityLabel, placeStatus, type StatusTone } from '@/utils/place-labels';
+import { trustScore } from '@/utils/trust-score';
 
 import { PlacePhoto } from './place-photo';
 import { RatingLine } from './rating-line';
@@ -22,6 +23,8 @@ type Props = {
   flat?: boolean;
   /** Herz zum Merken anzeigen (Standard: ja). */
   showFavorite?: boolean;
+  /** Vertrauensscore anzeigen (wenn danach sortiert wird). */
+  showTrustScore?: boolean;
 };
 
 export function PlaceCard({
@@ -31,6 +34,7 @@ export function PlaceCard({
   compact = false,
   flat = false,
   showFavorite = true,
+  showTrustScore = false,
 }: Props) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
@@ -48,13 +52,17 @@ export function PlaceCard({
     distanceMeters !== null ? formatDistance(distanceMeters, units) : null,
   ].filter(Boolean);
   const isClosed = place.businessStatus === 'closed_permanently';
+  const score = showTrustScore ? trustScore(place.rating, place.ratingCount) : null;
 
   return (
     <View>
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel={placeAccessibilityLabel(place, distanceMeters, units)}
+        accessibilityLabel={
+          placeAccessibilityLabel(place, distanceMeters, units) +
+          (score !== null ? `, Vertrauensscore ${formatRating(score)}` : '')
+        }
         accessibilityHint="Öffnet die Details"
         style={({ pressed }) => [
           styles.card,
@@ -80,6 +88,14 @@ export function PlaceCard({
             </ThemedText>
           )}
           <RatingLine rating={place.rating} ratingCount={place.ratingCount} />
+          {score !== null && (
+            <ThemedText type="small" themeColor="textSecondary">
+              Vertrauensscore{' '}
+              <ThemedText type="smallBold" style={{ color: theme.accent }}>
+                {formatRating(score)}
+              </ThemedText>
+            </ThemedText>
+          )}
           {status && (
             <ThemedText type="smallBold" style={{ color: toneColor[status.tone] }}>
               {status.label}

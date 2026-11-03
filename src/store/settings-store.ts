@@ -6,24 +6,29 @@ import { DEFAULT_RADIUS_METERS } from '@/services/config';
 import { persistStorage } from '@/services/storage';
 import { RADIUS_OPTIONS } from '@/utils/filters';
 import type { Units } from '@/utils/format';
+import { RESULT_SORT_OPTIONS, type ResultSort } from '@/utils/sort-places';
 
 export const RADIUS_SETTING_OPTIONS = RADIUS_OPTIONS;
 
 export type Settings = {
   defaultRadiusMeters: number;
   units: Units;
+  /** Sortierung der Suchtreffer. */
+  resultSort: ResultSort;
 };
 
 export type SettingsState = Settings & {
   hydrated: boolean;
   setDefaultRadius: (meters: number) => void;
   setUnits: (units: Units) => void;
+  setResultSort: (sort: ResultSort) => void;
   reset: () => void;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
   defaultRadiusMeters: DEFAULT_RADIUS_METERS,
   units: 'metric',
+  resultSort: 'relevance',
 };
 
 export const SETTINGS_STORAGE_KEY = 'tisch.settings';
@@ -37,6 +42,9 @@ export function sanitizeSettings(input: unknown): Settings {
       ? (raw.defaultRadiusMeters as number)
       : DEFAULT_SETTINGS.defaultRadiusMeters,
     units: raw.units === 'imperial' ? 'imperial' : 'metric',
+    resultSort: RESULT_SORT_OPTIONS.includes(raw.resultSort as ResultSort)
+      ? (raw.resultSort as ResultSort)
+      : DEFAULT_SETTINGS.resultSort,
   };
 }
 
@@ -61,13 +69,19 @@ export function createSettingsStore(
               .defaultRadiusMeters,
           }),
         setUnits: (units) => set({ units: units === 'imperial' ? 'imperial' : 'metric' }),
+        setResultSort: (resultSort) =>
+          set({ resultSort: sanitizeSettings({ resultSort }).resultSort }),
         reset: () => set(DEFAULT_SETTINGS),
       }),
       {
         name: SETTINGS_STORAGE_KEY,
         version: 1,
         storage,
-        partialize: (s) => ({ defaultRadiusMeters: s.defaultRadiusMeters, units: s.units }),
+        partialize: (s) => ({
+          defaultRadiusMeters: s.defaultRadiusMeters,
+          units: s.units,
+          resultSort: s.resultSort,
+        }),
         merge: (persisted, current) => ({ ...current, ...sanitizeSettings(persisted) }),
         onRehydrateStorage: () => (_state, error) => {
           if (error) console.warn('Einstellungen konnten nicht geladen werden', error);

@@ -25,6 +25,7 @@ type Props = {
   onEndReached: () => void;
   onRefresh: () => void;
   ListEmptyComponent?: ReactElement;
+  showTrustScore?: boolean;
 };
 
 export function PlaceList({
@@ -35,6 +36,7 @@ export function PlaceList({
   onEndReached,
   onRefresh,
   ListEmptyComponent,
+  showTrustScore = false,
 }: Props) {
   const theme = useTheme();
   return (
@@ -45,6 +47,7 @@ export function PlaceList({
         <PlaceCard
           place={item}
           distanceMeters={userLocation ? distanceMeters(userLocation, item.location) : null}
+          showTrustScore={showTrustScore}
           onPress={() => router.push({ pathname: '/place/[id]', params: { id: item.id } })}
         />
       )}

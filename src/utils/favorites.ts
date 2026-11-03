@@ -2,6 +2,7 @@ import type { Favorite, FavoriteList, FavoritesBackup, OwnRating } from '@/types
 import type { LatLng, PlaceSummary } from '@/types/place';
 
 import { distanceMeters } from './geo';
+import { trustScore } from './trust-score';
 
 export const MAX_NOTE_LENGTH = 2000;
 export const MAX_LIST_NAME_LENGTH = 40;
@@ -172,14 +173,15 @@ export function mergeBackup(
 // Anzeige: Filtern und Sortieren
 // ---------------------------------------------------------------------------
 
-export type FavoriteSort = 'added' | 'name' | 'ownRating' | 'rating' | 'distance';
+export type FavoriteSort = 'added' | 'name' | 'ownRating' | 'trust' | 'rating' | 'distance';
 export type VisitFilter = 'all' | 'visited' | 'open';
 
 export const SORT_LABEL: Record<FavoriteSort, string> = {
   added: 'Zuletzt hinzugefügt',
   name: 'Name',
   ownRating: 'Eigene Bewertung',
-  rating: 'Bewertung',
+  trust: 'Vertrauensscore',
+  rating: 'Google-Bewertung',
   distance: 'Entfernung',
 };
 
@@ -231,6 +233,13 @@ export function selectFavorites(
     ),
     ownRating: nullsLast(
       (f) => f.ownRating,
+      (a, b) => b - a,
+    ),
+    trust: nullsLast(
+      (f) => {
+        const p = places.get(f.placeId);
+        return p ? trustScore(p.rating, p.ratingCount) : null;
+      },
       (a, b) => b - a,
     ),
     rating: nullsLast(

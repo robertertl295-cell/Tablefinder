@@ -72,6 +72,12 @@ describe('Detailseite', () => {
   it('weist auf wenig Datenbasis und fehlende Angaben hin', async () => {
     await renderDetail('mock-vegan-kreuzberg');
     expect(await screen.findByText('Wenig Datenbasis')).toBeOnTheScreen();
+    // 4,8 aus 22 Bewertungen → Vertrauensscore 4,5 mit Erklärung
+    expect(
+      screen.getByLabelText(
+        'Vertrauensscore 4,5 von 5. Wenige sehr gute Bewertungen zählen weniger, bis mehr Stimmen sie bestätigen.',
+      ),
+    ).toBeOnTheScreen();
     // keine Telefonnummer → kein Anruf-Button
     expect(screen.queryByLabelText('Anrufen')).toBeNull();
   });

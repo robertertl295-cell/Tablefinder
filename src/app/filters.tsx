@@ -8,7 +8,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_LABEL } from '@/services/places/place-types';
 import { filterStore } from '@/store/filter-store';
-import { settingsStore, useUnits } from '@/store/settings-store';
+import { settingsStore, useSettings, useUnits } from '@/store/settings-store';
 import type { Filters } from '@/types/filters';
 import {
   ATTRIBUTE_LABEL,
@@ -31,6 +31,7 @@ import {
   PRICE_LEVEL_LABEL,
 } from '@/utils/format';
 import { LOW_DATA_THRESHOLD } from '@/utils/rating';
+import { RESULT_SORT_LABEL, RESULT_SORT_OPTIONS } from '@/utils/sort-places';
 
 /**
  * Filter als Bottom Sheet. Änderungen werden erst beim Schließen übernommen
@@ -39,6 +40,7 @@ import { LOW_DATA_THRESHOLD } from '@/utils/rating';
 export default function FiltersSheet() {
   const theme = useTheme();
   const units = useUnits();
+  const resultSort = useSettings((s) => s.resultSort);
   const [draft, setDraft] = useState<Filters>(() => filterStore.getState().filters);
   const draftRef = useRef(draft);
 
@@ -80,6 +82,16 @@ export default function FiltersSheet() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        <FilterSection
+          title="Sortieren nach"
+          hint="Der Vertrauensscore berücksichtigt, wie viele Bewertungen hinter dem Schnitt stehen.">
+          <MultiChoice
+            options={RESULT_SORT_OPTIONS.map((s) => ({ value: s, label: RESULT_SORT_LABEL[s] }))}
+            values={[resultSort]}
+            onToggle={(s) => settingsStore.getState().setResultSort(s)}
+          />
+        </FilterSection>
+
         <FilterSection title="Art">
           <MultiChoice
             options={CATEGORY_OPTIONS.map((c) => ({ value: c, label: CATEGORY_LABEL[c] }))}

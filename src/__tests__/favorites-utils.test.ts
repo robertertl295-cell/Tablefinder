@@ -115,16 +115,28 @@ describe('mergeBackup', () => {
 });
 
 describe('selectFavorites', () => {
-  const place = (id: string, name: string, rating: number | null, lat: number) =>
-    ({ id, name, rating, location: { latitude: lat, longitude: 13.4 } }) as PlaceSummary;
+  const place = (
+    id: string,
+    name: string,
+    rating: number | null,
+    ratingCount: number,
+    lat: number,
+  ) =>
+    ({
+      id,
+      name,
+      rating,
+      ratingCount,
+      location: { latitude: lat, longitude: 13.4 },
+    }) as PlaceSummary;
   const favorites = [
     fav('a', { addedAt: '2026-01-03T00:00:00Z', ownRating: 3, visited: true, listIds: ['l'] }),
     fav('b', { addedAt: '2026-01-02T00:00:00Z', ownRating: 5 }),
     fav('c', { addedAt: '2026-01-01T00:00:00Z' }),
   ];
   const places = new Map([
-    ['a', place('a', 'Zeta', 4.1, 52.6)],
-    ['b', place('b', 'Äpfel', 4.8, 52.5)],
+    ['a', place('a', 'Zeta', 4.5, 2000, 52.6)], // viele Bewertungen
+    ['b', place('b', 'Äpfel', 4.8, 3, 52.5)], // höherer Schnitt, aber nur 3 Bewertungen
     // c ist noch nicht geladen
   ]);
   const ids = (sort: Parameters<typeof selectFavorites>[1]['sort'], extra = {}) =>
@@ -138,6 +150,7 @@ describe('selectFavorites', () => {
     expect(ids('name')).toEqual(['b', 'a', 'c']); // Ä vor Z, Ungeladenes ans Ende
     expect(ids('ownRating')).toEqual(['b', 'a', 'c']);
     expect(ids('rating')).toEqual(['b', 'a', 'c']);
+    expect(ids('trust')).toEqual(['a', 'b', 'c']); // belastbare 4,5 schlägt 4,8 aus 3
     expect(ids('distance')).toEqual(['b', 'a', 'c']);
   });
 
