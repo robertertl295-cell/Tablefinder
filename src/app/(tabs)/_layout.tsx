@@ -1,9 +1,11 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
+import { useAutoSearch } from '@/hooks/use-auto-search';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function TabsLayout() {
   const theme = useTheme();
+  useAutoSearch();
 
   return (
     <NativeTabs

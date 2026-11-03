@@ -11,7 +11,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 | ----- | ------------------------------------------------------ | ------ |
 | 1     | Setup, Struktur, Linting, README                       | ✅     |
 | 2     | Datenschicht (`PlacesProvider`, Mock-Daten, Tests)     | ✅     |
-| 3     | Suche, Liste und Karte, Standort                       | offen  |
+| 3     | Suche, Liste und Karte, Standort                       | ✅     |
 | 4     | Filter mit Chips und Persistenz                        | offen  |
 | 5     | Detailseite                                            | offen  |
 | 6     | Favoriten und Listen, Export/Import                    | offen  |
@@ -99,7 +99,11 @@ app.config.ts           Expo-Konfiguration, liest Keys aus der Umgebung
 - **Persistenz:** Zustand mit `persist`. Als Speicher dient `expo-sqlite/kv-store`, ein AsyncStorage-kompatibler Key-Value-Speicher auf SQLite-Basis. So ist keine weitere native Abhängigkeit nötig.
 - **Standard-Standort:** Berlin-Mitte (Alexanderplatz), wenn keine Standortfreigabe vorliegt. Die App fragt nur „Beim Verwenden der App“ nach dem Standort, nie im Hintergrund.
 - **Akzentfarbe:** Terrakotta (`#B5432A` hell, `#F0876B` dunkel). Alle Text-/Hintergrund-Kombinationen erreichen mindestens WCAG AA.
-- **Web:** Kein Ziel der App. Die Web-Konfiguration bleibt nur, damit `expo start --web` nicht abbricht.
+- **Web:** Kein Ziel der App. Die Web-Konfiguration bleibt nur für eine schnelle Vorschau im Browser. Die Karte zeigt dort einen Hinweis (`results-map.web.tsx`), weil `react-native-maps` im Browser nicht läuft.
+- **Suche:** Sie startet automatisch 400 ms nach der letzten Eingabe sowie bei jedem Wechsel von Ort oder Radius. Die erste Suche wartet, bis feststeht, ob ein Standort vorliegt, damit keine überflüssige Anfrage für Berlin-Mitte rausgeht. Antworten älterer Suchen werden verworfen.
+- **Entfernung:** Sie wird nur angezeigt, wenn der eigene Standort bekannt ist, auch bei der Suche in einem Bezirk. Ein Abstand zum Mittelpunkt eines Bezirks wäre für die Entscheidung wenig hilfreich.
+- **Karte:** Ein Tipp auf einen Pin öffnet unten eine kompakte Karte des Lokals, ein Tipp darauf die Details. Nach dem Verschieben oder Zoomen erscheint „In diesem Bereich suchen“.
+- **Fotos:** Sie werden über `expo-image` erst beim Anzeigen geladen. Google-Fotos werden nur im Arbeitsspeicher gecacht, nicht auf dem Gerät gespeichert. Der Fotograf steht im Bild.
 
 ## Datenschicht
 
