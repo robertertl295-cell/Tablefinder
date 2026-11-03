@@ -10,7 +10,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 | Phase | Inhalt                                                 | Status |
 | ----- | ------------------------------------------------------ | ------ |
 | 1     | Setup, Struktur, Linting, README                       | ✅     |
-| 2     | Datenschicht (`PlacesProvider`, Mock-Daten, Tests)     | offen  |
+| 2     | Datenschicht (`PlacesProvider`, Mock-Daten, Tests)     | ✅     |
 | 3     | Suche, Liste und Karte, Standort                       | offen  |
 | 4     | Filter mit Chips und Persistenz                        | offen  |
 | 5     | Detailseite                                            | offen  |
@@ -101,6 +101,30 @@ app.config.ts           Expo-Konfiguration, liest Keys aus der Umgebung
 - **Akzentfarbe:** Terrakotta (`#B5432A` hell, `#F0876B` dunkel). Alle Text-/Hintergrund-Kombinationen erreichen mindestens WCAG AA.
 - **Web:** Kein Ziel der App. Die Web-Konfiguration bleibt nur, damit `expo start --web` nicht abbricht.
 
+## Datenschicht
+
+Alles liegt unter `src/services/places/`. Die Oberfläche spricht nur das Interface `PlacesProvider` an (`search`, `getDetails`, `getPhotoUrl`) und bekommt eigene Typen aus `src/types/place.ts`. Google-Formate dringen nicht nach außen.
+
+```
+placesProvider (index.ts)
+└── CachedPlacesProvider        Cache: Suche 2 Min., Details 5 Min.; bündelt gleichzeitige Anfragen
+    ├── GooglePlacesProvider    wenn EXPO_PUBLIC_PLACES_API_KEY gesetzt ist
+    └── MockPlacesProvider      sonst: 18 erfundene Berliner Lokale
+```
+
+| Datei                | Aufgabe                                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `provider.ts`        | Interface und `SearchQuery` / `SearchResult`                                                                                                                  |
+| `google-provider.ts` | Text Search (mit Suchbegriff), Nearby Search (ohne Suchbegriff), Place Details, Foto-URLs, Timeout nach 10 s                                                  |
+| `field-masks.ts`     | Feldmasken. Angebots-Merkmale (vegetarisch, Außenplätze …) werden nur mit `includeAttributes: true` geladen, weil sie eine teurere Abrechnungsstufe auslösen. |
+| `mapping.ts`         | Wandelt Google-Formate in eigene Typen um. Fehlende Angaben werden `null`, nie geraten.                                                                       |
+| `place-types.ts`     | Welche Typen als Gastronomie gelten. Maßgeblich ist der Haupttyp, so fliegt z. B. ein Hotel mit Restaurant raus.                                              |
+| `query-filter.ts`    | Gemeinsame Prüfung (Gastronomie, Radius, Kategorie, Bewertung, Preis, geöffnet) für alle Anbieter                                                             |
+| `errors.ts`          | `PlacesError` mit `kind` (`network`, `timeout`, `quota`, `auth`, `not_found` …) und deutschen Meldungen für die Oberfläche                                    |
+| `mock-data.ts`       | Beispieldaten mit Sonderfällen: wenige oder keine Bewertungen, vorübergehend oder dauerhaft geschlossen, ein Hotel als Negativbeispiel                        |
+
+**Mock-Daten:** Die Suche prüft, ob alle Wörter vorkommen, unabhängig von Groß-/Kleinschreibung und Akzenten. „vegan Kreuzberg“ findet also nur Lokale, die zu beiden Wörtern passen. Fotos sind neutrale Platzhalterbilder von picsum.photos und brauchen eine Internetverbindung.
+
 ## Daten und Nutzungsbedingungen
 
 - Lokal gespeichert werden nur `place_id`s und eigene Daten (Listen, Notizen, Status, eigene Bewertung).
@@ -115,3 +139,7 @@ Diese Liste wird bis Phase 8 fortlaufend ergänzt.
 - Die Places API liefert keine Verteilung der Sterne, sondern nur den Durchschnitt, die Anzahl und höchstens 5 Rezensionen. Statt einer Sterneverteilung zeigt die App deshalb an, wie belastbar die Datenbasis ist.
 - Nearby Search liefert höchstens 20 Treffer und kein Nachladen. Text Search liefert bis zu 60 Treffer über ein Seiten-Token.
 - Einen eigenen Filter „vegan“ gibt es nicht, die API kennt nur `servesVegetarianFood`.
+- Text Search lässt sich nur auf ein Rechteck begrenzen. Treffer in den Ecken außerhalb des Radius filtert die App danach heraus, sodass eine Seite auch weniger als 20 Treffer enthalten kann.
+- Die Mindestbewertung wird wie bei Google auf 0,5er-Schritte abgerundet (4,7 → 4,5).
+- Foto-URLs enthalten den API-Key. Das ist bei der Places API so vorgesehen und ein weiterer Grund für die Key-Einschränkung.
+- Der Google-Anbieter ist bisher nur gegen die dokumentierten API-Formate getestet (mit simulierten Antworten), noch nicht gegen die echte API.

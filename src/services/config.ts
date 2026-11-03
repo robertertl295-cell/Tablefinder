@@ -1,3 +1,5 @@
+import type { DataSource } from '@/types/place';
+
 /**
  * Zentrale Laufzeitkonfiguration.
  * EXPO_PUBLIC_*-Variablen werden beim Bundling eingesetzt und sind im App-Paket sichtbar.
@@ -8,8 +10,6 @@
 export const DEFAULT_LOCATION = { latitude: 52.5219, longitude: 13.4132 } as const;
 
 export const DEFAULT_RADIUS_METERS = 1500;
-
-export type DataSource = 'google' | 'mock';
 
 export type AppConfig = {
   placesApiKey: string | null;
