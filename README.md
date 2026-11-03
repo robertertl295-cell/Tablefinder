@@ -12,7 +12,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 | 1     | Setup, Struktur, Linting, README                       | ✅     |
 | 2     | Datenschicht (`PlacesProvider`, Mock-Daten, Tests)     | ✅     |
 | 3     | Suche, Liste und Karte, Standort                       | ✅     |
-| 4     | Filter mit Chips und Persistenz                        | offen  |
+| 4     | Filter mit Chips und Persistenz                        | ✅     |
 | 5     | Detailseite                                            | offen  |
 | 6     | Favoriten und Listen, Export/Import                    | offen  |
 | 7     | Feinschliff (Dark Mode, Barrierefreiheit, Performance) | offen  |
@@ -99,7 +99,7 @@ app.config.ts           Expo-Konfiguration, liest Keys aus der Umgebung
 - **Persistenz:** Zustand mit `persist`. Als Speicher dient `expo-sqlite/kv-store`, ein AsyncStorage-kompatibler Key-Value-Speicher auf SQLite-Basis. So ist keine weitere native Abhängigkeit nötig.
 - **Standard-Standort:** Berlin-Mitte (Alexanderplatz), wenn keine Standortfreigabe vorliegt. Die App fragt nur „Beim Verwenden der App“ nach dem Standort, nie im Hintergrund.
 - **Akzentfarbe:** Terrakotta (`#B5432A` hell, `#F0876B` dunkel). Alle Text-/Hintergrund-Kombinationen erreichen mindestens WCAG AA.
-- **Web:** Kein Ziel der App. Die Web-Konfiguration bleibt nur für eine schnelle Vorschau im Browser. Die Karte zeigt dort einen Hinweis (`results-map.web.tsx`), weil `react-native-maps` im Browser nicht läuft.
+- **Web:** Kein Ziel der App. Die Web-Konfiguration bleibt nur für eine schnelle Vorschau im Browser. Die Karte zeigt dort einen Hinweis (`results-map.web.tsx`), weil `react-native-maps` im Browser nicht läuft. Gespeichert wird dort in `localStorage` (`storage.web.ts`), weil expo-sqlite im Browser eine eigene WebAssembly-Konfiguration bräuchte.
 - **Suche:** Sie startet automatisch 400 ms nach der letzten Eingabe sowie bei jedem Wechsel von Ort oder Radius. Die erste Suche wartet, bis feststeht, ob ein Standort vorliegt, damit keine überflüssige Anfrage für Berlin-Mitte rausgeht. Antworten älterer Suchen werden verworfen.
 - **Entfernung:** Sie wird nur angezeigt, wenn der eigene Standort bekannt ist, auch bei der Suche in einem Bezirk. Ein Abstand zum Mittelpunkt eines Bezirks wäre für die Entscheidung wenig hilfreich.
 - **Karte:** Ein Tipp auf einen Pin öffnet unten eine kompakte Karte des Lokals, ein Tipp darauf die Details. Nach dem Verschieben oder Zoomen erscheint „In diesem Bereich suchen“.
@@ -128,6 +128,25 @@ placesProvider (index.ts)
 | `mock-data.ts`       | Beispieldaten mit Sonderfällen: wenige oder keine Bewertungen, vorübergehend oder dauerhaft geschlossen, ein Hotel als Negativbeispiel                        |
 
 **Mock-Daten:** Die Suche prüft, ob alle Wörter vorkommen, unabhängig von Groß-/Kleinschreibung und Akzenten. „vegan Kreuzberg“ findet also nur Lokale, die zu beiden Wörtern passen. Fotos sind neutrale Platzhalterbilder von picsum.photos und brauchen eine Internetverbindung.
+
+## Filter
+
+| Filter                                                     | Wo ausgewertet                                                |
+| ---------------------------------------------------------- | ------------------------------------------------------------- |
+| Art (Restaurant, Café, Bar, Bäckerei, Imbiss, Fast Food)   | API, wenn genau eine Art gewählt ist; bei mehreren in der App |
+| Mindestbewertung (3,5 / 4,0 / 4,5 ★)                       | API (Text Search) und App                                     |
+| Mindestanzahl Bewertungen (30+ / 100+ / 500+)              | App                                                           |
+| Preisniveau (€ bis €€€€, Mehrfachauswahl)                  | API (Text Search) und App                                     |
+| Jetzt geöffnet                                             | API (Text Search) und App                                     |
+| Umkreis (500 m bis 5 km)                                   | API                                                           |
+| Vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder | App, Felder werden nur dann von Google geladen                |
+| Frühstück / Mittagessen / Abendessen                       | App, Felder werden nur dann von Google geladen                |
+
+- **Fehlende Angaben:** Bei Merkmalen und Mahlzeiten gilt nur ein ausdrückliches „ja“. Fehlt die Angabe, fällt das Lokal heraus. Lieber ein Treffer zu wenig als ein Lokal, das sich vor Ort als unpassend herausstellt.
+- **Übernahme:** Änderungen im Filter-Sheet greifen erst beim Schließen, per „Fertig“ oder Wischgeste. So löst nicht jeder einzelne Tipp eine kostenpflichtige Anfrage aus.
+- **Nachladen beim Filtern:** Filtert die App selbst, lädt sie automatisch weitere Seiten, bis mindestens 8 Treffer da sind. Pro Suche sind es höchstens 3 Seiten (Kostenbremse).
+- **Speicherung:** Die Filter werden in SQLite gespeichert (`tisch.filters`, Format-Version 1) und beim Laden geprüft. Ungültige Werte, etwa nach einem Update, werden auf den Standard zurückgesetzt. Die erste Suche wartet, bis die gespeicherten Filter geladen sind.
+- **Bedienung:** Aktive Filter stehen als Chips direkt unter der Suche, ein Tipp entfernt sie. Ab zwei aktiven Filtern gibt es zusätzlich „Zurücksetzen“, im Leerzustand „Filter zurücksetzen“.
 
 ## Daten und Nutzungsbedingungen
 

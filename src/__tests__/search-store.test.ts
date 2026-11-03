@@ -1,21 +1,32 @@
 import { DEFAULT_LOCATION } from '@/services/config';
 import type { LocationResult } from '@/services/location';
 import { PlacesError } from '@/services/places/errors';
+import { MOCK_PLACES } from '@/services/places/mock-data';
 import { MockPlacesProvider } from '@/services/places/mock-provider';
 import type { PlacesProvider, SearchQuery, SearchResult } from '@/services/places/provider';
 import { createSearchStore, locationLabel, searchCenter } from '@/store/search-store';
+import type { Filters } from '@/types/filters';
+import { createDefaultFilters } from '@/utils/filters';
 
 const KREUZBERG_USER = { latitude: 52.4995, longitude: 13.42 };
+/** Ein beliebiger gültiger Treffer für Tests mit selbst gesteuerten Antworten. */
+const ANY_PLACE = MOCK_PLACES[0]!;
 
 function setup(
-  options: { location?: LocationResult; provider?: PlacesProvider & { clear?: () => void } } = {},
+  options: {
+    location?: LocationResult;
+    provider?: PlacesProvider & { clear?: () => void };
+    filters?: Filters;
+    minResults?: number;
+  } = {},
 ) {
   const provider = options.provider ?? new MockPlacesProvider({ latencyMs: 0, pageSize: 3 });
   const searchSpy = jest.spyOn(provider, 'search');
   const store = createSearchStore({
     provider,
     locate: async () => options.location ?? { status: 'denied' },
-    radiusMeters: 1500,
+    getFilters: () => options.filters ?? createDefaultFilters(1500),
+    minResults: options.minResults ?? 1,
   });
   const lastQuery = (): SearchQuery | undefined => searchSpy.mock.calls.at(-1)?.[0];
   return { store, provider, searchSpy, lastQuery };
@@ -101,9 +112,9 @@ describe('Suche', () => {
     const { store } = setup({ provider });
     const first = store.getState().search();
     const second = store.getState().search();
-    pending[1]?.resolve({ places: [], nextPageToken: 'neu' });
+    pending[1]?.resolve({ places: [ANY_PLACE], nextPageToken: 'neu' });
     await second;
-    pending[0]?.resolve({ places: [], nextPageToken: 'alt' });
+    pending[0]?.resolve({ places: [ANY_PLACE], nextPageToken: 'alt' });
     await first;
     expect(store.getState().nextPageToken).toBe('neu');
   });
@@ -142,7 +153,7 @@ describe('Nachladen und Aktualisieren', () => {
     const { provider, pending } = controllableProvider();
     const { store } = setup({ provider });
     const run = store.getState().search();
-    pending[0]?.resolve({ places: [], nextPageToken: 'p2' });
+    pending[0]?.resolve({ places: [ANY_PLACE], nextPageToken: 'p2' });
     await run;
     const more = store.getState().loadMore();
     expect(store.getState().isLoadingMore).toBe(true);
@@ -160,5 +171,57 @@ describe('Nachladen und Aktualisieren', () => {
     expect(provider.clear).toHaveBeenCalled();
     expect(store.getState().isRefreshing).toBe(false);
     expect(store.getState().status).toBe('success');
+  });
+});
+
+describe('Filter', () => {
+  const WIDE = { latitude: 52.515, longitude: 13.4 };
+
+  it('übergibt API-fähige Filter und den Filter-Radius an die Suche', async () => {
+    const filters: Filters = {
+      ...createDefaultFilters(1500),
+      categories: ['bar'],
+      minRating: 4,
+      priceLevels: [2, 1],
+      openNow: true,
+      radiusMeters: 3000,
+      attributes: ['outdoorSeating'],
+    };
+    const { store, lastQuery } = setup({ filters });
+    await store.getState().search();
+    expect(lastQuery()).toMatchObject({
+      category: 'bar',
+      minRating: 4,
+      priceLevels: [1, 2],
+      openNow: true,
+      radiusMeters: 3000,
+      includeAttributes: true,
+    });
+  });
+
+  it('filtert clientseitig nach Merkmalen und Mindestanzahl', async () => {
+    const filters: Filters = {
+      ...createDefaultFilters(1500),
+      attributes: ['dogsAllowed'],
+      minRatingCount: 100,
+    };
+    const { store } = setup({ filters, minResults: 50 });
+    store.getState().selectArea(WIDE, 20_000);
+    await store.getState().search();
+    const results = store.getState().results;
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.every((p) => p.attributes.dogsAllowed === true && p.ratingCount >= 100)).toBe(
+      true,
+    );
+  });
+
+  it('lädt Seiten nach, bis genug gefilterte Treffer da sind – höchstens 3', async () => {
+    const { store, searchSpy } = setup({ minResults: 100 });
+    store.getState().selectArea(WIDE, 20_000);
+    await store.getState().search();
+    // pageSize 3 → 3 Seiten à 3 Treffer, dann greift die Bremse.
+    expect(searchSpy).toHaveBeenCalledTimes(3);
+    expect(store.getState().results).toHaveLength(9);
+    expect(store.getState().nextPageToken).not.toBeNull();
   });
 });

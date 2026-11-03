@@ -29,6 +29,16 @@ export default function RootLayout() {
           name="place/[id]"
           options={{ title: '', headerBackTitle: 'Zurück', headerTransparent: true }}
         />
+        <Stack.Screen
+          name="filters"
+          options={{
+            presentation: 'formSheet',
+            headerShown: false,
+            sheetAllowedDetents: [0.75, 1],
+            sheetGrabberVisible: true,
+            sheetCornerRadius: 20,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

@@ -10,17 +10,28 @@ type Props = {
   selected?: boolean;
   onPress: () => void;
   icon?: ReactNode;
+  /** Element rechts vom Text, z. B. ein Entfernen-Kreuz. */
+  trailing?: ReactNode;
+  accessibilityLabel?: string;
   accessibilityHint?: string;
 };
 
-export function Chip({ label, selected = false, onPress, icon, accessibilityHint }: Props) {
+export function Chip({
+  label,
+  selected = false,
+  onPress,
+  icon,
+  trailing,
+  accessibilityLabel,
+  accessibilityHint,
+}: Props) {
   const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       accessibilityHint={accessibilityHint}
       hitSlop={4}
       style={({ pressed }) => [
@@ -34,6 +45,7 @@ export function Chip({ label, selected = false, onPress, icon, accessibilityHint
       <ThemedText type="smallBold" style={{ color: selected ? theme.onAccent : theme.text }}>
         {label}
       </ThemedText>
+      {trailing}
     </Pressable>
   );
 }

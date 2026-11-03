@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
-import { searchCenter, searchRadius, searchStore, useSearch } from '@/store/search-store';
+import { useFilters } from '@/store/filter-store';
+import { searchCenter, searchStore, useSearch } from '@/store/search-store';
+import { filtersKey } from '@/utils/filters';
 
 export const SEARCH_DEBOUNCE_MS = 400;
 
 /**
  * Fragt beim Start den Standort an und sucht danach automatisch neu,
- * sobald sich Suchtext (verzögert), Ort oder Radius ändern.
+ * sobald sich Suchtext (verzögert), Ort oder Filter ändern.
  * Einmal weit oben im Baum einbinden (Tab-Layout).
  */
 export function useAutoSearch() {
@@ -17,7 +19,11 @@ export function useAutoSearch() {
     const c = searchCenter(s);
     return `${c.latitude.toFixed(5)},${c.longitude.toFixed(5)}`;
   });
-  const radius = useSearch(searchRadius);
+  const selectionKey = useSearch((s) =>
+    s.selection.mode === 'area' ? `area:${s.selection.radiusMeters}` : s.selection.mode,
+  );
+  const filterKey = useFilters((s) => filtersKey(s.filters));
+  const filtersReady = useFilters((s) => s.hydrated);
   const locationSettled = useSearch(
     (s) => s.locationStatus !== 'unknown' && s.locationStatus !== 'requesting',
   );
@@ -27,7 +33,7 @@ export function useAutoSearch() {
   }, []);
 
   useEffect(() => {
-    // Erst suchen, wenn feststeht, ob es einen Standort gibt – spart eine unnötige Anfrage.
-    if (locationSettled) void searchStore.getState().search();
-  }, [debouncedText, centerKey, radius, locationSettled]);
+    // Erst suchen, wenn Standort und gespeicherte Filter feststehen – spart unnötige Anfragen.
+    if (locationSettled && filtersReady) void searchStore.getState().search();
+  }, [debouncedText, centerKey, selectionKey, filterKey, locationSettled, filtersReady]);
 }

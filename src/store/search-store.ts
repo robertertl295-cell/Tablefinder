@@ -2,12 +2,15 @@ import { useStore } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 import { findDistrict } from '@/constants/districts';
-import { DEFAULT_LOCATION, DEFAULT_RADIUS_METERS } from '@/services/config';
+import { DEFAULT_LOCATION } from '@/services/config';
 import { requestCurrentLocation, type LocationResult } from '@/services/location';
 import { placesProvider } from '@/services/places';
 import { PlacesError, toPlacesError } from '@/services/places/errors';
-import type { PlacesProvider, SearchQuery } from '@/services/places/provider';
+import type { PlacesProvider, SearchQuery, SearchResult } from '@/services/places/provider';
+import { filterStore, useFilters } from '@/store/filter-store';
+import type { Filters } from '@/types/filters';
 import type { LatLng, PlaceSummary } from '@/types/place';
+import { createDefaultFilters, filtersToQuery, matchesFilters } from '@/utils/filters';
 
 export type LocationSelection =
   | { mode: 'current' }
@@ -26,7 +29,6 @@ export type SearchState = {
   selection: LocationSelection;
   userLocation: LatLng | null;
   locationStatus: LocationStatus;
-  radiusMeters: number;
   viewMode: ViewMode;
 
   results: PlaceSummary[];
@@ -60,8 +62,9 @@ export function searchCenter(s: Pick<SearchState, 'selection' | 'userLocation'>)
   }
 }
 
-export function searchRadius(s: Pick<SearchState, 'selection' | 'radiusMeters'>): number {
-  return s.selection.mode === 'area' ? s.selection.radiusMeters : s.radiusMeters;
+/** Im Kartenausschnitt gilt dessen Radius, sonst der aus den Filtern. */
+export function searchRadius(selection: LocationSelection, filterRadius: number): number {
+  return selection.mode === 'area' ? selection.radiusMeters : filterRadius;
 }
 
 /** Kurzer Text für die aktuelle Standortwahl. */
@@ -84,22 +87,51 @@ export function locationLabel(
 export type SearchStoreDeps = {
   provider: PlacesProvider & { clear?: () => void };
   locate: () => Promise<LocationResult>;
-  radiusMeters?: number;
+  getFilters?: () => Filters;
+  /** Nach dem Filtern mindestens so viele Treffer anstreben (Standard 8) … */
+  minResults?: number;
 };
+
+const MIN_FILTERED_RESULTS = 8;
+/** … aber höchstens so viele Seiten pro Aktion laden (Kostenbremse). */
+const MAX_PAGES_PER_FETCH = 3;
 
 export function createSearchStore(deps: SearchStoreDeps): StoreApi<SearchState> {
   // Laufende Nummer, damit verspätete Antworten älterer Suchen ignoriert werden.
   let requestSeq = 0;
+  const getFilters = deps.getFilters ?? (() => createDefaultFilters());
+  const minResults = deps.minResults ?? MIN_FILTERED_RESULTS;
 
   return createStore<SearchState>()((set, get) => {
-    const buildQuery = (pageToken?: string): SearchQuery => {
+    const buildQuery = (filters: Filters, pageToken?: string): SearchQuery => {
       const s = get();
       return {
+        ...filtersToQuery(filters),
         text: s.text.trim() || undefined,
         center: searchCenter(s),
-        radiusMeters: searchRadius(s),
+        radiusMeters: searchRadius(s.selection, filters.radiusMeters),
         pageToken,
       };
+    };
+
+    /**
+     * Lädt Seiten und filtert clientseitig (Merkmale, Mindestanzahl Bewertungen …),
+     * bis genug Treffer da sind oder die Seitenbremse greift.
+     */
+    const fetchFiltered = async (
+      pageToken: string | undefined,
+      minResults: number,
+    ): Promise<SearchResult> => {
+      const filters = getFilters();
+      const places: PlaceSummary[] = [];
+      let token = pageToken;
+      for (let page = 0; page < MAX_PAGES_PER_FETCH; page++) {
+        const result = await deps.provider.search(buildQuery(filters, token));
+        places.push(...result.places.filter((p) => matchesFilters(p, filters)));
+        token = result.nextPageToken ?? undefined;
+        if (!token || places.length >= minResults) break;
+      }
+      return { places, nextPageToken: token ?? null };
     };
 
     return {
@@ -107,7 +139,6 @@ export function createSearchStore(deps: SearchStoreDeps): StoreApi<SearchState> 
       selection: { mode: 'current' },
       userLocation: null,
       locationStatus: 'unknown',
-      radiusMeters: deps.radiusMeters ?? DEFAULT_RADIUS_METERS,
       viewMode: 'list',
 
       results: [],
@@ -142,7 +173,7 @@ export function createSearchStore(deps: SearchStoreDeps): StoreApi<SearchState> 
         const seq = ++requestSeq;
         set({ status: 'loading', error: null, isLoadingMore: false });
         try {
-          const result = await deps.provider.search(buildQuery());
+          const result = await fetchFiltered(undefined, minResults);
           if (seq !== requestSeq) return;
           set({ results: result.places, nextPageToken: result.nextPageToken, status: 'success' });
         } catch (e) {
@@ -157,7 +188,8 @@ export function createSearchStore(deps: SearchStoreDeps): StoreApi<SearchState> 
         const seq = requestSeq;
         set({ isLoadingMore: true });
         try {
-          const result = await deps.provider.search(buildQuery(nextPageToken));
+          // Mindestens einen neuen Treffer holen, sonst feuert onEndReached nicht erneut.
+          const result = await fetchFiltered(nextPageToken, 1);
           if (seq !== requestSeq) return;
           const known = new Set(get().results.map((p) => p.id));
           set({
@@ -184,9 +216,17 @@ export function createSearchStore(deps: SearchStoreDeps): StoreApi<SearchState> 
 export const searchStore = createSearchStore({
   provider: placesProvider,
   locate: () => requestCurrentLocation(),
+  getFilters: () => filterStore.getState().filters,
 });
 
 /** React-Hook für den Such-Store. Immer einzelne Werte auswählen, keine neuen Objekte. */
 export function useSearch<T>(selector: (state: SearchState) => T): T {
   return useStore(searchStore, selector);
+}
+
+/** Wirksamer Suchradius (Kartenausschnitt oder Filter). */
+export function useSearchRadius(): number {
+  const selection = useSearch((s) => s.selection);
+  const filterRadius = useFilters((s) => s.filters.radiusMeters);
+  return searchRadius(selection, filterRadius);
 }

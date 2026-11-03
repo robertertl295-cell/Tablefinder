@@ -14,6 +14,7 @@ const ICONS = {
   empty: { ios: 'fork.knife', android: 'restaurant' },
   photo: { ios: 'photo', android: 'image' },
   refresh: { ios: 'arrow.clockwise', android: 'refresh' },
+  filter: { ios: 'line.3.horizontal.decrease', android: 'filter_list' },
 } as const satisfies Record<string, { ios: SFSymbol; android: AndroidSymbol }>;
 
 export type IconName = keyof typeof ICONS;

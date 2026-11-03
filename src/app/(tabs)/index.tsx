@@ -1,6 +1,9 @@
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ActiveFilterChips } from '@/components/filters/active-filter-chips';
+import { FilterButton } from '@/components/filters/filter-button';
 import { PlaceCardSkeleton } from '@/components/place/place-card-skeleton';
 import { PlaceList } from '@/components/place/place-list';
 import { ResultsMap } from '@/components/place/results-map';
@@ -13,13 +16,15 @@ import { StateMessage } from '@/components/state/state-message';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { filterStore, useFilters } from '@/store/filter-store';
 import {
   locationLabel,
   searchCenter,
-  searchRadius,
   searchStore,
   useSearch,
+  useSearchRadius,
 } from '@/store/search-store';
+import { activeFilterChips } from '@/utils/filters';
 
 const actions = () => searchStore.getState();
 
@@ -38,12 +43,14 @@ export default function SearchScreen() {
   const locationStatus = useSearch((s) => s.locationStatus);
   const label = useSearch(locationLabel);
   const center = useSearch(searchCenter);
-  const radius = useSearch(searchRadius);
+  const radius = useSearchRadius();
+  const filters = useFilters((s) => s.filters);
+  const chips = activeFilterChips(filters);
 
   const isInitialLoading = (status === 'loading' || status === 'idle') && results.length === 0;
   const summary = isInitialLoading
     ? 'Suche läuft …'
-    : `${results.length}${hasMore ? '+' : ''} ${results.length === 1 ? 'Treffer' : 'Treffer'} · ${label}`;
+    : `${results.length}${hasMore ? '+' : ''} Treffer · ${label}`;
 
   const empty = isInitialLoading ? (
     <View style={styles.skeletons}>
@@ -54,7 +61,13 @@ export default function SearchScreen() {
     <StateMessage
       icon="empty"
       title={text.trim() ? `Keine Treffer für „${text.trim()}“` : 'Hier ist nichts zu finden'}
-      message="Probiere einen anderen Begriff oder wähle einen anderen Ort."
+      message={
+        chips.length > 0
+          ? 'Lockere die Filter oder wähle einen anderen Ort.'
+          : 'Probiere einen anderen Begriff oder wähle einen anderen Ort.'
+      }
+      actionLabel={chips.length > 0 ? 'Filter zurücksetzen' : undefined}
+      onAction={filterStore.getState().reset}
     />
   );
 
@@ -84,6 +97,15 @@ export default function SearchScreen() {
         </ThemedText>
         <ViewToggle value={viewMode} onChange={actions().setViewMode} />
       </View>
+      <ActiveFilterChips
+        leading={
+          <FilterButton activeCount={chips.length} onPress={() => router.push('/filters')} />
+        }
+        chips={chips}
+        filters={filters}
+        onChange={filterStore.getState().setFilters}
+        onReset={filterStore.getState().reset}
+      />
 
       <View style={styles.content}>
         {status === 'error' && error ? (

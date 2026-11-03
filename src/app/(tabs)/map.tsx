@@ -8,9 +8,9 @@ import { useTheme } from '@/hooks/use-theme';
 import {
   locationLabel,
   searchCenter,
-  searchRadius,
   searchStore,
   useSearch,
+  useSearchRadius,
 } from '@/store/search-store';
 
 /** Vollbild-Karte mit den Treffern der aktuellen Suche (Favoriten folgen in Phase 6). */
@@ -23,7 +23,7 @@ export default function MapScreen() {
   const userLocation = useSearch((s) => s.userLocation);
   const label = useSearch(locationLabel);
   const center = useSearch(searchCenter);
-  const radius = useSearch(searchRadius);
+  const radius = useSearchRadius();
 
   const title = text ? `„${text}“ · ${label}` : label;
   const headerTop = insets.top + Spacing.two;
