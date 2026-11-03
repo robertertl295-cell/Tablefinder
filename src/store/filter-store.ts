@@ -17,7 +17,7 @@ export type FilterState = {
 
 type Persisted = { filters: Filters };
 
-export const FILTER_STORAGE_KEY = 'tisch.filters';
+export const FILTER_STORAGE_KEY = 'tablefinder.filters';
 
 export function createFilterStore(
   storage: PersistStorage<Persisted> | undefined = persistStorage as PersistStorage<Persisted>,

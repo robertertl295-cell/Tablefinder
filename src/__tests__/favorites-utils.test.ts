@@ -68,12 +68,17 @@ describe('parseBackup', () => {
 
   it.each([
     ['kein JSON', '{kaputt', 'kein gültiges JSON'],
-    ['fremde Datei', JSON.stringify({ hallo: 1 }), 'keine Favoriten-Sicherung von Tisch'],
+    ['fremde Datei', JSON.stringify({ hallo: 1 }), 'keine Favoriten-Sicherung von Tablefinder'],
     ['neuere Version', JSON.stringify({ ...valid, version: 2 }), 'neueren App-Version'],
   ])('lehnt %s ab', (_, text, message) => {
     const result = parseBackup(text);
     expect(result.ok).toBe(false);
     expect(!result.ok && result.error).toContain(message);
+  });
+
+  it('liest auch Sicherungen aus der Zeit, als die App „Tisch“ hieß', () => {
+    const result = parseBackup(JSON.stringify({ ...valid, app: 'tisch' }));
+    expect(result.ok).toBe(true);
   });
 
   it('zählt übersprungene Einträge', () => {

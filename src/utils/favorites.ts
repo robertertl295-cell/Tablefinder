@@ -80,7 +80,7 @@ export function createBackup(
   now = new Date(),
 ): FavoritesBackup {
   return {
-    app: 'tisch',
+    app: 'tablefinder',
     format: 'favorites',
     version: 1,
     exportedAt: now.toISOString(),
@@ -104,8 +104,9 @@ export function parseBackup(text: string): ParseResult {
     return { ok: false, error: 'Die Datei enthält keine Favoriten-Sicherung.' };
   }
   const d = data as Record<string, unknown>;
-  if (d.app !== 'tisch' || d.format !== 'favorites') {
-    return { ok: false, error: 'Die Datei ist keine Favoriten-Sicherung von Tisch.' };
+  // „tisch“ = früherer App-Name; solche Sicherungen bleiben importierbar.
+  if ((d.app !== 'tablefinder' && d.app !== 'tisch') || d.format !== 'favorites') {
+    return { ok: false, error: 'Die Datei ist keine Favoriten-Sicherung von Tablefinder.' };
   }
   if (typeof d.version !== 'number' || d.version > 1) {
     return {

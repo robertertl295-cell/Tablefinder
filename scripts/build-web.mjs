@@ -26,21 +26,21 @@ const head = `
     <link rel="apple-touch-icon" href="${BASE}/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Tisch" />
+    <meta name="apple-mobile-web-app-title" content="Tablefinder" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="application-name" content="Tisch" />
+    <meta name="application-name" content="Tablefinder" />
     <meta name="description" content="Restaurants, Cafés und Bars in Berlin finden, filtern und merken." />
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0C0A09" media="(prefers-color-scheme: dark)" />
     <meta name="format-detection" content="telephone=no" />
-    <style id="tisch-pwa">
+    <style id="tablefinder-pwa">
       html, body { background: #FFFFFF; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
       @media (prefers-color-scheme: dark) { html, body { background: #0C0A09; } }
       /* Karte: dunkle Kacheln im Dunkelmodus, ruhige Quellenangabe */
-      .tisch-map-dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.4); }
+      .tf-map-dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.4); }
       .leaflet-control-attribution { font-size: 10px; }
-      .tisch-map-dark .leaflet-control-attribution { background: rgba(28, 25, 23, 0.85); color: #A8A29E; }
-      .tisch-map-dark .leaflet-control-attribution a { color: #F0876B; }
+      .tf-map-dark .leaflet-control-attribution { background: rgba(28, 25, 23, 0.85); color: #A8A29E; }
+      .tf-map-dark .leaflet-control-attribution a { color: #F0876B; }
     </style>`;
 
 const file = join(OUT, 'index.html');

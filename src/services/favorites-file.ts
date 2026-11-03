@@ -8,7 +8,7 @@ import { parseBackup, type ParseResult } from '@/utils/favorites';
 const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 
 export function backupFileName(backup: FavoritesBackup): string {
-  return `tisch-favoriten-${backup.exportedAt.slice(0, 10)}.json`;
+  return `tablefinder-favoriten-${backup.exportedAt.slice(0, 10)}.json`;
 }
 
 /**
@@ -53,7 +53,8 @@ export async function pickBackup(): Promise<ParseResult | null> {
 export function deleteBackupFiles(): void {
   try {
     for (const entry of new Directory(Paths.cache).list()) {
-      if (entry instanceof File && entry.name.startsWith('tisch-favoriten-')) entry.delete();
+      if (entry instanceof File && /^(tablefinder|tisch)-favoriten-/.test(entry.name))
+        entry.delete();
     }
   } catch {
     // Cache nicht lesbar – nichts zu tun, das System räumt ihn ohnehin auf.

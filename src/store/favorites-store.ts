@@ -40,7 +40,7 @@ export type FavoritesState = {
 
 type Persisted = Pick<FavoritesState, 'lists' | 'favorites'>;
 
-export const FAVORITES_STORAGE_KEY = 'tisch.favorites';
+export const FAVORITES_STORAGE_KEY = 'tablefinder.favorites';
 
 const nowIso = () => new Date().toISOString();
 

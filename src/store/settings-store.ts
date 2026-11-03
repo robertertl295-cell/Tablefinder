@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dataSource: 'auto',
 };
 
-export const SETTINGS_STORAGE_KEY = 'tisch.settings';
+export const SETTINGS_STORAGE_KEY = 'tablefinder.settings';
 
 export function sanitizeSettings(input: unknown): Settings {
   const raw = (typeof input === 'object' && input !== null ? input : {}) as Record<string, unknown>;

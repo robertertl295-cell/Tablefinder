@@ -3,7 +3,7 @@ import { parseBackup, type ParseResult } from '@/utils/favorites';
 
 /** Web-Vorschau: Download statt Teilen-Menü, Datei-Input statt Dokumentauswahl. */
 export function backupFileName(backup: FavoritesBackup): string {
-  return `tisch-favoriten-${backup.exportedAt.slice(0, 10)}.json`;
+  return `tablefinder-favoriten-${backup.exportedAt.slice(0, 10)}.json`;
 }
 
 export async function shareBackup(backup: FavoritesBackup): Promise<'shared' | 'unavailable'> {

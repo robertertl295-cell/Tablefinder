@@ -1,4 +1,4 @@
-# Tisch
+# Tablefinder
 
 [![CI](https://github.com/robertertl295-cell/Tablefinder/actions/workflows/ci.yml/badge.svg)](https://github.com/robertertl295-cell/Tablefinder/actions/workflows/ci.yml)
 
@@ -7,7 +7,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 **Funktionen:** Suche, feine Filter, Detailansicht, Favoriten mit eigenen Listen und Notizen.
 **Bewusst nicht enthalten:** Reservierung, Lieferung, Bezahlung, Social Feed, Nutzerkonten.
 
-**Was Tisch von anderen Apps unterscheidet:**
+**Was Tablefinder von anderen Apps unterscheidet:**
 
 1. **Bewertungen ehrlich darstellen:** Sterne stehen immer zusammen mit der Anzahl der Bewertungen. Unter 30 Bewertungen erscheint deutlich „Wenig Datenbasis“. Die Detailseite zeigt, wie belastbar der Schnitt ist, und einen **Vertrauensscore**, nach dem sich die Treffer auch sortieren lassen.
 2. **Feine Filter:** Art, Mindestbewertung, Mindestanzahl Bewertungen, Preis, Umkreis, jetzt geöffnet, vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder, Frühstück, Mittag- und Abendessen.
@@ -64,11 +64,11 @@ npx expo run:android
 
 **Weg 1 – Web-App auf dem Home-Bildschirm (empfohlen, kostenlos, ohne App Store):**
 
-Wie bei AGNES der HU Berlin: Tisch läuft als Website, startet aber vom Home-Bildschirm mit eigenem Symbol, im Vollbild und ohne Browserleiste.
+Wie bei AGNES der HU Berlin: Tablefinder läuft als Website, startet aber vom Home-Bildschirm mit eigenem Symbol, im Vollbild und ohne Browserleiste.
 
 1. Auf dem iPhone in **Safari** öffnen: **https://robertertl295-cell.github.io/Tablefinder/**
 2. Unten auf **Teilen** (Quadrat mit Pfeil) tippen → **„Zum Home-Bildschirm“** → **Hinzufügen**.
-3. Tisch über das neue Symbol starten. Beim ersten Mal nach dem Standort fragen lassen und „Erlauben“ wählen.
+3. Tablefinder über das neue Symbol starten. Beim ersten Mal nach dem Standort fragen lassen und „Erlauben“ wählen.
 
 - **Updates:** Jeder Push auf `main` veröffentlicht automatisch eine neue Version (`.github/workflows/deploy-web.yml`). Die App holt sie beim nächsten Start.
 - **Daten:** Die Web-App sucht mit OpenStreetMap. Einen Google-Key bekommt sie bewusst nicht, weil er auf einer öffentlichen Seite für alle auslesbar wäre.
@@ -133,7 +133,7 @@ So legst du den Places-Key an:
 2. **Places API (New)** aktivieren. Für Android zusätzlich **Maps SDK for Android**.
 3. Einen API-Key erstellen und **einschränken**:
    - API-Einschränkung: nur „Places API (New)“.
-   - App-Einschränkung: iOS-Bundle-ID bzw. Android-Paketname `de.tisch.app` (für Android zusätzlich der SHA-1-Fingerabdruck).
+   - App-Einschränkung: iOS-Bundle-ID bzw. Android-Paketname `de.tablefinder.app` (für Android zusätzlich der SHA-1-Fingerabdruck).
 4. Ein Tageskontingent (Quota) und eine Budgetwarnung setzen, um die Kosten zu begrenzen.
 
 > ⚠️ Variablen mit `EXPO_PUBLIC_` werden ins App-Paket eingebaut und lassen sich daraus auslesen. Auch die Foto-URLs enthalten den Key. Die Einschränkungen und das Tageskontingent sind deshalb Pflicht. Für mehr als den persönlichen Gebrauch: siehe Proxy unter [Nächste Schritte](#nächste-schritte).
@@ -306,7 +306,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 **Wo er erscheint:**
 
 - **Detailseite:** Der Score mit einem Satz Erklärung zu genau diesem Lokal und der offengelegten Berechnung.
-- **Suche:** Die Sortierung „Relevanz“, „Vertrauensscore“ oder „Entfernung“ wählst du im Filter-Sheet. Sie wird gespeichert (`tisch.settings`) und löst keine neue Anfrage aus. Die aktive Sortierung steht als Chip neben dem Filter-Button, ein Tipp stellt zurück auf Relevanz. Beim Sortieren nach Vertrauensscore zeigt jede Karte ihren Score, damit die Reihenfolge nachvollziehbar ist.
+- **Suche:** Die Sortierung „Relevanz“, „Vertrauensscore“ oder „Entfernung“ wählst du im Filter-Sheet. Sie wird gespeichert (`tablefinder.settings`) und löst keine neue Anfrage aus. Die aktive Sortierung steht als Chip neben dem Filter-Button, ein Tipp stellt zurück auf Relevanz. Beim Sortieren nach Vertrauensscore zeigt jede Karte ihren Score, damit die Reihenfolge nachvollziehbar ist.
 - **Favoriten:** zusätzliche Sortierung „Vertrauensscore“ neben „Google-Bewertung“.
 
 ## Filter
@@ -327,7 +327,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **Übernahme:** Änderungen im Filter-Sheet greifen erst beim Schließen, per „Fertig“ oder Wischgeste. So löst nicht jeder einzelne Tipp eine kostenpflichtige Anfrage aus.
 - **Nachladen beim Filtern:** Filtert die App selbst, lädt sie automatisch weitere Seiten, bis mindestens 8 Treffer da sind. Pro Suche sind es höchstens 3 Seiten (Kostenbremse).
 - **Bedienung:** Aktive Filter stehen als Chips unter der Suche, ein Tipp entfernt sie. Ab zwei Filtern gibt es „Zurücksetzen“, im Leerzustand „Filter zurücksetzen“.
-- **Speicherung:** unter `tisch.filters`, beim Laden wird geprüft.
+- **Speicherung:** unter `tablefinder.filters`, beim Laden wird geprüft.
 - **Je Datenquelle:** Welche Filter angeboten werden, hängt von der Quelle ab (siehe [Datenquellen](#datenquellen)).
 
 ## Detailseite
@@ -360,11 +360,11 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **Verwalten:** Listen anlegen (mit Vorschlägen), umbenennen und löschen. Beim Löschen einer Liste bleiben die Favoriten erhalten.
 - **Sicherung als JSON:**
   - Export über das Teilen-Menü, Import über die Dateiauswahl.
-  - Format: `{ app: "tisch", format: "favorites", version: 1, exportedAt, lists, favorites }`.
+  - Format: `{ app: "tablefinder", format: "favorites", version: 1, exportedAt, lists, favorites }`. Sicherungen aus der Zeit, als die App noch „Tisch“ hieß (`app: "tisch"`), lassen sich weiterhin importieren.
   - Jeder Eintrag wird geprüft. Ungültige werden übersprungen und gezählt, Dateien aus neueren Versionen abgelehnt.
   - „Zusammenführen“: Gleichnamige Listen werden vereint, bei doppelten Favoriten gewinnt die neuere Bearbeitung.
   - „Ersetzen“ stellt die Sicherung exakt wieder her.
-- **Speicherung:** unter `tisch.favorites`, nur `placeId`, Listen, Notiz, Besuchsstatus, eigene Bewertung und Zeitstempel.
+- **Speicherung:** unter `tablefinder.favorites`, nur `placeId`, Listen, Notiz, Besuchsstatus, eigene Bewertung und Zeitstempel.
 
 ## Einstellungen
 
@@ -427,7 +427,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Datenschutz und Nutzungsbedingungen
 
-- **Kein Tracking:** Tisch hat keine eigenen Server, keine Konten und kein Tracking.
+- **Kein Tracking:** Tablefinder hat keine eigenen Server, keine Konten und kein Tracking.
 - **Was übertragen wird:**
   - **Google Places:** Suchbegriff und Suchort (eigener Standort oder gewählter Bezirk).
   - **OpenStreetMap:** nur der Suchort, an den öffentlichen Overpass-Server `overpass-api.de` (OpenStreetMap-Umfeld). Der Suchbegriff bleibt auf dem Gerät.
@@ -506,5 +506,5 @@ Nach Priorität:
 | Zweite Datenquelle (OpenStreetMap) | ✅ Umgesetzt (siehe [Datenquellen](#datenquellen)). Nächster Schritt wäre die Kombination: Google-Treffer mit OSM-Angaben (vegan) anreichern, über Name und Entfernung abgeglichen.                                                                             |
 | Gerichte-Suche                     | Die Places API hat keine Speisekarten. Möglich ist nur die Freitextsuche („Ramen“), die schon funktioniert. Mehr bräuchte eine eigene Datenquelle.                                                                                                              |
 | Vertrauensscore für Bewertungen    | ✅ Umgesetzt (siehe [Vertrauensscore](#vertrauensscore)).                                                                                                                                                                                                       |
-| Teilen von Listen                  | Ohne Backend über die vorhandene JSON-Sicherung oder einen Deep Link mit `place_id`s (`tisch://liste?…`). Es dürfen keine Google-Inhalte mitgeschickt werden, die IDs schon.                                                                                    |
+| Teilen von Listen                  | Ohne Backend über die vorhandene JSON-Sicherung oder einen Deep Link mit `place_id`s (`tablefinder://liste?…`). Es dürfen keine Google-Inhalte mitgeschickt werden, die IDs schon.                                                                              |
 | Widget „Was esse ich heute?“       | Machbar mit `expo-widgets` (für SDK 58 verfügbar, nicht ausprobiert) bzw. einem nativen Widget-Target. Zufallsvorschlag aus „Noch ausprobieren“, der jetzt geöffnet ist. Braucht einen Development Build und frische Daten beim Antippen (Nutzungsbedingungen). |

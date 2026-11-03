@@ -137,7 +137,7 @@ describe('Export und Import', () => {
     a.store.getState().addFavorite('p1', [id]);
     a.store.getState().updateFavorite('p1', { ownRating: 5, visited: true });
     const backup = a.store.getState().exportBackup();
-    expect(backup).toMatchObject({ app: 'tisch', format: 'favorites', version: 1 });
+    expect(backup).toMatchObject({ app: 'tablefinder', format: 'favorites', version: 1 });
 
     const b = await setup();
     b.store.getState().addFavorite('wird-ersetzt');

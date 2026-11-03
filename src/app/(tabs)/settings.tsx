@@ -170,7 +170,7 @@ export default function SettingsScreen() {
 
         <Section title="Datenschutz">
           <Paragraph>
-            Tisch hat keine eigenen Server, keine Konten und kein Tracking. Favoriten, Listen,
+            Tablefinder hat keine eigenen Server, keine Konten und kein Tracking. Favoriten, Listen,
             Notizen, Filter und Einstellungen bleiben ausschließlich auf diesem Gerät.
           </Paragraph>
           <Paragraph>

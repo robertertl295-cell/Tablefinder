@@ -147,7 +147,7 @@ describe('Verwalten-Sheet', () => {
     await fireEvent.press(screen.getByText('Exportieren'));
     expect(mockShare).toHaveBeenCalledWith(
       expect.objectContaining({
-        app: 'tisch',
+        app: 'tablefinder',
         lists: [expect.objectContaining({ name: 'Date-Abend' })],
       }),
     );

@@ -92,7 +92,7 @@ export function ResultsMap({
         bounds={toBounds(center, radiusMeters)}
         style={{ height: '100%', width: '100%', background: theme.backgroundElement }}
         zoomControl={false}
-        className={dark ? 'tisch-map-dark' : undefined}>
+        className={dark ? 'tf-map-dark' : undefined}>
         <TileLayer url={OSM_TILES} attribution={OSM_ATTRIBUTION} maxZoom={19} />
         <FollowSearch center={center} radiusMeters={radiusMeters} />
         <TrackRegion onRegion={setVisibleRegion} onMapPress={() => setSelectedId(null)} />

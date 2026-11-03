@@ -6,22 +6,22 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  */
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Tisch',
-  slug: 'tisch',
+  name: 'Tablefinder',
+  slug: 'tablefinder',
   version: '0.1.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: 'tisch',
+  scheme: 'tablefinder',
   userInterfaceStyle: 'automatic',
   ios: {
     icon: './assets/images/icon.png',
-    bundleIdentifier: 'de.tisch.app',
+    bundleIdentifier: 'de.tablefinder.app',
     supportsTablet: false,
     // Nur Standard-HTTPS → keine Exportkontroll-Abfrage bei TestFlight/App Store.
     config: { usesNonExemptEncryption: false },
   },
   android: {
-    package: 'de.tisch.app',
+    package: 'de.tablefinder.app',
     adaptiveIcon: {
       backgroundColor: '#B5432A',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -41,7 +41,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'expo-location',
       {
         locationWhenInUsePermission:
-          'Tisch nutzt deinen Standort, um Restaurants, Cafés und Bars in deiner Nähe zu finden.',
+          'Tablefinder nutzt deinen Standort, um Restaurants, Cafés und Bars in deiner Nähe zu finden.',
         locationAlwaysAndWhenInUsePermission: false,
         locationAlwaysPermission: false,
       },

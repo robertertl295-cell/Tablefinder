@@ -1,5 +1,5 @@
 /**
- * Design-Tokens für Tisch: ruhig, viel Weißraum, ein Akzentton (Terrakotta).
+ * Design-Tokens für Tablefinder: ruhig, viel Weißraum, ein Akzentton (Terrakotta).
  * Alle Text/Hintergrund-Paare erfüllen WCAG AA (≥ 4.5:1).
  */
 import { Platform } from 'react-native';

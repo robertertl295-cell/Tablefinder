@@ -6,7 +6,7 @@ import { Icon } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-const DISMISSED_KEY = 'tisch.installHintDismissed';
+const DISMISSED_KEY = 'tablefinder.installHintDismissed';
 
 /** iPhone/iPad in Safari, aber noch nicht als Web-App vom Home-Bildschirm gestartet? */
 export function shouldShowInstallHint(
@@ -30,7 +30,7 @@ function readState(): boolean {
   }
 }
 
-/** Anleitung „Zum Home-Bildschirm“, damit Tisch wie eine App startet. */
+/** Anleitung „Zum Home-Bildschirm“, damit Tablefinder wie eine App startet. */
 export function InstallHint() {
   const theme = useTheme();
   const [visible, setVisible] = useState(readState);
@@ -49,11 +49,11 @@ export function InstallHint() {
     <View
       style={[styles.box, { backgroundColor: theme.accent }]}
       accessibilityRole="summary"
-      accessibilityLabel="Tisch als App nutzen: In Safari auf Teilen tippen und Zum Home-Bildschirm wählen.">
+      accessibilityLabel="Tablefinder als App nutzen: In Safari auf Teilen tippen und Zum Home-Bildschirm wählen.">
       <Icon name="share" size={20} color={theme.onAccent} />
       <View style={styles.text}>
         <ThemedText type="smallBold" style={{ color: theme.onAccent }}>
-          Tisch als App nutzen
+          Tablefinder als App nutzen
         </ThemedText>
         <ThemedText type="small" style={{ color: theme.onAccent }}>
           Tippe in Safari auf „Teilen“ und dann auf „Zum Home-Bildschirm“.

@@ -23,7 +23,7 @@ export type Favorite = {
 
 /** Dateiformat für Sicherung (Export/Import). */
 export type FavoritesBackup = {
-  app: 'tisch';
+  app: 'tablefinder';
   format: 'favorites';
   version: 1;
   exportedAt: string;
