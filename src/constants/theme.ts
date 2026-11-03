@@ -58,5 +58,3 @@ export const Radius = {
   large: 20,
   pill: 999,
 } as const;
-
-export const MaxContentWidth = 800;
