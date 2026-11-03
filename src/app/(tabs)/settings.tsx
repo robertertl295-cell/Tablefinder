@@ -176,9 +176,10 @@ export default function SettingsScreen() {
           <Paragraph>
             Für die Suche wird der Suchort (dein Standort oder der gewählte Bezirk) an die gewählte
             Datenquelle übertragen: bei Google Places zusammen mit dem Suchbegriff, bei
-            OpenStreetMap an einen öffentlichen Overpass-Server (overpass-api.de) – dort ohne
-            Suchbegriff, weil die App den Text selbst auswertet. Es gelten die Bestimmungen des
-            jeweiligen Dienstes.
+            OpenStreetMap an öffentliche Overpass-Server (overpass-api.de, bei Überlastung
+            ersatzweise overpass.private.coffee oder overpass.kumi.systems) – dort ohne Suchbegriff,
+            weil die App den Text selbst auswertet. Es gelten die Bestimmungen des jeweiligen
+            Dienstes.
           </Paragraph>
           <Paragraph>
             Der Standort wird nur abgefragt, während du die App benutzt, und nicht gespeichert.

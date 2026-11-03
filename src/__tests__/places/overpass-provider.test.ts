@@ -46,7 +46,15 @@ describe('Overpass-Abfrage', () => {
       'nwr["amenity"~"^(restaurant|cafe|bar|pub|biergarten|fast_food|food_court|ice_cream)$"]["name"](around:1500,52.498600,13.420300)',
     );
     expect(q).toContain('nwr["shop"="bakery"]["name"]');
-    expect(q).toContain('out center tags;');
+    expect(q).toContain('out center tags qt;');
+  });
+
+  it('begrenzt die Suche zusätzlich mit einer Box und einem kurzen Server-Limit', () => {
+    const q = buildAreaQuery(52.4986, 13.4203, 1500);
+    expect(q).toMatch(
+      /^\[out:json\]\[timeout:15\]\[bbox:52\.48\d+,13\.39\d+,52\.51\d+,13\.44\d+\];/,
+    );
+    expect(q).toContain('out center tags qt;');
   });
 
   it('sendet POST mit Formular-Daten und begrenzt den Radius', async () => {
@@ -139,6 +147,62 @@ describe('Details', () => {
     expect(
       provider.getPhotoUrl({ name: 'x', widthPx: null, heightPx: null, attributions: [] }, 100),
     ).toBeNull();
+  });
+});
+
+describe('Ausweich-Server', () => {
+  const ENDPOINTS = ['https://a.example/api', 'https://b.example/api', 'https://c.example/api'];
+  function multi(responder: (url: string) => Response | Promise<Response>) {
+    const urls: string[] = [];
+    const fetchFn = jest.fn((url: string | URL | Request, init?: RequestInit) => {
+      urls.push(String(url));
+      // Wie echtes fetch: Abbruch über das Signal beendet die Anfrage.
+      const aborted = new Promise<Response>((_, reject) =>
+        init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))),
+      );
+      return Promise.race([Promise.resolve(responder(String(url))), aborted]);
+    }) as unknown as typeof fetch;
+    const provider = new OverpassPlacesProvider({
+      fetchFn,
+      endpoints: ENDPOINTS,
+      timeoutMs: 50,
+      pageSize: 3,
+      now: () => NOW,
+    });
+    return { provider, urls };
+  }
+
+  it('fragt bei Überlastung den nächsten Server und merkt sich den funktionierenden', async () => {
+    const { provider, urls } = multi((url) =>
+      url.includes('a.example') ? jsonResponse({}, 429) : jsonResponse({ elements: OSM_AREA }),
+    );
+    expect((await provider.search(QUERY)).places.length).toBeGreaterThan(0);
+    expect(urls).toEqual([ENDPOINTS[0], ENDPOINTS[1]]);
+    // nächste Anfrage (anderes Gebiet) direkt beim funktionierenden Server
+    await provider.search({ ...QUERY, center: { latitude: 52.52, longitude: 13.4 } });
+    expect(urls.at(-1)).toBe(ENDPOINTS[1]);
+  });
+
+  it('wechselt auch bei keiner Antwort (Zeitüberschreitung)', async () => {
+    const { provider, urls } = multi((url) =>
+      url.includes('a.example')
+        ? new Promise<Response>(() => {}) // hängt
+        : jsonResponse({ elements: OSM_AREA }),
+    );
+    expect((await provider.search(QUERY)).places.length).toBeGreaterThan(0);
+    expect(urls).toEqual([ENDPOINTS[0], ENDPOINTS[1]]);
+  });
+
+  it('meldet den letzten Fehler, wenn alle Server versagen', async () => {
+    const { provider, urls } = multi(() => jsonResponse({}, 504));
+    await expect(provider.search(QUERY)).rejects.toMatchObject({ kind: 'timeout' });
+    expect(urls).toHaveLength(3);
+  });
+
+  it('probiert bei einer fehlerhaften Anfrage keine anderen Server', async () => {
+    const { provider, urls } = multi(() => jsonResponse({}, 400));
+    await expect(provider.search(QUERY)).rejects.toMatchObject({ kind: 'invalid_request' });
+    expect(urls).toHaveLength(1);
   });
 });
 

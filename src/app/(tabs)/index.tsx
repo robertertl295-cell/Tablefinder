@@ -19,7 +19,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Chip } from '@/components/ui/chip';
 import { Icon } from '@/components/ui/icon';
 import { Spacing } from '@/constants/theme';
-import { useSourceCapabilities } from '@/hooks/use-active-source';
+import { useActiveSource, useSourceCapabilities } from '@/hooks/use-active-source';
 import { useTheme } from '@/hooks/use-theme';
 import { filterStore, useFilters } from '@/store/filter-store';
 import { settingsStore, useSettings } from '@/store/settings-store';
@@ -55,6 +55,7 @@ export default function SearchScreen() {
   const defaultRadius = useSettings((s) => s.defaultRadiusMeters);
   const units = useSettings((s) => s.units);
   const caps = useSourceCapabilities();
+  const activeSource = useActiveSource();
   const resultSort = effectiveSort(
     useSettings((s) => s.resultSort),
     caps,
@@ -161,7 +162,11 @@ export default function SearchScreen() {
 
       <View style={styles.content}>
         {status === 'error' && error ? (
-          <SearchError error={error} onRetry={() => void actions().search()} />
+          <SearchError
+            error={error}
+            source={activeSource}
+            onRetry={() => void actions().search()}
+          />
         ) : viewMode === 'map' ? (
           <ResultsMap
             places={results}

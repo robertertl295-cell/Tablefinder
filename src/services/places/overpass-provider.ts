@@ -1,5 +1,5 @@
 import type { PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
-import { distanceMeters } from '@/utils/geo';
+import { boundingBox, distanceMeters } from '@/utils/geo';
 import { describeOpenState } from '@/utils/opening-hours';
 import { searchTokens } from '@/utils/text';
 
@@ -18,11 +18,28 @@ import { matchesQuery } from './query-filter';
 
 export const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
 
+/**
+ * Öffentliche Overpass-Server, der Reihe nach probiert. Ist einer überlastet
+ * (Warteschlange, 429, 5xx, keine Antwort), übernimmt der nächste.
+ */
+export const OVERPASS_ENDPOINTS = [
+  OVERPASS_ENDPOINT,
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+];
+
+/** Server-seitiges Zeitlimit; muss unter dem Zeitlimit der App liegen. */
+const SERVER_TIMEOUT_S = 15;
+
+/** Bei diesen Fehlern lohnt sich ein anderer Server; bei fehlerhaften Anfragen nicht. */
+const RETRY_ON_OTHER_SERVER: PlacesErrorKind[] = ['network', 'timeout', 'quota', 'server'];
+
 /** Größere Umkreise würden in Berlin Tausende Lokale laden. */
 export const OSM_MAX_RADIUS_METERS = 5000;
 
 export type OverpassProviderOptions = {
-  endpoint?: string;
+  /** Server in Probier-Reihenfolge (Standard: OVERPASS_ENDPOINTS). */
+  endpoints?: string[];
   fetchFn?: typeof fetch;
   timeoutMs?: number;
   /** Wie lange ein geladenes Gebiet wiederverwendet wird. */
@@ -33,21 +50,29 @@ export type OverpassProviderOptions = {
 
 type OsmEntry = { place: PlaceDetails; text: string };
 
-/** Overpass-Abfrage für alle Gastronomie-Orte mit Namen im Umkreis. */
+/**
+ * Overpass-Abfrage für alle Gastronomie-Orte mit Namen im Umkreis.
+ * Die globale Box `[bbox:…]` zwingt den Server, nur im Gebiet zu suchen (schnell),
+ * `around` schneidet danach exakt auf den Kreis zu. `qt` spart die Sortierung.
+ */
 export function buildAreaQuery(lat: number, lon: number, radiusMeters: number): string {
   const around = `(around:${Math.round(radiusMeters)},${lat.toFixed(6)},${lon.toFixed(6)})`;
+  const { low, high } = boundingBox({ latitude: lat, longitude: lon }, radiusMeters);
+  const bbox = [low.latitude, low.longitude, high.latitude, high.longitude]
+    .map((n) => n.toFixed(5))
+    .join(',');
   return [
-    '[out:json][timeout:25];',
+    `[out:json][timeout:${SERVER_TIMEOUT_S}][bbox:${bbox}];`,
     '(',
     `  nwr["amenity"~"^(${OSM_AMENITIES.join('|')})$"]["name"]${around};`,
     `  nwr["shop"="bakery"]["name"]${around};`,
     ');',
-    'out center tags;',
+    'out center tags qt;',
   ].join('\n');
 }
 
 export function buildElementQuery(type: OverpassElement['type'], id: number): string {
-  return `[out:json][timeout:25];\n${type}(${id});\nout center tags;`;
+  return `[out:json][timeout:${SERVER_TIMEOUT_S}];\n${type}(${id});\nout center tags;`;
 }
 
 /**
@@ -57,7 +82,9 @@ export function buildElementQuery(type: OverpassElement['type'], id: number): st
 export class OverpassPlacesProvider implements PlacesProvider {
   readonly source = 'osm' as const;
 
-  private readonly endpoint: string;
+  private readonly endpoints: string[];
+  /** Zuletzt funktionierender Server – wird zuerst gefragt. */
+  private preferred = 0;
   private readonly fetchFn: typeof fetch;
   private readonly timeoutMs: number;
   private readonly pageSize: number;
@@ -68,9 +95,10 @@ export class OverpassPlacesProvider implements PlacesProvider {
   private readonly known = new Map<string, PlaceDetails>();
 
   constructor(options: OverpassProviderOptions = {}) {
-    this.endpoint = options.endpoint ?? OVERPASS_ENDPOINT;
+    this.endpoints = options.endpoints?.length ? options.endpoints : OVERPASS_ENDPOINTS;
     this.fetchFn = options.fetchFn ?? fetch.bind(globalThis);
-    this.timeoutMs = options.timeoutMs ?? 30_000;
+    // Etwas über dem Server-Limit; danach übernimmt der nächste Server.
+    this.timeoutMs = options.timeoutMs ?? (SERVER_TIMEOUT_S + 5) * 1000;
     this.pageSize = options.pageSize ?? 20;
     this.now = options.now ?? (() => new Date());
     this.areas = new TtlCache(options.areaTtlMs ?? 10 * 60_000, 20);
@@ -162,12 +190,31 @@ export class OverpassPlacesProvider implements PlacesProvider {
     return { ...place, openNow, openingHours: { ...place.openingHours, openNow } };
   }
 
+  /** Fragt die Server der Reihe nach, beginnend mit dem zuletzt funktionierenden. */
   private async request(query: string): Promise<OverpassResponse> {
+    let lastError: PlacesError | undefined;
+    for (let attempt = 0; attempt < this.endpoints.length; attempt++) {
+      const index = (this.preferred + attempt) % this.endpoints.length;
+      try {
+        const data = await this.requestFrom(this.endpoints[index]!, query);
+        this.preferred = index;
+        return data;
+      } catch (error) {
+        if (!(error instanceof PlacesError) || !RETRY_ON_OTHER_SERVER.includes(error.kind)) {
+          throw error;
+        }
+        lastError = error;
+      }
+    }
+    throw lastError ?? new PlacesError('server', 'Kein Overpass-Server erreichbar');
+  }
+
+  private async requestFrom(endpoint: string, query: string): Promise<OverpassResponse> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     let response: Response;
     try {
-      response = await this.fetchFn(this.endpoint, {
+      response = await this.fetchFn(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',

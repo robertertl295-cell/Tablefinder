@@ -267,7 +267,7 @@ Einstellbar unter Einstellungen → Datenquelle. „Automatisch“ nimmt Google,
 - **Filter je Quelle:** Filter und Sortierungen, die die aktive Quelle nicht kann, sind im Filter-Sheet ausgeblendet, tauchen nicht als Chip auf und werden bei der Suche ignoriert. Sonst würde z. B. „ab 4 ★“ bei OSM alles ausschließen. Gespeichert bleiben sie trotzdem, beim Zurückwechseln sind sie wieder aktiv.
 - **Favoriten aus mehreren Quellen:** Sie funktionieren nebeneinander. Jede ID trägt ihre Quelle (`osm:…`, `mock-…`, sonst Google), Details kommen immer aus der Ursprungsquelle. Google-Favoriten brauchen dafür den Key.
 - **OpenStreetMap im Detail:**
-  - **Abfrage:** Eine Overpass-Abfrage holt alle Gastronomie-Orte mit Namen im Umkreis (höchstens 5 km): `amenity` = restaurant, cafe, bar, pub, biergarten, fast_food, food_court, ice_cream sowie `shop=bakery`. Das Ergebnis wird 10 Minuten wiederverwendet. Suchtext, Filter und Seiten laufen lokal, das schont die öffentlichen Server.
+  - **Abfrage:** Eine Overpass-Abfrage holt alle Gastronomie-Orte mit Namen im Umkreis (höchstens 5 km): `amenity` = restaurant, cafe, bar, pub, biergarten, fast_food, food_court, ice_cream sowie `shop=bakery`. Das Ergebnis wird 10 Minuten wiederverwendet. Die Abfrage ist zusätzlich auf eine Kartenbox begrenzt (`[bbox:…]`, schnell auf dem Server) und hat ein Server-Limit von 15 s. Antwortet ein Server nicht innerhalb von 20 s oder ist er überlastet (429/5xx), fragt die App den nächsten (`overpass-api.de` → `overpass.private.coffee` → `overpass.kumi.systems`) und merkt sich den funktionierenden. Suchtext, Filter und Seiten laufen lokal, das schont die öffentlichen Server.
   - **Freitext:** Er sucht in Name, Art, Küche (auch deutsch: „Döner“, „japanisch“, „Kaffee“), Diät-Angaben und Straße. Ortsnamen („vegan Kreuzberg“) werden ignoriert, weil sie selten am Lokal stehen. Den Ort wählt man über die Bezirks-Chips.
   - **Öffnungszeiten:** Ein eigener Parser versteht die übliche Teilmenge des OSM-Formats (`Mo-Fr 08:00-18:00; Sa 10:00-02:00; PH off`, `24/7`). Exotische Angaben gelten als unbekannt, nicht als geschlossen.
   - **Anzeige:** keine leeren Foto- und Sternflächen, stattdessen „Keine Bewertungen (OpenStreetMap)“. Die Detailseite verlinkt den Ort auf openstreetmap.org, dort lassen sich falsche Angaben korrigieren.
@@ -430,7 +430,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **Kein Tracking:** Tablefinder hat keine eigenen Server, keine Konten und kein Tracking.
 - **Was übertragen wird:**
   - **Google Places:** Suchbegriff und Suchort (eigener Standort oder gewählter Bezirk).
-  - **OpenStreetMap:** nur der Suchort, an den öffentlichen Overpass-Server `overpass-api.de` (OpenStreetMap-Umfeld). Der Suchbegriff bleibt auf dem Gerät.
+  - **OpenStreetMap:** nur der Suchort, an öffentliche Overpass-Server: `overpass-api.de`, bei Überlastung ersatzweise `overpass.private.coffee` oder `overpass.kumi.systems`. Der Suchbegriff bleibt auf dem Gerät.
 - **Standort:** Er wird nur während der Nutzung abgefragt und nicht gespeichert.
 - **Was lokal bleibt:** nur `place_id`s und eigene Daten (Listen, Notizen, Status, eigene Bewertung, Filter, Einstellungen). Ein Test stellt sicher, dass keine Ortsdaten von Google gespeichert werden.
 - **Inhalte von Google:** Bewertungen, Rezensionen und Fotos liegen nur wenige Minuten im Arbeitsspeicher, Fotos werden nicht auf dem Gerät gecacht.
