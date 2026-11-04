@@ -3,31 +3,24 @@ import 'leaflet/dist/leaflet.css';
 import { router } from 'expo-router';
 import { latLng, type LatLngBounds } from 'leaflet';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 import { CircleMarker, MapContainer, useMap, useMapEvents } from 'react-leaflet';
 
-import { ThemedText } from '@/components/themed-text';
-import { Icon } from '@/components/ui/icon';
-import { Radius, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useTheme } from '@/hooks/use-theme';
 import type { LatLng, PlaceSummary } from '@/types/place';
-import { distanceMeters } from '@/utils/geo';
-import { radiusForRegion, regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
+import { regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
+
+import { config } from '@/services/config';
 
 import { BaseMap } from './base-map.web';
+import { useGoogleMapsFailed } from './google-maps-auth';
+import { GoogleResultsMap } from './google-results-map.web';
+import { MapOverlays, type ResultsMapProps } from './map-overlays';
 import { mayShowDetailsOnMap } from '@/services/places/map-rules';
 
-import { PlaceCard } from './place-card';
-
-type Props = {
-  places: PlaceSummary[];
-  center: LatLng;
-  radiusMeters: number;
-  userLocation: LatLng | null;
-  onSearchArea?: (center: LatLng, radiusMeters: number) => void;
-  topInset?: number;
-};
+type Props = ResultsMapProps;
 
 const toBounds = (center: LatLng, radiusMeters: number): LatLngBounds =>
   latLng(center.latitude, center.longitude).toBounds(radiusMeters * 2.3);
@@ -66,8 +59,20 @@ function TrackRegion({
   return null;
 }
 
-/** Karte für die Web-App: Leaflet mit OpenStreetMap-Kacheln (react-native-maps läuft nicht im Browser). */
-export function ResultsMap({
+/**
+ * Karte für die Web-App (react-native-maps läuft nicht im Browser):
+ * mit Google-Key die Google-Karte, sonst Leaflet mit OpenFreeMap.
+ */
+export function ResultsMap(props: Props) {
+  const googleFailed = useGoogleMapsFailed();
+  return config.googleMapsKey && !googleFailed ? (
+    <GoogleResultsMap {...props} />
+  ) : (
+    <LeafletResultsMap {...props} />
+  );
+}
+
+function LeafletResultsMap({
   places,
   center,
   radiusMeters,
@@ -126,59 +131,17 @@ export function ResultsMap({
         ))}
       </MapContainer>
 
-      {pendingRegion && onSearchArea && (
-        <View style={[styles.topOverlay, { top: topInset }]} pointerEvents="box-none">
-          <Pressable
-            onPress={() =>
-              onSearchArea(
-                { latitude: pendingRegion.latitude, longitude: pendingRegion.longitude },
-                radiusForRegion(pendingRegion),
-              )
-            }
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.areaButton,
-              { backgroundColor: theme.background, opacity: pressed ? 0.85 : 1 },
-            ]}>
-            <Icon name="refresh" size={14} color={theme.accent} />
-            <ThemedText type="smallBold" style={{ color: theme.accent }}>
-              In diesem Bereich suchen
-            </ThemedText>
-          </Pressable>
-        </View>
-      )}
-
-      {selected && mayShowDetailsOnMap(selected.source) && (
-        <View style={styles.bottomOverlay}>
-          <PlaceCard
-            compact
-            place={selected}
-            distanceMeters={userLocation ? distanceMeters(userLocation, selected.location) : null}
-            onPress={() => router.push({ pathname: '/place/[id]', params: { id: selected.id } })}
-          />
-        </View>
-      )}
+      <MapOverlays
+        pendingRegion={pendingRegion}
+        onSearchArea={onSearchArea}
+        topInset={topInset}
+        selected={selected && mayShowDetailsOnMap(selected.source) ? selected : null}
+        userLocation={userLocation}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topOverlay: { position: 'absolute', left: 0, right: 0, alignItems: 'center', zIndex: 1000 },
-  areaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    minHeight: 40,
-    borderRadius: Radius.pill,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-  },
-  bottomOverlay: {
-    position: 'absolute',
-    left: Spacing.three,
-    right: Spacing.three,
-    bottom: Spacing.five,
-    zIndex: 1000,
-  },
 });

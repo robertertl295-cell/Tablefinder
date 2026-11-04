@@ -16,16 +16,27 @@ export type AppConfig = {
   osmDatasetUrl: string | null;
   /** Ordner mit den KI-Symbolbildern (public/placeholders); `null` = keine Symbolbilder. */
   placeholderBaseUrl: string | null;
+  /**
+   * Schlüssel für die Google-Karte in der Web-App (Maps JavaScript API).
+   * Standard: derselbe Key wie für Places. `null` = Karte von OpenFreeMap.
+   */
+  googleMapsKey: string | null;
+  /** Map-ID für Google-Karten (Marker, Dunkelmodus); ohne eigene ID die Demo-ID von Google. */
+  googleMapId: string;
 };
 
 export function readConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const key = env.EXPO_PUBLIC_PLACES_API_KEY?.trim();
   const dataset = env.EXPO_PUBLIC_OSM_DATASET_URL?.trim();
   const placeholders = env.EXPO_PUBLIC_PLACEHOLDER_BASE_URL?.trim();
+  const mapsKey = env.EXPO_PUBLIC_GOOGLE_MAPS_KEY?.trim() || key;
+  const mapId = env.EXPO_PUBLIC_GOOGLE_MAP_ID?.trim();
   return {
     placesApiKey: key ? key : null,
     osmDatasetUrl: dataset ? dataset : null,
     placeholderBaseUrl: placeholders ? placeholders : null,
+    googleMapsKey: mapsKey ? mapsKey : null,
+    googleMapId: mapId ? mapId : 'DEMO_MAP_ID',
   };
 }
 
@@ -34,4 +45,6 @@ export const config: AppConfig = readConfig({
   EXPO_PUBLIC_PLACES_API_KEY: process.env.EXPO_PUBLIC_PLACES_API_KEY,
   EXPO_PUBLIC_OSM_DATASET_URL: process.env.EXPO_PUBLIC_OSM_DATASET_URL,
   EXPO_PUBLIC_PLACEHOLDER_BASE_URL: process.env.EXPO_PUBLIC_PLACEHOLDER_BASE_URL,
+  EXPO_PUBLIC_GOOGLE_MAPS_KEY: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY,
+  EXPO_PUBLIC_GOOGLE_MAP_ID: process.env.EXPO_PUBLIC_GOOGLE_MAP_ID,
 });

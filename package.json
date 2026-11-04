@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~58.0.26",
     "@maplibre/maplibre-gl-leaflet": "^0.1.4",
+    "@vis.gl/react-google-maps": "^1.10.1",
     "expo": "~58.0.22",
     "expo-constants": "~58.0.14",
     "expo-device": "~58.0.5",

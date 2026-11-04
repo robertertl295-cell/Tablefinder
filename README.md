@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 373 Tests laufen ohne Fehler.
+- Typecheck, Lint und 374 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -365,7 +365,8 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 - **Umsetzung:** `src/services/places/map-rules.ts` (`mayShowDetailsOnMap`).
 - **Karte:** Google-Orte erscheinen nur als Punkte. Ein Tipp öffnet direkt die Detailseite statt einer Vorschaukarte auf der Karte; nativ zeigt der Pin keinen Namen.
 - **Detailseite:** Bei Google-Orten keine Mini-Karte; der Button „Route“ öffnet die Karten-App.
-- **Folge:** Die Maps JavaScript API wird nicht gebraucht – die Karte bleibt OpenFreeMap, der Key braucht nur die Places API (New).
+- **Karte:** Mit Key zeigt die Web-App Google Maps (Maps JavaScript API, `@vis.gl/react-google-maps`, `google-results-map.web.tsx`, Mini-Karte in `mini-map.web.tsx`). Google-Orte erscheinen dort nur als Punkte – Koordinaten und place_id dürfen auf jede Karte. Lehnt Google den Key ab (`gm_authFailure`: falsche Website, Guthaben aufgebraucht, API aus), schalten die Karten automatisch auf OpenFreeMap um.
+- **Key:** derselbe wie für Places (`EXPO_PUBLIC_PLACES_API_KEY`), optional ein eigener (`EXPO_PUBLIC_GOOGLE_MAPS_KEY`). Map-ID: `EXPO_PUBLIC_GOOGLE_MAP_ID`, sonst Googles `DEMO_MAP_ID`.
 - OpenStreetMap- und Beispieldaten sind nicht betroffen.
 
 ## Favoriten
@@ -422,7 +423,7 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 ## Tests
 
-373 Tests in 39 Dateien (`npm test`):
+374 Tests in 39 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -7,6 +7,8 @@ describe('readConfig', () => {
       placesApiKey: null,
       osmDatasetUrl: null,
       placeholderBaseUrl: null,
+      googleMapsKey: null,
+      googleMapId: 'DEMO_MAP_ID',
     });
   });
 
@@ -24,6 +26,8 @@ it('liest die Adresse des OSM-Datensatzes', () => {
     placesApiKey: null,
     osmDatasetUrl: '/Tablefinder/data/osm-berlin.json',
     placeholderBaseUrl: null,
+    googleMapsKey: null,
+    googleMapId: 'DEMO_MAP_ID',
   });
 });
 
@@ -42,4 +46,12 @@ describe('resolveSource', () => {
     expect(resolveSource('osm', true)).toBe('osm');
     expect(resolveSource('mock', true)).toBe('mock');
   });
+});
+
+it('nutzt den Places-Key auch für die Google-Karte, eigener Karten-Key hat Vorrang', () => {
+  expect(readConfig({ EXPO_PUBLIC_PLACES_API_KEY: 'p' }).googleMapsKey).toBe('p');
+  expect(
+    readConfig({ EXPO_PUBLIC_PLACES_API_KEY: 'p', EXPO_PUBLIC_GOOGLE_MAPS_KEY: 'm' }).googleMapsKey,
+  ).toBe('m');
+  expect(readConfig({ EXPO_PUBLIC_GOOGLE_MAP_ID: 'abc' }).googleMapId).toBe('abc');
 });
