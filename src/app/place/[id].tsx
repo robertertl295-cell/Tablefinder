@@ -22,6 +22,7 @@ import { Icon } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { usePlaceDetails } from '@/hooks/use-place-details';
 import { useTheme } from '@/hooks/use-theme';
+import { mayShowDetailsOnMap } from '@/services/places/map-rules';
 import { placeholderFor } from '@/services/placeholders/placeholders';
 import { useSearch } from '@/store/search-store';
 import type { PlaceDetails, PlaceSummary } from '@/types/place';
@@ -260,7 +261,10 @@ function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) 
             Website: {displayUrl(details.website)}
           </ThemedText>
         )}
-        <MiniMap location={details.location} onPress={route} />
+        {/* EWR-Bedingungen: Google-Inhalte nicht zusammen mit einer Karte zeigen. */}
+        {mayShowDetailsOnMap(details.source) && (
+          <MiniMap location={details.location} onPress={route} />
+        )}
       </Section>
 
       {details.source === 'osm' ? (

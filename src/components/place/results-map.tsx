@@ -12,6 +12,8 @@ import type { LatLng, PlaceSummary } from '@/types/place';
 import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, regionDiffersFromSearch, regionForRadius } from '@/utils/map-region';
 
+import { mayShowDetailsOnMap } from '@/services/places/map-rules';
+
 import { PlaceCard } from './place-card';
 
 type Props = {
@@ -46,6 +48,12 @@ export function ResultsMap({
       ? visibleRegion
       : null;
   const selected = places.find((p) => p.id === selectedId) ?? null;
+  // Google-Orte: Name und Bewertung nicht auf der Karte zeigen (EWR-Bedingungen) –
+  // ein Tipp auf den Punkt öffnet direkt die Detailseite.
+  const select = (p: PlaceSummary) => {
+    if (mayShowDetailsOnMap(p.source)) setSelectedId(p.id);
+    else router.push({ pathname: '/place/[id]', params: { id: p.id } });
+  };
 
   // Bei neuem Suchmittelpunkt (z. B. anderer Bezirk) dorthin schwenken.
   useEffect(() => {
@@ -70,12 +78,13 @@ export function ResultsMap({
             key={p.id}
             identifier={p.id}
             coordinate={p.location}
-            title={p.name}
+            // EWR-Bedingungen: keine Google-Inhalte (Name) auf der Karte.
+            title={mayShowDetailsOnMap(p.source) ? p.name : undefined}
             pinColor={p.id === selectedId ? theme.text : theme.accent}
             tracksViewChanges={false}
             onPress={(e) => {
               e.stopPropagation();
-              setSelectedId(p.id);
+              select(p);
             }}
           />
         ))}
@@ -103,7 +112,7 @@ export function ResultsMap({
         </View>
       )}
 
-      {selected && (
+      {selected && mayShowDetailsOnMap(selected.source) && (
         <View style={styles.bottomOverlay}>
           <PlaceCard
             compact

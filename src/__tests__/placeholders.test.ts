@@ -8,7 +8,7 @@ import {
   PLACEHOLDER_GROUPS,
   type PlaceholderManifest,
 } from '@/services/placeholders/placeholders';
-import emptyManifest from '@/services/placeholders/manifest.json';
+import shippedManifest from '@/services/placeholders/manifest.json';
 import type { PlaceSummary } from '@/types/place';
 
 const base = MOCK_PLACES.find((p) => p.id === 'mock-ramen-kreuzberg')!;
@@ -46,9 +46,11 @@ describe('Katalog', () => {
     }
   });
 
-  it('das ausgelieferte Manifest ist gültig', () => {
-    expect(emptyManifest.version).toBe(1);
-    expect(typeof emptyManifest.images).toBe('object');
+  it('das ausgelieferte Manifest passt zum Katalog', () => {
+    expect(shippedManifest.version).toBe(1);
+    for (const group of Object.keys(shippedManifest.images)) {
+      expect(PLACEHOLDER_GROUPS).toContain(group);
+    }
   });
 });
 
@@ -88,7 +90,9 @@ describe('pickPlaceholder', () => {
   const BASE = '/Tablefinder/placeholders';
 
   it('ohne Bilder oder ohne Adresse: kein Symbolbild', () => {
-    expect(pickPlaceholder(place({}), emptyManifest as PlaceholderManifest, BASE)).toBeNull();
+    expect(
+      pickPlaceholder(place({}), { version: 1, generator: null, images: {} }, BASE),
+    ).toBeNull();
     expect(pickPlaceholder(place({}), fullManifest, null)).toBeNull();
   });
 

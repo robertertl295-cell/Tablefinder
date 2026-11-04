@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 369 Tests laufen ohne Fehler.
+- Typecheck, Lint und 370 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -71,7 +71,7 @@ Wie bei AGNES der HU Berlin: Tablefinder läuft als Website, startet aber vom Ho
 3. Tablefinder über das neue Symbol starten. Beim ersten Mal nach dem Standort fragen lassen und „Erlauben“ wählen.
 
 - **Updates:** Jeder Push auf `main` veröffentlicht automatisch eine neue Version (`.github/workflows/deploy-web.yml`). Die App holt sie beim nächsten Start.
-- **Daten:** Die Web-App sucht mit OpenStreetMap. Einen Google-Key bekommt sie bewusst nicht, weil er auf einer öffentlichen Seite für alle auslesbar wäre.
+- **Daten:** Ist im Repository das Secret `GOOGLE_MAPS_API_KEY` gesetzt, sucht die Web-App mit Google Places, sonst mit OpenStreetMap. Der Key steht zwangsläufig im öffentlichen Bundle. Deshalb muss er in der Google Cloud Console auf die Website (`https://robertertl295-cell.github.io/*`) und die Places API (New) beschränkt sein; Budget-Warnung und Foto-Sparmodus begrenzen die Kosten. Für mehr Nutzer wäre ein Proxy mit eigenem Tageslimit (z. B. Cloudflare Worker) sicherer.
 - **Speicher:** Favoriten liegen im Speicher dieser Web-App auf dem iPhone. Wer in Safari die Website-Daten löscht, löscht sie mit. Zur Sicherheit gibt es den JSON-Export unter Favoriten → Verwalten.
 - **Einmalig einrichten:** Im Repository unter **Settings → Pages → Build and deployment → Source** auf **„GitHub Actions“** stellen. Danach unter **Actions → „Web-App veröffentlichen“ → Run workflow** starten, oder einfach den nächsten Push abwarten.
 
@@ -358,6 +358,16 @@ OpenStreetMap hat keine Fotos. Damit die Liste nicht leer wirkt, zeigt die App f
 - **Zuordnung:** `src/services/placeholders/placeholders.ts` – Typ aus Küche (spezifisch vor allgemein), sonst aus Art; Variante per Hash der Orts-ID, also stabil pro Lokal und verschieden zwischen Nachbarn. Terrassen-Motive nur bei Lokalen mit Außenplätzen, vegetarische Lokale bekommen häufig ein vegetarisches Motiv. Fehlt ein Typ, nimmt die App ein allgemeines Restaurant-Bild; ohne Bilder bleibt alles wie vorher.
 - **Native App:** `EXPO_PUBLIC_PLACEHOLDER_BASE_URL` auf die veröffentlichte Adresse setzen (siehe `.env.example`).
 
+## Google-Bedingungen im EWR
+
+Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsraum. Dafür gelten seit 8. Juli 2025 eigene Bedingungen: Inhalte der Places API (Name, Bewertung, Rezensionen, Fotos, Öffnungszeiten …) dürfen nicht zusammen mit einer Karte gezeigt werden, auch nicht mit Google Maps. Erlaubt sind Koordinaten und `place_id` auf einer Karte sowie alle Inhalte in Listen und Detailseiten ohne Karte.
+
+- **Umsetzung:** `src/services/places/map-rules.ts` (`mayShowDetailsOnMap`).
+- **Karte:** Google-Orte erscheinen nur als Punkte. Ein Tipp öffnet direkt die Detailseite statt einer Vorschaukarte auf der Karte; nativ zeigt der Pin keinen Namen.
+- **Detailseite:** Bei Google-Orten keine Mini-Karte; der Button „Route“ öffnet die Karten-App.
+- **Folge:** Die Maps JavaScript API wird nicht gebraucht – die Karte bleibt OpenFreeMap, der Key braucht nur die Places API (New).
+- OpenStreetMap- und Beispieldaten sind nicht betroffen.
+
 ## Favoriten
 
 - **Merken:** Das Herz sitzt auf jeder Ergebniskarte, in der Kartenansicht und auf der Detailseite. Hat ein Favorit schon eigene Angaben, fragt die App vor dem Entfernen nach.
@@ -411,7 +421,7 @@ OpenStreetMap hat keine Fotos. Damit die Liste nicht leer wirkt, zeigt die App f
 
 ## Tests
 
-369 Tests in 38 Dateien (`npm test`):
+370 Tests in 39 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

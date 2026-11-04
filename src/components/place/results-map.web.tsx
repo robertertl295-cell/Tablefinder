@@ -16,6 +16,8 @@ import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
 
 import { BaseMap } from './base-map.web';
+import { mayShowDetailsOnMap } from '@/services/places/map-rules';
+
 import { PlaceCard } from './place-card';
 
 type Props = {
@@ -82,6 +84,12 @@ export function ResultsMap({
       ? visibleRegion
       : null;
   const selected = places.find((p) => p.id === selectedId) ?? null;
+  // Google-Orte: Name und Bewertung nicht auf der Karte zeigen (EWR-Bedingungen) –
+  // ein Tipp auf den Punkt öffnet direkt die Detailseite.
+  const select = (p: PlaceSummary) => {
+    if (mayShowDetailsOnMap(p.source)) setSelectedId(p.id);
+    else router.push({ pathname: '/place/[id]', params: { id: p.id } });
+  };
 
   return (
     <View style={styles.container} accessibilityLabel="Karte mit Suchergebnissen">
@@ -113,7 +121,7 @@ export function ResultsMap({
               fillColor: p.id === selectedId ? theme.text : theme.accent,
               fillOpacity: 1,
             }}
-            eventHandlers={{ click: () => setSelectedId(p.id) }}
+            eventHandlers={{ click: () => select(p) }}
           />
         ))}
       </MapContainer>
@@ -140,7 +148,7 @@ export function ResultsMap({
         </View>
       )}
 
-      {selected && (
+      {selected && mayShowDetailsOnMap(selected.source) && (
         <View style={styles.bottomOverlay}>
           <PlaceCard
             compact

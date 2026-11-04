@@ -49,11 +49,13 @@ jobs:
           FALLBACK_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/osm-berlin.json
 
       - name: Web-App bauen
-        # Kein Google-Key: Die Seite ist öffentlich, der Key wäre für alle auslesbar.
-        # Die Web-App sucht daher mit OpenStreetMap.
+        # Google-Key (optional): Er steht zwangsläufig im öffentlichen Bundle – daher in der
+        # Google Cloud Console auf die Website (robertertl295-cell.github.io/*) und die
+        # Places API (New) beschränken. Ohne Secret sucht die Web-App mit OpenStreetMap.
         run: npm run build:web
         env:
           BASE_URL: /${{ github.event.repository.name }}
+          EXPO_PUBLIC_PLACES_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
 
       - name: Ergebnis hochladen
         uses: actions/upload-pages-artifact@v3
