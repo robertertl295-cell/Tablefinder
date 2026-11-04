@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { latLng, type LatLngBounds } from 'leaflet';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
-import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { CircleMarker, MapContainer, useMap, useMapEvents } from 'react-leaflet';
 
 import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/ui/icon';
@@ -15,7 +15,7 @@ import type { LatLng, PlaceSummary } from '@/types/place';
 import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
 
-import { mapTiles } from './map-tiles';
+import { BaseMap } from './base-map.web';
 import { PlaceCard } from './place-card';
 
 type Props = {
@@ -75,7 +75,6 @@ export function ResultsMap({
 }: Props) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
-  const tiles = mapTiles(dark);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [visibleRegion, setVisibleRegion] = useState<MapRegion | null>(null);
   const pendingRegion =
@@ -90,14 +89,8 @@ export function ResultsMap({
         bounds={toBounds(center, radiusMeters)}
         style={{ height: '100%', width: '100%', background: theme.backgroundElement }}
         zoomControl={false}
-        className={tiles.className}>
-        <TileLayer
-          key={tiles.url}
-          url={tiles.url}
-          subdomains={tiles.subdomains}
-          attribution={tiles.attribution}
-          maxZoom={tiles.maxZoom}
-        />
+        maxZoom={19}>
+        <BaseMap dark={dark} />
         <FollowSearch center={center} radiusMeters={radiusMeters} />
         <TrackRegion onRegion={setVisibleRegion} onMapPress={() => setSelectedId(null)} />
         {userLocation && (

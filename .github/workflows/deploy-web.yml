@@ -54,8 +54,6 @@ jobs:
         run: npm run build:web
         env:
           BASE_URL: /${{ github.event.repository.name }}
-          # Optional: CARTO-Kartenstil. Ohne Schlüssel zeigt die App die OSM-Standardkarte.
-          EXPO_PUBLIC_CARTO_API_KEY: ${{ secrets.CARTO_API_KEY }}
 
       - name: Ergebnis hochladen
         uses: actions/upload-pages-artifact@v3

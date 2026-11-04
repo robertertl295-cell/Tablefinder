@@ -42,7 +42,7 @@ const head = `
     <style id="tablefinder-pwa">
       html, body { background: #FFFFFF; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
       @media (prefers-color-scheme: dark) { html, body { background: #0C0A09; } }
-      /* Karte: OSM-Kacheln im Dunkelmodus abdunkeln (ohne CARTO-Schlüssel), ruhige Quellenangabe */
+      /* Karte: Rückfall-Kacheln (ohne WebGL) im Dunkelmodus abdunkeln, ruhige Quellenangabe */
       .tf-map-invert .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.4); }
       .leaflet-control-attribution { font-size: 10px; }
       .tf-map-dark .leaflet-control-attribution { background: rgba(28, 25, 23, 0.85); color: #A8A29E; }

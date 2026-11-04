@@ -3,7 +3,7 @@ import { readConfig } from '@/services/config';
 
 describe('readConfig', () => {
   it('ohne Key: kein Schlüssel', () => {
-    expect(readConfig({})).toEqual({ placesApiKey: null, osmDatasetUrl: null, cartoApiKey: null });
+    expect(readConfig({})).toEqual({ placesApiKey: null, osmDatasetUrl: null });
   });
 
   it('behandelt einen leeren Key wie keinen Key', () => {
@@ -19,7 +19,6 @@ it('liest die Adresse des OSM-Datensatzes', () => {
   expect(readConfig({ EXPO_PUBLIC_OSM_DATASET_URL: '/Tablefinder/data/osm-berlin.json' })).toEqual({
     placesApiKey: null,
     osmDatasetUrl: '/Tablefinder/data/osm-berlin.json',
-    cartoApiKey: null,
   });
 });
 
@@ -38,8 +37,4 @@ describe('resolveSource', () => {
     expect(resolveSource('osm', true)).toBe('osm');
     expect(resolveSource('mock', true)).toBe('mock');
   });
-});
-
-test('CARTO-Schlüssel wird gelesen und getrimmt', () => {
-  expect(readConfig({ EXPO_PUBLIC_CARTO_API_KEY: ' abc ' }).cartoApiKey).toBe('abc');
 });

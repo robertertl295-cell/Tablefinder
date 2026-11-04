@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 352 Tests laufen ohne Fehler.
+- Typecheck, Lint und 351 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -142,14 +142,14 @@ So legst du den Places-Key an:
 
 Dieselbe Codebasis läuft im Browser. Für die Nutzung als App vom Home-Bildschirm gibt es dort eigene Varianten, die Expo über die Endung `.web.tsx`/`.web.ts` automatisch wählt:
 
-| Baustein   | Web-Variante                                                                                                                       |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Tab-Leiste | `(tabs)/_layout.web.tsx`: unten wie in iOS, mit Abstand zum Home-Indikator                                                         |
-| Karte      | `results-map.web.tsx`, `mini-map.web.tsx`: Leaflet; mit CARTO-Schlüssel Voyager/Dark Matter, sonst OSM-Kacheln (dunkel per Filter) |
-| Dialoge    | `dialog.web.ts` + `dialog-host.web.tsx`: eigener Dialog im App-Stil, weil `Alert` im Browser wirkungslos ist                       |
-| Speicher   | `storage.web.ts`: `localStorage` statt SQLite                                                                                      |
-| Sicherung  | `favorites-file.web.ts`: Download bzw. Dateiauswahl statt Teilen-Menü                                                              |
-| Hinweis    | `install-hint.web.tsx`: „Zum Home-Bildschirm“, nur in Safari auf iPhone/iPad, schließbar                                           |
+| Baustein   | Web-Variante                                                                                                                             |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Tab-Leiste | `(tabs)/_layout.web.tsx`: unten wie in iOS, mit Abstand zum Home-Indikator                                                               |
+| Karte      | `results-map.web.tsx`, `mini-map.web.tsx`: Leaflet mit OpenFreeMap-Vektorkarte (MapLibre GL, `base-map.web.tsx`), ohne WebGL OSM-Kacheln |
+| Dialoge    | `dialog.web.ts` + `dialog-host.web.tsx`: eigener Dialog im App-Stil, weil `Alert` im Browser wirkungslos ist                             |
+| Speicher   | `storage.web.ts`: `localStorage` statt SQLite                                                                                            |
+| Sicherung  | `favorites-file.web.ts`: Download bzw. Dateiauswahl statt Teilen-Menü                                                                    |
+| Hinweis    | `install-hint.web.tsx`: „Zum Home-Bildschirm“, nur in Safari auf iPhone/iPad, schließbar                                                 |
 
 **Build:** `npm run build:web` (Skript `scripts/build-web.mjs`)
 
@@ -401,7 +401,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Tests
 
-352 Tests in 36 Dateien (`npm test`):
+351 Tests in 36 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -489,7 +489,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
   - Kein Offline-Modus (ohne Internet ist die Suche ohnehin nicht möglich).
   - Favoriten verschwinden, wenn man in Safari die Website-Daten löscht.
   - Die Web-App lief nur in einer iPhone-Emulation (Chromium), noch nicht in echtem Safari auf einem iPhone.
-- **Kartenkacheln:** Mit Schlüssel kommen sie von CARTO (`basemaps.cartocdn.com`, Stil Voyager bzw. Dark Matter). CARTO verlangt seit August 2026 einen kostenlosen Schlüssel (https://carto.com/basemaps/apikey); er gehört als Repository-Secret `CARTO_API_KEY` in GitHub (lokal: `EXPO_PUBLIC_CARTO_API_KEY` in `.env`). Er steht zwangsläufig in der öffentlichen Web-App. Ohne Schlüssel nutzt die App die OSM-Standardkacheln. Die kostenlose CARTO-Nutzung ist für nicht-kommerzielle Projekte gedacht. Bei vielen Nutzern oder kommerziellem Einsatz bräuchte es einen Vertrag mit CARTO oder einen anderen Anbieter (z. B. Apple MapKit JS mit Entwicklerkonto).
+- **Kartenstil:** Vektorkarten von [OpenFreeMap](https://openfreemap.org) (Stil Positron, im Dunkelmodus Dark), gezeichnet mit MapLibre GL innerhalb von Leaflet. Kein Konto, kein Schlüssel, kein Limit; der Dienst ist aber ohne Garantie. Ohne WebGL oder wenn der Stil nicht lädt, zeigt die App die OSM-Standardkacheln. Den Stil ändert man in `src/components/place/map-style.ts`.
 - **Sortierung:** Nach Vertrauensscore oder Entfernung wird in der App sortiert, nur über die bereits geladenen Treffer. Beim Nachladen ordnen sich neue Treffer ein. Google kann nicht nach Bewertung sortieren.
 - **Annahme im Vertrauensscore:** Der Durchschnitt 4,3 ist fest angenommen, nicht aus echten Daten ermittelt. Mit echtem Key lohnt es sich, ihn anhand eigener Suchergebnisse zu prüfen.
 
