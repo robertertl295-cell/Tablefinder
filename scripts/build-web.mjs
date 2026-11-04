@@ -42,8 +42,7 @@ const head = `
     <style id="tablefinder-pwa">
       html, body { background: #FFFFFF; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
       @media (prefers-color-scheme: dark) { html, body { background: #0C0A09; } }
-      /* Karte: dunkle Kacheln im Dunkelmodus, ruhige Quellenangabe */
-      .tf-map-dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.4); }
+      /* Karte: ruhige Quellenangabe (dunkle Kacheln liefert CARTO „Dark Matter“) */
       .leaflet-control-attribution { font-size: 10px; }
       .tf-map-dark .leaflet-control-attribution { background: rgba(28, 25, 23, 0.85); color: #A8A29E; }
       .tf-map-dark .leaflet-control-attribution a { color: #F0876B; }

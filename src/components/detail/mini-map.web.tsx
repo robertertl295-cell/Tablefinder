@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import { CircleMarker, MapContainer, TileLayer } from 'react-leaflet';
 
-import { OSM_ATTRIBUTION, OSM_TILES } from '@/components/place/results-map.web';
+import { MAP_ATTRIBUTION, MAP_TILE_SUBDOMAINS, mapTilesUrl } from '@/components/place/map-tiles';
 import { Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { LatLng } from '@/types/place';
@@ -26,7 +26,12 @@ export function MiniMap({ location, onPress }: { location: LatLng; onPress: () =
         touchZoom={false}
         boxZoom={false}
         keyboard={false}>
-        <TileLayer url={OSM_TILES} attribution={OSM_ATTRIBUTION} />
+        <TileLayer
+          key={dark ? 'dark' : 'light'}
+          url={mapTilesUrl(dark)}
+          subdomains={MAP_TILE_SUBDOMAINS}
+          attribution={MAP_ATTRIBUTION}
+        />
         <CircleMarker
           center={[location.latitude, location.longitude]}
           radius={10}

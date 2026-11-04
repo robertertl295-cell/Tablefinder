@@ -145,7 +145,7 @@ Dieselbe Codebasis läuft im Browser. Für die Nutzung als App vom Home-Bildschi
 | Baustein   | Web-Variante                                                                                                 |
 | ---------- | ------------------------------------------------------------------------------------------------------------ |
 | Tab-Leiste | `(tabs)/_layout.web.tsx`: unten wie in iOS, mit Abstand zum Home-Indikator                                   |
-| Karte      | `results-map.web.tsx`, `mini-map.web.tsx`: Leaflet mit OpenStreetMap-Kacheln, dunkle Kacheln im Dunkelmodus  |
+| Karte      | `results-map.web.tsx`, `mini-map.web.tsx`: Leaflet mit CARTO-Kacheln (Voyager, im Dunkelmodus Dark Matter)   |
 | Dialoge    | `dialog.web.ts` + `dialog-host.web.tsx`: eigener Dialog im App-Stil, weil `Alert` im Browser wirkungslos ist |
 | Speicher   | `storage.web.ts`: `localStorage` statt SQLite                                                                |
 | Sicherung  | `favorites-file.web.ts`: Download bzw. Dateiauswahl statt Teilen-Menü                                        |
@@ -489,7 +489,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
   - Kein Offline-Modus (ohne Internet ist die Suche ohnehin nicht möglich).
   - Favoriten verschwinden, wenn man in Safari die Website-Daten löscht.
   - Die Web-App lief nur in einer iPhone-Emulation (Chromium), noch nicht in echtem Safari auf einem iPhone.
-- **Kartenkacheln:** Sie kommen von den öffentlichen OSM-Servern (`tile.openstreetmap.org`), deren Nutzungsrichtlinie für private, geringe Nutzung passt. Bei vielen Nutzern bräuchte es einen eigenen Kachel-Anbieter.
+- **Kartenkacheln:** Sie kommen von CARTO (`basemaps.cartocdn.com`, Stil Voyager bzw. Dark Matter, OSM-Daten). Die kostenlose Nutzung ist für nicht-kommerzielle Projekte gedacht. Bei vielen Nutzern oder kommerziellem Einsatz bräuchte es einen Vertrag mit CARTO oder einen anderen Anbieter (z. B. Apple MapKit JS mit Entwicklerkonto).
 - **Sortierung:** Nach Vertrauensscore oder Entfernung wird in der App sortiert, nur über die bereits geladenen Treffer. Beim Nachladen ordnen sich neue Treffer ein. Google kann nicht nach Bewertung sortieren.
 - **Annahme im Vertrauensscore:** Der Durchschnitt 4,3 ist fest angenommen, nicht aus echten Daten ermittelt. Mit echtem Key lohnt es sich, ihn anhand eigener Suchergebnisse zu prüfen.
 

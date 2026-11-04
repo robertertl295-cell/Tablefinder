@@ -15,11 +15,8 @@ import type { LatLng, PlaceSummary } from '@/types/place';
 import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
 
+import { MAP_ATTRIBUTION, MAP_MAX_ZOOM, MAP_TILE_SUBDOMAINS, mapTilesUrl } from './map-tiles';
 import { PlaceCard } from './place-card';
-
-export const OSM_TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-export const OSM_ATTRIBUTION =
-  '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap-Mitwirkende</a>';
 
 type Props = {
   places: PlaceSummary[];
@@ -93,7 +90,13 @@ export function ResultsMap({
         style={{ height: '100%', width: '100%', background: theme.backgroundElement }}
         zoomControl={false}
         className={dark ? 'tf-map-dark' : undefined}>
-        <TileLayer url={OSM_TILES} attribution={OSM_ATTRIBUTION} maxZoom={19} />
+        <TileLayer
+          key={dark ? 'dark' : 'light'}
+          url={mapTilesUrl(dark)}
+          subdomains={MAP_TILE_SUBDOMAINS}
+          attribution={MAP_ATTRIBUTION}
+          maxZoom={MAP_MAX_ZOOM}
+        />
         <FollowSearch center={center} radiusMeters={radiusMeters} />
         <TrackRegion onRegion={setVisibleRegion} onMapPress={() => setSelectedId(null)} />
         {userLocation && (
