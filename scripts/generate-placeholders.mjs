@@ -118,7 +118,9 @@ async function withRetry(fn, attempts = 4) {
     try {
       return await fn();
     } catch (error) {
-      const retryable = error.status === 429 || (error.status ?? 500) >= 500;
+      // „Kein Guthaben“ kommt ebenfalls als 429 – Warten hilft da nicht.
+      const noCredits = /credits|quota|billing/i.test(error.message);
+      const retryable = !noCredits && (error.status === 429 || (error.status ?? 500) >= 500);
       if (!retryable || i >= attempts) throw error;
       const wait = 2 ** i * 5_000;
       console.warn(`  … ${error.message} – neuer Versuch in ${wait / 1000} s`);
@@ -167,7 +169,7 @@ async function main() {
         failed++;
         console.warn(`✗ ${job.file}: ${error.message}`);
         // Falscher Key, kein Guthaben, gesperrtes Modell: sofort aufhören statt 150-mal scheitern.
-        if ([401, 403].includes(error.status) || /billing|quota/i.test(error.message)) {
+        if ([401, 403].includes(error.status) || /credits|billing|quota/i.test(error.message)) {
           queue.length = 0;
         }
       }
