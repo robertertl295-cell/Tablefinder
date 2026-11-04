@@ -38,7 +38,8 @@ export function buildPrompt(catalog, group, sceneIndex) {
   const g = catalog.groups[group];
   const scene = g.scenes[sceneIndex];
   const light = catalog.lighting[sceneIndex % catalog.lighting.length];
-  return `${scene.text}. Setting: a ${g.place} in Berlin. Lighting: ${light}. ${catalog.style}`;
+  const article = /^[aeiou]/i.test(g.place) ? 'an' : 'a';
+  return `${scene.text}. Setting: ${article} ${g.place} in Berlin. Lighting: ${light}. ${catalog.style}`;
 }
 
 export function fileName(group, sceneIndex) {

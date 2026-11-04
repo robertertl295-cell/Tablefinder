@@ -1,5 +1,5 @@
 {
-  "$comment": "Symbolbilder (KI) je Restaurant-Typ. Jede Gruppe hat 6 Szenen. tags steuern die Auswahl in der App (terrace = Außenplätze, veggie = vegetarisch/vegan). Gruppen-Schlüssel müssen zu src/services/placeholders/groups.ts passen (Test prüft das).",
+  "$comment": "Symbolbilder (KI) je Restaurant-Typ. Jede Gruppe hat 6 Szenen: Gericht im Lokal, Gastraum, Außenansicht, Terrasse, vegetarisches Gericht im Lokal, Blick zum Tresen. tags steuern die Auswahl in der App (terrace = Außenplätze, veggie = vegetarisch/vegan). Gruppen-Schlüssel müssen zu src/services/placeholders/groups.ts passen (Test prüft das).",
   "style": "Editorial food and restaurant photography, shot on a full-frame camera with a 35mm lens, natural light, shallow depth of field, authentic and slightly imperfect, warm but muted colours, Berlin setting. No text, no lettering, no signs with words, no logos, no watermark, no recognisable faces.",
   "lighting": [
     "soft morning daylight from a window",
@@ -16,15 +16,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a Neapolitan margherita pizza with blistered crust on a marble table, seen from above"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a wood-fired oven with a pizza peel sliding a pizza in, flames glowing"
+          "text": "a Neapolitan margherita pizza with blistered crust on a marble table, seen from above, served on a table inside the pizzeria, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a small casual pizzeria interior with tiled walls and wooden stools"
+          "text": "wide view of a small casual pizzeria interior with tiled walls and wooden stools, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a pizzeria on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -32,11 +32,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a vegetable pizza with grilled courgette, peppers and fresh basil, close-up"
+          "text": "a vegetable pizza with grilled courgette, peppers and fresh basil, close-up, on a table inside the pizzeria with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "hands stretching pizza dough on a floured counter, close-up without faces"
+          "tags": ["interior"],
+          "text": "view across the pizzeria towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -46,15 +46,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a plate of fresh tagliatelle with ragù and parmesan on a linen tablecloth"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a shared table with antipasti, burrata, olives and bread, seen from above"
+          "text": "a plate of fresh tagliatelle with ragù and parmesan on a linen tablecloth, served on a table inside the Italian trattoria, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a warm Italian trattoria interior with wooden tables, wine bottles on shelves"
+          "text": "wide view of a warm Italian trattoria interior with wooden tables, wine bottles on shelves, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of an Italian trattoria on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -62,11 +62,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a creamy mushroom risotto with herbs in a ceramic bowl"
+          "text": "a creamy mushroom risotto with herbs in a ceramic bowl, on a table inside the Italian trattoria with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a glass of espresso and a tiramisu on a small marble table"
+          "tags": ["interior"],
+          "text": "view across the Italian trattoria towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -76,15 +76,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "an assortment of nigiri and maki sushi on a dark wooden board"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a steaming bowl of tonkotsu ramen with egg, chashu and spring onions"
+          "text": "an assortment of nigiri and maki sushi on a dark wooden board, served on a table inside the Japanese restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a minimalist Japanese restaurant counter with light wood and paper lamps"
+          "text": "wide view of a minimalist Japanese restaurant counter with light wood and paper lamps, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Japanese restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -92,11 +92,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a vegetarian ramen bowl with tofu, corn, mushrooms and nori"
+          "text": "a vegetarian ramen bowl with tofu, corn, mushrooms and nori, on a table inside the Japanese restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "chopsticks resting on a ceramic holder next to a bowl of miso soup"
+          "tags": ["interior"],
+          "text": "view across the Japanese restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -106,15 +106,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a large bowl of pho with fresh herbs, lime and chili on the side"
-        },
-        {
-          "tags": ["dish"],
-          "text": "fresh summer rolls with peanut dipping sauce on a bamboo plate"
+          "text": "a large bowl of pho with fresh herbs, lime and chili on the side, served on a table inside the Vietnamese restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a bright Vietnamese canteen interior with plants and simple wooden tables"
+          "text": "wide view of a bright Vietnamese canteen interior with plants and simple wooden tables, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Vietnamese restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -122,11 +122,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a colourful tofu and vegetable bowl with rice noodles and herbs"
+          "text": "a colourful tofu and vegetable bowl with rice noodles and herbs, on a table inside the Vietnamese restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a glass of Vietnamese iced coffee with condensed milk"
+          "tags": ["interior"],
+          "text": "view across the Vietnamese restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -136,15 +136,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a plate of pad thai with shrimp, peanuts and lime"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a bowl of green curry with jasmine rice on the side"
+          "text": "a plate of pad thai with shrimp, peanuts and lime, served on a table inside the Thai restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a cosy Thai restaurant interior with warm lanterns and teak wood"
+          "text": "wide view of a cosy Thai restaurant interior with warm lanterns and teak wood, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Thai restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -152,11 +152,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a red curry with tofu and vegetables in a clay bowl"
+          "text": "a red curry with tofu and vegetables in a clay bowl, on a table inside the Thai restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "fresh lemongrass, chilies and Thai basil on a wooden board"
+          "tags": ["interior"],
+          "text": "view across the Thai restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -166,15 +166,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "bamboo steamers with dumplings, seen from above"
-        },
-        {
-          "tags": ["dish"],
-          "text": "hand-pulled noodles with chili oil and spring onions in a bowl"
+          "text": "bamboo steamers with dumplings, seen from above, served on a table inside the Chinese restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a lively Chinese restaurant interior with round tables and a lazy susan"
+          "text": "wide view of a lively Chinese restaurant interior with round tables and a lazy susan, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Chinese restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -182,11 +182,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "mapo tofu and stir-fried green vegetables in bowls"
+          "text": "mapo tofu and stir-fried green vegetables in bowls, on a table inside the Chinese restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a teapot and small cups of jasmine tea on a wooden table"
+          "tags": ["interior"],
+          "text": "view across the Chinese restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -196,15 +196,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a bibimbap in a hot stone bowl with a raw egg yolk on top"
-        },
-        {
-          "tags": ["dish"],
-          "text": "Korean barbecue meat sizzling on a table grill with banchan side dishes"
+          "text": "a bibimbap in a hot stone bowl with a raw egg yolk on top, served on a table inside the Korean restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a modern Korean restaurant interior with table grills and extractor hoods"
+          "text": "wide view of a modern Korean restaurant interior with table grills and extractor hoods, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Korean restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -212,11 +212,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a vegetable bibimbap with tofu and kimchi"
+          "text": "a vegetable bibimbap with tofu and kimchi, on a table inside the Korean restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "small bowls of kimchi and pickled side dishes, close-up"
+          "tags": ["interior"],
+          "text": "view across the Korean restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -226,15 +226,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a wok of stir-fried noodles with vegetables and sesame"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a crispy duck dish with rice and pak choi"
+          "text": "a wok of stir-fried noodles with vegetables and sesame, served on a table inside the pan-Asian restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a modern pan-Asian restaurant interior with dark wood and warm lights"
+          "text": "wide view of a modern pan-Asian restaurant interior with dark wood and warm lights, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a pan-Asian restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -242,11 +242,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a poke-style bowl with tofu, edamame, avocado and rice"
+          "text": "a poke-style bowl with tofu, edamame, avocado and rice, on a table inside the pan-Asian restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a wok over a high flame in a restaurant kitchen, motion and steam"
+          "tags": ["interior"],
+          "text": "view across the pan-Asian restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -256,15 +256,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "butter chicken with naan bread and basmati rice in copper bowls"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a thali platter with several small curries, dal and rice"
+          "text": "butter chicken with naan bread and basmati rice in copper bowls, served on a table inside the Indian restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a warm Indian restaurant interior with rich colours and brass lamps"
+          "text": "wide view of a warm Indian restaurant interior with rich colours and brass lamps, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of an Indian restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -272,11 +272,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "palak paneer and chana masala with naan, seen from above"
+          "text": "palak paneer and chana masala with naan, seen from above, on a table inside the Indian restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "colourful spices in small bowls on a dark wooden table"
+          "tags": ["interior"],
+          "text": "view across the Indian restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -286,15 +286,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a Berlin-style döner kebab sandwich with salad and sauce, close-up"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a grilled meat platter with bulgur, grilled peppers and tomatoes"
+          "text": "a Berlin-style döner kebab sandwich with salad and sauce, close-up, served on a table inside the Turkish grill restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a Turkish grill restaurant interior with a vertical rotisserie and tiled counter"
+          "text": "wide view of a Turkish grill restaurant interior with a vertical rotisserie and tiled counter, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Turkish grill restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -302,11 +302,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a mezze plate with hummus, ezme, stuffed vine leaves and flatbread"
+          "text": "a mezze plate with hummus, ezme, stuffed vine leaves and flatbread, on a table inside the Turkish grill restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "Turkish tea in tulip glasses on a small copper tray"
+          "tags": ["interior"],
+          "text": "view across the Turkish grill restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -316,15 +316,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a falafel plate with hummus, tabbouleh and pickles"
-        },
-        {
-          "tags": ["dish"],
-          "text": "shawarma wrapped in thin flatbread, cut in half, close-up"
+          "text": "a falafel plate with hummus, tabbouleh and pickles, served on a table inside the Middle Eastern restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a cosy Lebanese restaurant interior with patterned tiles and lanterns"
+          "text": "wide view of a cosy Lebanese restaurant interior with patterned tiles and lanterns, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Middle Eastern restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -332,11 +332,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a colourful vegetarian mezze spread with baba ganoush and muhammara"
+          "text": "a colourful vegetarian mezze spread with baba ganoush and muhammara, on a table inside the Middle Eastern restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "fresh flatbread and za'atar with olive oil on a wooden board"
+          "tags": ["interior"],
+          "text": "view across the Middle Eastern restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -346,15 +346,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a Wiener schnitzel with potato salad and a lemon wedge"
-        },
-        {
-          "tags": ["dish"],
-          "text": "Berlin currywurst with fries on a white plate"
+          "text": "a Wiener schnitzel with potato salad and a lemon wedge, served on a table inside the traditional German restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a traditional Berlin pub-restaurant interior with dark wood panelling"
+          "text": "wide view of a traditional Berlin pub-restaurant interior with dark wood panelling, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a traditional German restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -362,11 +362,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "Käsespätzle with crispy onions in a cast-iron pan"
+          "text": "Käsespätzle with crispy onions in a cast-iron pan, on a table inside the traditional German restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a freshly tapped pilsner with a foamy head on a beer mat without text"
+          "tags": ["interior"],
+          "text": "view across the traditional German restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -376,15 +376,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a juicy cheeseburger with fries on a metal tray"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a burger cut in half showing the layers, close-up"
+          "text": "a juicy cheeseburger with fries on a metal tray, served on a table inside the burger restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "an industrial-style burger bar interior with neon-free warm lights"
+          "text": "wide view of an industrial-style burger bar interior with neon-free warm lights, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a burger restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -392,11 +392,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a plant-based burger with avocado and sweet potato fries"
+          "text": "a plant-based burger with avocado and sweet potato fries, on a table inside the burger restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "burger patties sizzling on a flat-top grill"
+          "tags": ["interior"],
+          "text": "view across the burger restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -406,15 +406,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "three tacos al pastor with pineapple, coriander and lime"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a burrito bowl with rice, beans, salsa and guacamole"
+          "text": "three tacos al pastor with pineapple, coriander and lime, served on a table inside the Mexican restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a colourful Mexican restaurant interior with painted tiles and plants"
+          "text": "wide view of a colourful Mexican restaurant interior with painted tiles and plants, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Mexican restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -422,11 +422,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "vegetarian tacos with grilled vegetables and black beans"
+          "text": "vegetarian tacos with grilled vegetables and black beans, on a table inside the Mexican restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "fresh guacamole in a molcajete with tortilla chips"
+          "tags": ["interior"],
+          "text": "view across the Mexican restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -436,15 +436,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a gyros plate with tzatziki, fries and tomatoes"
-        },
-        {
-          "tags": ["dish"],
-          "text": "grilled octopus with lemon and olive oil on a white plate"
+          "text": "a gyros plate with tzatziki, fries and tomatoes, served on a table inside the Greek taverna, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a Greek taverna interior with white walls and blue wooden chairs"
+          "text": "wide view of a Greek taverna interior with white walls and blue wooden chairs, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a Greek taverna on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -452,11 +452,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a Greek salad with feta, olives and oregano, seen from above"
+          "text": "a Greek salad with feta, olives and oregano, seen from above, on a table inside the Greek taverna with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a carafe of white wine and olives on a checked tablecloth"
+          "tags": ["interior"],
+          "text": "view across the Greek taverna towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -466,15 +466,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a beautifully plated modern European dish on a ceramic plate"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a shared table with several seasonal dishes, seen from above"
+          "text": "a beautifully plated modern European dish on a ceramic plate, served on a table inside the neighbourhood restaurant, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a stylish neighbourhood restaurant interior in an old Berlin building with high ceilings"
+          "text": "wide view of a stylish neighbourhood restaurant interior in an old Berlin building with high ceilings, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a neighbourhood restaurant on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -482,11 +482,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a colourful vegetable plate with grains and herbs"
+          "text": "a colourful vegetable plate with grains and herbs, on a table inside the neighbourhood restaurant with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "wine glasses and cutlery on a set table, close-up"
+          "tags": ["interior"],
+          "text": "view across the neighbourhood restaurant towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -496,15 +496,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a flat white with latte art and a croissant on a small marble table"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a brunch plate with eggs, avocado toast and fruit, seen from above"
+          "text": "a flat white with latte art and a croissant on a small marble table, served on a table inside the café, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a cosy Berlin café interior with mismatched chairs, plants and big windows"
+          "text": "wide view of a cosy Berlin café interior with mismatched chairs, plants and big windows, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a café on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -512,11 +512,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a bowl of granola with yoghurt, berries and a matcha latte"
+          "text": "a bowl of granola with yoghurt, berries and a matcha latte, on a table inside the café with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "an espresso machine pouring a shot, close-up"
+          "tags": ["interior"],
+          "text": "view across the café towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -526,15 +526,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "fresh crusty bread loaves and rolls on wooden shelves"
-        },
-        {
-          "tags": ["dish"],
-          "text": "pastries and cakes in a glass display counter"
+          "text": "fresh crusty bread loaves and rolls on wooden shelves, served on a table inside the bakery, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a small neighbourhood bakery interior in the morning"
+          "text": "wide view of a small neighbourhood bakery interior in the morning, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a bakery on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -542,11 +542,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a sourdough loaf cut open on a linen cloth"
+          "text": "a sourdough loaf cut open on a linen cloth, on a table inside the bakery with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "flour-dusted hands shaping dough, close-up without faces"
+          "tags": ["interior"],
+          "text": "view across the bakery towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -556,15 +556,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "two cocktails with garnish on a dark wooden bar counter"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a gin and tonic with lime in a highball glass, close-up"
+          "text": "two cocktails with garnish on a dark wooden bar counter, served on a table inside the cocktail bar, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a dimly lit Berlin cocktail bar interior with a backlit bottle shelf"
+          "text": "wide view of a dimly lit Berlin cocktail bar interior with a backlit bottle shelf, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a cocktail bar on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -572,11 +572,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a glass of natural wine and a small plate of snacks"
+          "text": "a glass of natural wine and a small plate of snacks, on a table inside the cocktail bar with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a bartender's hands stirring a cocktail, close-up without faces"
+          "tags": ["interior"],
+          "text": "view across the cocktail bar towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -586,15 +586,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "two pints of beer on a worn wooden table"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a bowl of salted pretzels and a beer"
+          "text": "two pints of beer on a worn wooden table, served on a table inside the corner pub, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a classic Berlin Eckkneipe interior with wooden bar and old lamps"
+          "text": "wide view of a classic Berlin Eckkneipe interior with wooden bar and old lamps, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a corner pub on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -602,11 +602,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a plate of fries and a beer on a pub table"
+          "text": "a plate of fries and a beer on a pub table, on a table inside the corner pub with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a beer being tapped from a brass tap, close-up"
+          "tags": ["interior"],
+          "text": "view across the corner pub towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -646,15 +646,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a waffle cone with two scoops of gelato, close-up"
-        },
-        {
-          "tags": ["dish"],
-          "text": "a gelato display counter with colourful flavours"
+          "text": "a waffle cone with two scoops of gelato, close-up, served on a table inside the ice cream parlour, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a bright small ice cream parlour interior with pastel tiles"
+          "text": "wide view of a bright small ice cream parlour interior with pastel tiles, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of an ice cream parlour on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -662,11 +662,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a cup of sorbet in mango and raspberry"
+          "text": "a cup of sorbet in mango and raspberry, on a table inside the ice cream parlour with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "a scoop of pistachio gelato being served with a spatula"
+          "tags": ["interior"],
+          "text": "view across the ice cream parlour towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     },
@@ -676,15 +676,15 @@
       "scenes": [
         {
           "tags": ["dish"],
-          "text": "a paper tray of fries with mayo and ketchup"
-        },
-        {
-          "tags": ["dish"],
-          "text": "falafel wraps and fries on a stand-up counter"
+          "text": "a paper tray of fries with mayo and ketchup, served on a table inside the snack bar, the room softly blurred in the background"
         },
         {
           "tags": ["interior"],
-          "text": "a small Berlin Imbiss with a counter and a few stools"
+          "text": "wide view of a small Berlin Imbiss with a counter and a few stools, a few guests seen from behind, inviting atmosphere"
+        },
+        {
+          "tags": ["exterior"],
+          "text": "the street front and entrance of a snack bar on the ground floor of an old Berlin building, large windows with warm light inside, a few people passing by, no readable signs"
         },
         {
           "tags": ["terrace"],
@@ -692,11 +692,11 @@
         },
         {
           "tags": ["veggie", "dish"],
-          "text": "a halloumi wrap with salad, cut in half"
+          "text": "a halloumi wrap with salad, cut in half, on a table inside the snack bar with the dining room in the background"
         },
         {
-          "tags": ["detail"],
-          "text": "food sizzling on a griddle in a snack bar, close-up"
+          "tags": ["interior"],
+          "text": "view across the snack bar towards the counter or open kitchen, staff and guests seen from behind or at a distance"
         }
       ]
     }
