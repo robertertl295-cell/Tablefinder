@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Chip } from '@/components/ui/chip';
 import { Icon } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
+import { useSheetInsets } from '@/hooks/use-sheet-insets';
 import { useTheme } from '@/hooks/use-theme';
 import { pickBackup, shareBackup } from '@/services/favorites-file';
 import { favoritesStore, useFavorites } from '@/store/favorites-store';
@@ -16,6 +17,7 @@ import { showDialog } from '@/utils/dialog';
 /** Listen anlegen, umbenennen, löschen sowie Favoriten sichern und wiederherstellen. */
 export default function FavoritesManageSheet() {
   const theme = useTheme();
+  const sheetInsets = useSheetInsets();
   const lists = useFavorites((s) => s.lists);
   const favoriteCount = useFavorites((s) => Object.keys(s.favorites).length);
   const [newName, setNewName] = useState('');
@@ -31,7 +33,13 @@ export default function FavoritesManageSheet() {
   return (
     <ScrollView
       style={{ backgroundColor: theme.background }}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        {
+          paddingTop: Spacing.four + sheetInsets.top,
+          paddingBottom: Spacing.six + sheetInsets.bottom,
+        },
+      ]}
       keyboardShouldPersistTaps="handled">
       <ThemedText type="subtitle" accessibilityRole="header" style={styles.title}>
         Favoriten verwalten

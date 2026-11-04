@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { FilterSection, MultiChoice, SingleChoice } from '@/components/filters/filter-section';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { useSheetInsets } from '@/hooks/use-sheet-insets';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_LABEL } from '@/services/places/place-types';
 import { filterStore } from '@/store/filter-store';
@@ -47,6 +48,7 @@ import { availableSorts, effectiveSort, RESULT_SORT_LABEL } from '@/utils/sort-p
  */
 export default function FiltersSheet() {
   const theme = useTheme();
+  const sheetInsets = useSheetInsets();
   const units = useUnits();
   const caps = useSourceCapabilities();
   const source = useActiveSource();
@@ -84,7 +86,8 @@ export default function FiltersSheet() {
   };
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+    <View
+      style={[styles.screen, { backgroundColor: theme.background, paddingTop: sheetInsets.top }]}>
       <View style={[styles.bar, { borderColor: theme.border }]}>
         <Pressable
           onPress={() =>
@@ -109,7 +112,11 @@ export default function FiltersSheet() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Spacing.six + sheetInsets.bottom },
+        ]}>
         {!caps.ratings && (
           <ThemedText
             type="small"
