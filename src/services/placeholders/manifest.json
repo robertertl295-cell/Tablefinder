@@ -5,27 +5,901 @@
     "pizza": [
       {
         "file": "pizza-1.webp",
-        "tags": ["dish"]
+        "tags": [
+          "dish"
+        ]
       },
       {
         "file": "pizza-2.webp",
-        "tags": ["dish"]
+        "tags": [
+          "interior"
+        ]
       },
       {
         "file": "pizza-3.webp",
-        "tags": ["interior"]
+        "tags": [
+          "exterior"
+        ]
       },
       {
         "file": "pizza-4.webp",
-        "tags": ["terrace"]
+        "tags": [
+          "terrace"
+        ]
       },
       {
         "file": "pizza-5.webp",
-        "tags": ["veggie", "dish"]
+        "tags": [
+          "veggie",
+          "dish"
+        ]
       },
       {
         "file": "pizza-6.webp",
-        "tags": ["detail"]
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "italian": [
+      {
+        "file": "italian-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "italian-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "italian-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "italian-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "italian-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "italian-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "japanese": [
+      {
+        "file": "japanese-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "japanese-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "japanese-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "japanese-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "japanese-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "japanese-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "vietnamese": [
+      {
+        "file": "vietnamese-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "vietnamese-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "vietnamese-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "vietnamese-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "vietnamese-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "vietnamese-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "thai": [
+      {
+        "file": "thai-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "thai-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "thai-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "thai-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "thai-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "thai-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "chinese": [
+      {
+        "file": "chinese-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "chinese-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "chinese-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "chinese-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "chinese-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "chinese-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "korean": [
+      {
+        "file": "korean-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "korean-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "korean-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "korean-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "korean-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "korean-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "asian": [
+      {
+        "file": "asian-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "asian-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "asian-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "asian-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "asian-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "asian-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "indian": [
+      {
+        "file": "indian-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "indian-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "indian-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "indian-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "indian-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "indian-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "turkish": [
+      {
+        "file": "turkish-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "turkish-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "turkish-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "turkish-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "turkish-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "turkish-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "middle_eastern": [
+      {
+        "file": "middle_eastern-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "middle_eastern-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "middle_eastern-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "middle_eastern-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "middle_eastern-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "middle_eastern-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "german": [
+      {
+        "file": "german-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "german-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "german-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "german-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "german-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "german-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "burger": [
+      {
+        "file": "burger-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "burger-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "burger-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "burger-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "burger-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "burger-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "mexican": [
+      {
+        "file": "mexican-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "mexican-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "mexican-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "mexican-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "mexican-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "mexican-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "greek": [
+      {
+        "file": "greek-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "greek-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "greek-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "greek-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "greek-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "greek-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "restaurant": [
+      {
+        "file": "restaurant-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "restaurant-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "restaurant-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "restaurant-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "restaurant-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "restaurant-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "cafe": [
+      {
+        "file": "cafe-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "cafe-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "cafe-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "cafe-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "cafe-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "cafe-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "bakery": [
+      {
+        "file": "bakery-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "bakery-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "bakery-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "bakery-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "bakery-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "bakery-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "bar": [
+      {
+        "file": "bar-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "bar-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "bar-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "bar-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "bar-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "bar-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "pub": [
+      {
+        "file": "pub-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "pub-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "pub-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "pub-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "pub-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "pub-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "biergarten": [
+      {
+        "file": "biergarten-1.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "biergarten-2.webp",
+        "tags": [
+          "terrace",
+          "dish"
+        ]
+      },
+      {
+        "file": "biergarten-3.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "biergarten-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "biergarten-5.webp",
+        "tags": [
+          "veggie",
+          "terrace",
+          "dish"
+        ]
+      },
+      {
+        "file": "biergarten-6.webp",
+        "tags": [
+          "terrace",
+          "detail"
+        ]
+      }
+    ],
+    "ice_cream": [
+      {
+        "file": "ice_cream-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "ice_cream-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "ice_cream-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "ice_cream-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "ice_cream-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "ice_cream-6.webp",
+        "tags": [
+          "interior"
+        ]
+      }
+    ],
+    "imbiss": [
+      {
+        "file": "imbiss-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "imbiss-2.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "imbiss-3.webp",
+        "tags": [
+          "exterior"
+        ]
+      },
+      {
+        "file": "imbiss-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "imbiss-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "imbiss-6.webp",
+        "tags": [
+          "interior"
+        ]
       }
     ]
   }
