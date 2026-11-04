@@ -14,16 +14,24 @@ export type AppConfig = {
   placesApiKey: string | null;
   /** Täglicher OSM-Datensatz für Berlin; `null` = live bei Overpass fragen. */
   osmDatasetUrl: string | null;
+  /** CARTO-Basiskarten-Schlüssel (kostenlos, carto.com/basemaps/apikey); `null` = OSM-Standardkarte. */
+  cartoApiKey: string | null;
 };
 
 export function readConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const key = env.EXPO_PUBLIC_PLACES_API_KEY?.trim();
   const dataset = env.EXPO_PUBLIC_OSM_DATASET_URL?.trim();
-  return { placesApiKey: key ? key : null, osmDatasetUrl: dataset ? dataset : null };
+  const carto = env.EXPO_PUBLIC_CARTO_API_KEY?.trim();
+  return {
+    placesApiKey: key ? key : null,
+    osmDatasetUrl: dataset ? dataset : null,
+    cartoApiKey: carto ? carto : null,
+  };
 }
 
 export const config: AppConfig = readConfig({
   // Expo ersetzt nur direkte Zugriffe auf process.env.EXPO_PUBLIC_* statisch.
   EXPO_PUBLIC_PLACES_API_KEY: process.env.EXPO_PUBLIC_PLACES_API_KEY,
   EXPO_PUBLIC_OSM_DATASET_URL: process.env.EXPO_PUBLIC_OSM_DATASET_URL,
+  EXPO_PUBLIC_CARTO_API_KEY: process.env.EXPO_PUBLIC_CARTO_API_KEY,
 });

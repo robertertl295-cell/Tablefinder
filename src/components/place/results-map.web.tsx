@@ -15,7 +15,7 @@ import type { LatLng, PlaceSummary } from '@/types/place';
 import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
 
-import { MAP_ATTRIBUTION, MAP_MAX_ZOOM, MAP_TILE_SUBDOMAINS, mapTilesUrl } from './map-tiles';
+import { mapTiles } from './map-tiles';
 import { PlaceCard } from './place-card';
 
 type Props = {
@@ -75,6 +75,7 @@ export function ResultsMap({
 }: Props) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
+  const tiles = mapTiles(dark);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [visibleRegion, setVisibleRegion] = useState<MapRegion | null>(null);
   const pendingRegion =
@@ -89,13 +90,13 @@ export function ResultsMap({
         bounds={toBounds(center, radiusMeters)}
         style={{ height: '100%', width: '100%', background: theme.backgroundElement }}
         zoomControl={false}
-        className={dark ? 'tf-map-dark' : undefined}>
+        className={tiles.className}>
         <TileLayer
-          key={dark ? 'dark' : 'light'}
-          url={mapTilesUrl(dark)}
-          subdomains={MAP_TILE_SUBDOMAINS}
-          attribution={MAP_ATTRIBUTION}
-          maxZoom={MAP_MAX_ZOOM}
+          key={tiles.url}
+          url={tiles.url}
+          subdomains={tiles.subdomains}
+          attribution={tiles.attribution}
+          maxZoom={tiles.maxZoom}
         />
         <FollowSearch center={center} radiusMeters={radiusMeters} />
         <TrackRegion onRegion={setVisibleRegion} onMapPress={() => setSelectedId(null)} />
