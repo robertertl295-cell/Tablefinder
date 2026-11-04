@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo } from 'react';
 import { AccessibilityInfo, Platform, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Screen } from '@/components/screen';
 import { ActiveFilterChips } from '@/components/filters/active-filter-chips';
 import { FilterButton } from '@/components/filters/filter-button';
 import { InstallHint } from '@/components/install-hint';
@@ -113,7 +113,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: theme.background }]}>
+    <Screen>
       <View style={styles.header}>
         <SearchBar
           value={text}
@@ -188,7 +188,7 @@ export default function SearchScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 

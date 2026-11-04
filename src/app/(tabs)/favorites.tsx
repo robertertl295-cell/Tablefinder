@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Screen } from '@/components/screen';
 import { FavoriteCard } from '@/components/favorites/favorite-card';
 import { ResultsMap } from '@/components/place/results-map';
 import { ViewToggle } from '@/components/search/view-toggle';
@@ -83,19 +83,19 @@ export default function FavoritesScreen() {
 
   if (all.length === 0) {
     return (
-      <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: theme.background }]}>
+      <Screen>
         {header}
         <StateMessage
           icon="heart"
           title="Noch keine Favoriten"
           message="Tippe bei einem Lokal auf das Herz, um es hier zu sammeln – mit eigenen Listen, Notizen und Bewertung."
         />
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: theme.background }]}>
+    <Screen>
       {header}
 
       <ScrollView
@@ -206,7 +206,7 @@ export default function FavoritesScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 

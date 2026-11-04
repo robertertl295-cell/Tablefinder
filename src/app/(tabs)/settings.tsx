@@ -1,8 +1,8 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Screen } from '@/components/screen';
 import { Section } from '@/components/detail/section';
 import { ThemedText } from '@/components/themed-text';
 import { Chip } from '@/components/ui/chip';
@@ -44,7 +44,6 @@ const UNIT_OPTIONS: { value: Units; label: string }[] = [
 ];
 
 export default function SettingsScreen() {
-  const theme = useTheme();
   const radius = useSettings((s) => s.defaultRadiusMeters);
   const units = useSettings((s) => s.units);
   const version = Constants.expoConfig?.version ?? '–';
@@ -79,7 +78,7 @@ export default function SettingsScreen() {
     );
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.screen, { backgroundColor: theme.background }]}>
+    <Screen>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title" accessibilityRole="header" style={styles.title}>
           Einstellungen
@@ -206,7 +205,7 @@ export default function SettingsScreen() {
           <Paragraph>Version {version}</Paragraph>
         </Section>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
