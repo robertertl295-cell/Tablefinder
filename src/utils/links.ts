@@ -4,11 +4,33 @@ import type { LatLng } from '@/types/place';
 
 export type Platform = 'ios' | 'android' | 'web' | string;
 
+/** Bevorzugte App für die Routenplanung (Einstellung). */
+export type RouteApp = 'google' | 'system';
+
 /**
- * Link, der eine Route zum Ort in der Karten-App öffnet.
- * iOS: Apple Maps. Android: `geo:` – das System bietet alle installierten Karten-Apps an.
+ * Routenplanung in Google Maps. Auf dem iPhone/Android öffnet der Link die Google-Maps-App,
+ * wenn sie installiert ist, sonst Google Maps im Browser. Die place_id (nur bei Google-Orten)
+ * sorgt dafür, dass Google genau dieses Lokal als Ziel nimmt.
  */
-export function directionsUrl(platform: Platform, location: LatLng, name: string): string {
+export function googleDirectionsUrl(location: LatLng, placeId?: string | null): string {
+  const coords = `${location.latitude},${location.longitude}`;
+  const id = placeId ? `&destination_place_id=${encodeURIComponent(placeId)}` : '';
+  return `https://www.google.com/maps/dir/?api=1&destination=${coords}${id}`;
+}
+
+/**
+ * Link, der eine Route zum Ort öffnet.
+ * `app = 'google'`: immer Google Maps. `app = 'system'`: iOS Apple Maps, Android `geo:`
+ * (das System bietet alle Karten-Apps an), sonst Google Maps im Browser.
+ */
+export function directionsUrl(
+  platform: Platform,
+  location: LatLng,
+  name: string,
+  app: RouteApp = 'system',
+  placeId?: string | null,
+): string {
+  if (app === 'google') return googleDirectionsUrl(location, placeId);
   const coords = `${location.latitude},${location.longitude}`;
   if (platform === 'ios') {
     return `https://maps.apple.com/?daddr=${coords}&q=${encodeURIComponent(name)}`;

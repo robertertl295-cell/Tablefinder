@@ -65,6 +65,7 @@ describe('Einstellungen-Store', () => {
       resultSort: 'trust',
       dataSource: 'auto',
       listPhotos: 'symbol',
+      routeApp: 'google',
     });
     // Ältere gespeicherte Stände ohne Sortierung bekommen den Standard.
     expect(sanitizeSettings({ defaultRadiusMeters: 3000 }).resultSort).toBe('relevance');
@@ -90,6 +91,7 @@ describe('Einstellungen-Store', () => {
       resultSort: 'trust',
       dataSource: 'auto',
       listPhotos: 'real',
+      routeApp: 'google',
     });
 
     const second = createSettingsStore(storage);

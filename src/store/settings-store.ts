@@ -22,6 +22,10 @@ export const SOURCE_PREFERENCES: readonly SourcePreference[] = ['auto', 'google'
 export type ListPhotos = 'symbol' | 'real';
 export const LIST_PHOTO_OPTIONS: readonly ListPhotos[] = ['symbol', 'real'];
 
+/** App für „Route“: Google Maps oder die Karten-App des Systems (iPhone: Apple Karten). */
+export type RouteAppSetting = 'google' | 'system';
+export const ROUTE_APP_OPTIONS: readonly RouteAppSetting[] = ['google', 'system'];
+
 export type Settings = {
   defaultRadiusMeters: number;
   units: Units;
@@ -29,6 +33,7 @@ export type Settings = {
   resultSort: ResultSort;
   dataSource: SourcePreference;
   listPhotos: ListPhotos;
+  routeApp: RouteAppSetting;
 };
 
 export type SettingsState = Settings & {
@@ -38,6 +43,7 @@ export type SettingsState = Settings & {
   setResultSort: (sort: ResultSort) => void;
   setDataSource: (source: SourcePreference) => void;
   setListPhotos: (mode: ListPhotos) => void;
+  setRouteApp: (app: RouteAppSetting) => void;
   reset: () => void;
 };
 
@@ -47,6 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   resultSort: 'relevance',
   dataSource: 'auto',
   listPhotos: 'symbol',
+  routeApp: 'google',
 };
 
 export const SETTINGS_STORAGE_KEY = 'tablefinder.settings';
@@ -69,6 +76,9 @@ export function sanitizeSettings(input: unknown): Settings {
     listPhotos: LIST_PHOTO_OPTIONS.includes(raw.listPhotos as ListPhotos)
       ? (raw.listPhotos as ListPhotos)
       : DEFAULT_SETTINGS.listPhotos,
+    routeApp: ROUTE_APP_OPTIONS.includes(raw.routeApp as RouteAppSetting)
+      ? (raw.routeApp as RouteAppSetting)
+      : DEFAULT_SETTINGS.routeApp,
   };
 }
 
@@ -95,6 +105,7 @@ export function createSettingsStore(
         setUnits: (units) => set({ units: units === 'imperial' ? 'imperial' : 'metric' }),
         setDataSource: (dataSource) =>
           set({ dataSource: sanitizeSettings({ dataSource }).dataSource }),
+        setRouteApp: (routeApp) => set({ routeApp: sanitizeSettings({ routeApp }).routeApp }),
         setListPhotos: (listPhotos) =>
           set({ listPhotos: sanitizeSettings({ listPhotos }).listPhotos }),
         setResultSort: (resultSort) =>
@@ -111,6 +122,7 @@ export function createSettingsStore(
           resultSort: s.resultSort,
           dataSource: s.dataSource,
           listPhotos: s.listPhotos,
+          routeApp: s.routeApp,
         }),
         merge: (persisted, current) => ({ ...current, ...sanitizeSettings(persisted) }),
         onRehydrateStorage: () => (_state, error) => {

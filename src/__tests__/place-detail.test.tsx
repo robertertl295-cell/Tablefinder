@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { Linking, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import PlaceDetailScreen from '@/app/place/[id]';
+import { settingsStore } from '@/store/settings-store';
 
 let mockId = 'mock-ramen-kreuzberg';
 jest.mock('expo-router', () => ({
@@ -32,7 +33,10 @@ const renderDetail = (id: string) => {
 
 describe('Detailseite', () => {
   const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
-  afterEach(() => openURL.mockClear());
+  afterEach(async () => {
+    openURL.mockClear();
+    await act(async () => settingsStore.getState().reset());
+  });
 
   it('zeigt alle Abschnitte mit Daten aus dem Anbieter', async () => {
     await renderDetail('mock-ramen-kreuzberg');
@@ -57,7 +61,16 @@ describe('Detailseite', () => {
     expect(screen.getByText('Beispieldaten – keine echte Datenquelle')).toBeOnTheScreen();
   });
 
+  it('öffnet die Route standardmäßig in Google Maps', async () => {
+    await renderDetail('mock-ramen-kreuzberg');
+    await fireEvent.press(await screen.findByLabelText('Route'));
+    expect(openURL).toHaveBeenCalledWith(
+      'https://www.google.com/maps/dir/?api=1&destination=52.5009,13.4186',
+    );
+  });
+
   it('öffnet Route und Telefon über die System-Apps', async () => {
+    await act(async () => settingsStore.getState().setRouteApp('system'));
     await renderDetail('mock-ramen-kreuzberg');
     await fireEvent.press(await screen.findByLabelText('Route'));
     expect(openURL).toHaveBeenCalledWith(

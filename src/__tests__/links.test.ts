@@ -1,4 +1,10 @@
-import { directionsUrl, displayUrl, mapsPlatform, phoneUrl } from '@/utils/links';
+import {
+  directionsUrl,
+  displayUrl,
+  googleDirectionsUrl,
+  mapsPlatform,
+  phoneUrl,
+} from '@/utils/links';
 
 const LOC = { latitude: 52.5009, longitude: 13.4186 };
 
@@ -13,6 +19,19 @@ describe('directionsUrl', () => {
     expect(directionsUrl('android', LOC, 'Café & Bar')).toBe(
       'geo:52.5009,13.4186?q=52.5009,13.4186(Caf%C3%A9%20%26%20Bar)',
     );
+  });
+
+  it('mit Google Maps als Routen-App: immer Google Maps, auch auf dem iPhone', () => {
+    expect(directionsUrl('ios', LOC, 'x', 'google')).toBe(
+      'https://www.google.com/maps/dir/?api=1&destination=52.5009,13.4186',
+    );
+    expect(directionsUrl('android', LOC, 'x', 'google', 'ChIJabc')).toBe(
+      'https://www.google.com/maps/dir/?api=1&destination=52.5009,13.4186&destination_place_id=ChIJabc',
+    );
+  });
+
+  it('googleDirectionsUrl kodiert die place_id', () => {
+    expect(googleDirectionsUrl(LOC, 'a b')).toContain('destination_place_id=a%20b');
   });
 
   it('fällt sonst auf Google Maps im Browser zurück', () => {

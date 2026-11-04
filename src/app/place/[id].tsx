@@ -25,6 +25,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { mayShowDetailsOnMap } from '@/services/places/map-rules';
 import { placeholderFor } from '@/services/placeholders/placeholders';
 import { useSearch } from '@/store/search-store';
+import { useSettings } from '@/store/settings-store';
 import type { PlaceDetails, PlaceSummary } from '@/types/place';
 import { formatPriceLevel } from '@/utils/format';
 import { directionsUrl, displayUrl, mapsPlatform, phoneUrl } from '@/utils/links';
@@ -176,8 +177,17 @@ function Header({
 }
 
 function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) {
+  const routeApp = useSettings((s) => s.routeApp);
   const route = () =>
-    void Linking.openURL(directionsUrl(mapsPlatform(), details.location, details.name));
+    void Linking.openURL(
+      directionsUrl(
+        mapsPlatform(),
+        details.location,
+        details.name,
+        routeApp,
+        details.source === 'google' ? details.id : null,
+      ),
+    );
   const phone = details.internationalPhone ?? details.phone;
 
   const actions: Action[] = [

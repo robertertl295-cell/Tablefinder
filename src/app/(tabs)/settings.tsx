@@ -19,6 +19,7 @@ import {
   settingsStore,
   useSettings,
   type ListPhotos,
+  type RouteAppSetting,
   type SourcePreference,
 } from '@/store/settings-store';
 import type { DataSource } from '@/types/place';
@@ -44,6 +45,11 @@ const LIST_PHOTO_CHOICES: { value: ListPhotos; label: string }[] = [
   { value: 'real', label: 'Echte Fotos' },
 ];
 
+const ROUTE_APP_CHOICES: { value: RouteAppSetting; label: string }[] = [
+  { value: 'google', label: 'Google Maps' },
+  { value: 'system', label: 'Apple Karten' },
+];
+
 const UNIT_OPTIONS: { value: Units; label: string }[] = [
   { value: 'metric', label: 'Kilometer' },
   { value: 'imperial', label: 'Meilen' },
@@ -55,6 +61,7 @@ export default function SettingsScreen() {
   const version = Constants.expoConfig?.version ?? '–';
   const dataSource = useSettings((s) => s.dataSource);
   const listPhotos = useSettings((s) => s.listPhotos);
+  const routeApp = useSettings((s) => s.routeApp);
   const activeSource = useActiveSource();
   const hasGoogleKey = config.placesApiKey !== null;
 
@@ -120,6 +127,24 @@ export default function SettingsScreen() {
               />
             ))}
           </View>
+
+          <ThemedText type="smallBold" style={styles.subheading}>
+            Route planen mit
+          </ThemedText>
+          <View style={styles.wrap}>
+            {ROUTE_APP_CHOICES.map((o) => (
+              <Chip
+                key={o.value}
+                label={o.label}
+                selected={routeApp === o.value}
+                onPress={() => settingsStore.getState().setRouteApp(o.value)}
+              />
+            ))}
+          </View>
+          <ThemedText type="small" themeColor="textSecondary">
+            „Route“ auf der Detailseite öffnet diese App. Google Maps öffnet die App, wenn sie
+            installiert ist, sonst die Website.
+          </ThemedText>
 
           <ThemedText type="smallBold" style={styles.subheading}>
             Sprache
