@@ -12,14 +12,18 @@ export const DEFAULT_RADIUS_METERS = 1500;
 export type AppConfig = {
   /** Google-Places-Schlüssel; `null` = nicht gesetzt (dann sucht „Automatisch“ mit OpenStreetMap). */
   placesApiKey: string | null;
+  /** Täglicher OSM-Datensatz für Berlin; `null` = live bei Overpass fragen. */
+  osmDatasetUrl: string | null;
 };
 
 export function readConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const key = env.EXPO_PUBLIC_PLACES_API_KEY?.trim();
-  return { placesApiKey: key ? key : null };
+  const dataset = env.EXPO_PUBLIC_OSM_DATASET_URL?.trim();
+  return { placesApiKey: key ? key : null, osmDatasetUrl: dataset ? dataset : null };
 }
 
 export const config: AppConfig = readConfig({
   // Expo ersetzt nur direkte Zugriffe auf process.env.EXPO_PUBLIC_* statisch.
   EXPO_PUBLIC_PLACES_API_KEY: process.env.EXPO_PUBLIC_PLACES_API_KEY,
+  EXPO_PUBLIC_OSM_DATASET_URL: process.env.EXPO_PUBLIC_OSM_DATASET_URL,
 });

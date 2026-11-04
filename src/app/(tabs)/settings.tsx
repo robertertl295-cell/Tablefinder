@@ -34,7 +34,7 @@ const SOURCE_OPTIONS: { value: SourcePreference; label: string }[] = [
 const SOURCE_DESCRIPTION: Record<DataSource, string> = {
   google:
     'Mit Bewertungen, Fotos, Rezensionen und Preisen. Kostenpflichtig nach Nutzung, braucht einen API-Schlüssel.',
-  osm: 'Kostenlos und ohne Schlüssel, von Freiwilligen gepflegt. Kennt vegane Angebote, aber keine Bewertungen, Preise oder Fotos. Daten © OpenStreetMap-Mitwirkende (ODbL).',
+  osm: 'Kostenlos und ohne Schlüssel, von Freiwilligen gepflegt, täglich aktualisiert. Kennt vegane Angebote, aber keine Bewertungen, Preise oder Fotos. Daten © OpenStreetMap-Mitwirkende (ODbL).',
   mock: '18 erfundene Berliner Lokale zum Ausprobieren, ohne Internet.',
 };
 
@@ -174,12 +174,13 @@ export default function SettingsScreen() {
             Notizen, Filter und Einstellungen bleiben ausschließlich auf diesem Gerät.
           </Paragraph>
           <Paragraph>
-            Für die Suche wird der Suchort (dein Standort oder der gewählte Bezirk) an die gewählte
-            Datenquelle übertragen: bei Google Places zusammen mit dem Suchbegriff, bei
-            OpenStreetMap an öffentliche Overpass-Server (overpass-api.de, bei Überlastung
-            ersatzweise overpass.private.coffee oder overpass.kumi.systems) – dort ohne Suchbegriff,
-            weil die App den Text selbst auswertet. Es gelten die Bestimmungen des jeweiligen
-            Dienstes.
+            Bei Google Places werden Suchbegriff und Suchort (dein Standort oder der gewählte
+            Bezirk) an Google übertragen. Bei OpenStreetMap lädt die App einmal einen Datensatz
+            aller Berliner Lokale von ihrer eigenen Seite (GitHub Pages) und sucht darin auf dem
+            Gerät – dein Standort und deine Suche verlassen es dabei nicht. Nur wenn der Datensatz
+            nicht erreichbar ist, fragt sie öffentliche Overpass-Server (overpass-api.de,
+            ersatzweise overpass.private.coffee oder overpass.kumi.systems) mit dem Suchort. Es
+            gelten die Bestimmungen des jeweiligen Dienstes.
           </Paragraph>
           <Paragraph>
             Der Standort wird nur abgefragt, während du die App benutzt, und nicht gespeichert.

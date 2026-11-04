@@ -27,7 +27,9 @@ export function createPlacesProvider(
   return new RoutingPlacesProvider(
     {
       google,
-      osm: new CachedPlacesProvider(new OverpassPlacesProvider()),
+      osm: new CachedPlacesProvider(
+        new OverpassPlacesProvider({ datasetUrl: appConfig.osmDatasetUrl }),
+      ),
       mock: new CachedPlacesProvider(new MockPlacesProvider()),
     },
     () => resolveSource(preference(), google !== undefined),

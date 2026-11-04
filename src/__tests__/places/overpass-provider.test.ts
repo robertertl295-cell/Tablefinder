@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
 import { PlacesError } from '@/services/places/errors';
 import {
   buildAreaQuery,
@@ -239,5 +242,85 @@ describe('Fehler', () => {
     expect(await kind(() => Promise.reject(new TypeError('Network request failed')))).toBe(
       'network',
     );
+  });
+});
+
+describe('Datensatz statt Live-Abfrage', () => {
+  const DATASET = '/Tablefinder/data/osm-berlin.json';
+
+  function withDataset(datasetResponse: () => Response | Promise<Response>) {
+    const urls: string[] = [];
+    const fetchFn = jest.fn((url: string | URL | Request) => {
+      urls.push(String(url));
+      return Promise.resolve(
+        String(url) === DATASET ? datasetResponse() : jsonResponse({ elements: OSM_AREA }),
+      );
+    }) as unknown as typeof fetch;
+    const provider = new OverpassPlacesProvider({
+      fetchFn,
+      datasetUrl: DATASET,
+      pageSize: 10,
+      now: () => NOW,
+    });
+    return { provider, urls };
+  }
+
+  it('lädt den Datensatz einmal und sucht dann lokal – ohne Overpass', async () => {
+    const { provider, urls } = withDataset(() => jsonResponse({ version: 1, elements: OSM_AREA }));
+    const [a, b] = await Promise.all([
+      provider.search(QUERY),
+      provider.search({ ...QUERY, text: 'vegan' }),
+    ]);
+    expect(names(a)).toEqual([
+      'Backstube',
+      'Café am Ufer',
+      'Kebab Haus',
+      'Eckkneipe',
+      'Ramen Yokai',
+    ]);
+    expect(names(b)).toEqual(['Ramen Yokai']);
+    // anderes Gebiet: findet „Weit Weg“, weiterhin ohne neue Anfrage
+    const north = await provider.search({
+      ...QUERY,
+      center: { latitude: 52.5295, longitude: 13.4203 },
+      radiusMeters: 500,
+    });
+    expect(names(north)).toEqual(['Weit Weg']);
+    expect(urls).toEqual([DATASET]);
+  });
+
+  it('liefert Details und Favoriten aus dem Datensatz', async () => {
+    const { provider, urls } = withDataset(() => jsonResponse({ elements: OSM_AREA }));
+    const s = await provider.getSummary('osm:way:202');
+    expect(s.name).toBe('Café am Ufer');
+    expect(urls).toEqual([DATASET]);
+  });
+
+  it('fällt auf Live-Abfragen zurück, wenn der Datensatz fehlt, und probiert ihn nicht sofort erneut', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const { provider, urls } = withDataset(() => jsonResponse({}, 404));
+    expect(names(await provider.search(QUERY))).toContain('Ramen Yokai');
+    await provider.search({ ...QUERY, center: { latitude: 52.52, longitude: 13.4 } });
+    expect(urls.filter((u) => u === DATASET)).toHaveLength(1);
+    expect(urls.filter((u) => u.includes('overpass'))).toHaveLength(2);
+    warn.mockRestore();
+  });
+
+  it('wertet einen leeren Datensatz als Fehler', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const { provider, urls } = withDataset(() => jsonResponse({ elements: [] }));
+    await provider.search(QUERY);
+    expect(urls.some((u) => u.includes('overpass'))).toBe(true);
+    warn.mockRestore();
+  });
+});
+
+describe('Datensatz-Skript', () => {
+  it('fragt dieselben Lokal-Arten ab wie die App', () => {
+    const { OSM_AMENITIES } = jest.requireActual('@/services/places/osm-mapping');
+    const script = readFileSync(join(__dirname, '../../../scripts/fetch-osm-berlin.mjs'), 'utf8');
+    const listed = /export const AMENITIES = \[([\s\S]*?)\];/.exec(script)?.[1] ?? '';
+    const scriptAmenities = [...listed.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
+    expect(scriptAmenities).toEqual(OSM_AMENITIES);
   });
 });

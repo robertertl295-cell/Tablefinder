@@ -8,6 +8,9 @@ name: Web-App veröffentlichen
 on:
   push:
     branches: [main]
+  # Täglich frische OpenStreetMap-Daten (04:17 UTC)
+  schedule:
+    - cron: '17 4 * * *'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +27,7 @@ jobs:
   build:
     name: Web-App bauen
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Code auschecken
         uses: actions/checkout@v4
@@ -37,6 +40,13 @@ jobs:
 
       - name: Abhängigkeiten installieren
         run: npm ci --no-audit --no-fund
+
+      - name: OpenStreetMap-Datensatz für Berlin laden
+        # Eine große Abfrage hier statt langsamer Live-Abfragen in der App.
+        # Schlägt sie fehl, bleibt der zuletzt veröffentlichte Datensatz bestehen.
+        run: node scripts/fetch-osm-berlin.mjs
+        env:
+          FALLBACK_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/osm-berlin.json
 
       - name: Web-App bauen
         # Kein Google-Key: Die Seite ist öffentlich, der Key wäre für alle auslesbar.

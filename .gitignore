@@ -49,3 +49,6 @@ example
 
 # Tests
 coverage/
+
+# OSM-Datensatz (wird in der GitHub Action erzeugt)
+public/data/

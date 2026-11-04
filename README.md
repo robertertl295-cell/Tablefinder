@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 317 Tests laufen ohne Fehler.
+- Typecheck, Lint und 329 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -267,7 +267,9 @@ Einstellbar unter Einstellungen → Datenquelle. „Automatisch“ nimmt Google,
 - **Filter je Quelle:** Filter und Sortierungen, die die aktive Quelle nicht kann, sind im Filter-Sheet ausgeblendet, tauchen nicht als Chip auf und werden bei der Suche ignoriert. Sonst würde z. B. „ab 4 ★“ bei OSM alles ausschließen. Gespeichert bleiben sie trotzdem, beim Zurückwechseln sind sie wieder aktiv.
 - **Favoriten aus mehreren Quellen:** Sie funktionieren nebeneinander. Jede ID trägt ihre Quelle (`osm:…`, `mock-…`, sonst Google), Details kommen immer aus der Ursprungsquelle. Google-Favoriten brauchen dafür den Key.
 - **OpenStreetMap im Detail:**
-  - **Abfrage:** Eine Overpass-Abfrage holt alle Gastronomie-Orte mit Namen im Umkreis (höchstens 5 km): `amenity` = restaurant, cafe, bar, pub, biergarten, fast_food, food_court, ice_cream sowie `shop=bakery`. Das Ergebnis wird 10 Minuten wiederverwendet. Die Abfrage ist zusätzlich auf eine Kartenbox begrenzt (`[bbox:…]`, schnell auf dem Server) und hat ein Server-Limit von 15 s. Antwortet ein Server nicht innerhalb von 20 s oder ist er überlastet (429/5xx), fragt die App den nächsten (`overpass-api.de` → `overpass.private.coffee` → `overpass.kumi.systems`) und merkt sich den funktionierenden. Suchtext, Filter und Seiten laufen lokal, das schont die öffentlichen Server.
+  - **Datensatz statt Live-Abfrage:** Live-Abfragen bei Overpass dauerten im Test ~38 s für 1,5 km, zu langsam für eine App. Deshalb lädt die GitHub Action „Web-App veröffentlichen“ **täglich (04:17 UTC) und bei jedem Push** alle Berliner Lokale in einer einzigen Abfrage (`scripts/fetch-osm-berlin.mjs`, Zeitlimit 10 Min., drei Server nacheinander). Sie legt sie als `data/osm-berlin.json` neben die Web-App. Gespeichert werden nur die Tags, die die App nutzt. Schlägt der Abruf fehl, bleibt der zuletzt veröffentlichte Datensatz stehen.
+  - **In der App:** Der Datensatz wird einmal geladen (`EXPO_PUBLIC_OSM_DATASET_URL`, setzt `build-web.mjs` automatisch). Danach laufen Umkreis, Suchtext, Filter, Seiten, Details und Favoriten auf dem Gerät, ohne weitere Anfragen. Ist er nicht erreichbar, fragt die App live (siehe unten) und versucht den Datensatz nach 5 Minuten erneut.
+  - **Live-Abfrage (Rückfall):** Eine Overpass-Abfrage holt alle Gastronomie-Orte mit Namen im Umkreis (höchstens 5 km): `amenity` = restaurant, cafe, bar, pub, biergarten, fast_food, food_court, ice_cream sowie `shop=bakery`. Das Ergebnis wird 10 Minuten wiederverwendet. Die Abfrage ist zusätzlich auf eine Kartenbox begrenzt (`[bbox:…]`, schnell auf dem Server) und hat ein Server-Limit von 15 s. Antwortet ein Server nicht innerhalb von 20 s oder ist er überlastet (429/5xx), fragt die App den nächsten (`overpass-api.de` → `overpass.private.coffee` → `overpass.kumi.systems`) und merkt sich den funktionierenden. Suchtext, Filter und Seiten laufen lokal, das schont die öffentlichen Server.
   - **Freitext:** Er sucht in Name, Art, Küche (auch deutsch: „Döner“, „japanisch“, „Kaffee“), Diät-Angaben und Straße. Ortsnamen („vegan Kreuzberg“) werden ignoriert, weil sie selten am Lokal stehen. Den Ort wählt man über die Bezirks-Chips.
   - **Öffnungszeiten:** Ein eigener Parser versteht die übliche Teilmenge des OSM-Formats (`Mo-Fr 08:00-18:00; Sa 10:00-02:00; PH off`, `24/7`). Exotische Angaben gelten als unbekannt, nicht als geschlossen.
   - **Anzeige:** keine leeren Foto- und Sternflächen, stattdessen „Keine Bewertungen (OpenStreetMap)“. Die Detailseite verlinkt den Ort auf openstreetmap.org, dort lassen sich falsche Angaben korrigieren.
@@ -397,7 +399,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Tests
 
-317 Tests in 34 Dateien (`npm test`):
+329 Tests in 34 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -430,7 +432,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **Kein Tracking:** Tablefinder hat keine eigenen Server, keine Konten und kein Tracking.
 - **Was übertragen wird:**
   - **Google Places:** Suchbegriff und Suchort (eigener Standort oder gewählter Bezirk).
-  - **OpenStreetMap:** nur der Suchort, an öffentliche Overpass-Server: `overpass-api.de`, bei Überlastung ersatzweise `overpass.private.coffee` oder `overpass.kumi.systems`. Der Suchbegriff bleibt auf dem Gerät.
+  - **OpenStreetMap:** nichts. Die App lädt den Berlin-Datensatz von ihrer eigenen Seite und sucht auf dem Gerät. Nur wenn der Datensatz nicht erreichbar ist, geht der Suchort (ohne Suchbegriff) an öffentliche Overpass-Server: `overpass-api.de`, ersatzweise `overpass.private.coffee` oder `overpass.kumi.systems`.
 - **Standort:** Er wird nur während der Nutzung abgefragt und nicht gespeichert.
 - **Was lokal bleibt:** nur `place_id`s und eigene Daten (Listen, Notizen, Status, eigene Bewertung, Filter, Einstellungen). Ein Test stellt sicher, dass keine Ortsdaten von Google gespeichert werden.
 - **Inhalte von Google:** Bewertungen, Rezensionen und Fotos liegen nur wenige Minuten im Arbeitsspeicher, Fotos werden nicht auf dem Gerät gecacht.
@@ -464,7 +466,9 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 - **Datenqualität:** Die Daten pflegen Freiwillige. Öffnungszeiten, Diät-Angaben und geschlossene Lokale sind nicht immer aktuell, viele Lokale haben solche Angaben gar nicht.
 - **Keine Bewertungen:** Bei OSM gibt es keine Bewertungen, Preise, Fotos oder Rezensionen, damit entfallen auch Vertrauensscore und Bewertungsfilter.
-- **Öffentliche Overpass-Server:** Sie sind kostenlos, aber begrenzt (Fair Use). Bei Überlastung erscheint „Anfragelimit erreicht“ bzw. eine Zeitüberschreitung. Für viele Nutzer bräuchte es einen eigenen Overpass-Server.
+- **Aktualität:** Der Datensatz ist bis zu einen Tag alt (täglicher Abruf).
+- **Öffentliche Overpass-Server:** Sie sind kostenlos, aber begrenzt (Fair Use) und für Live-Abfragen oft zu langsam (gemessen: ~38 s für 1,5 km). Die App nutzt sie nur als Rückfall, wenn der Datensatz fehlt.
+- **Native App:** Sie braucht `EXPO_PUBLIC_OSM_DATASET_URL` mit der vollen Adresse (siehe `.env.example`), sonst fragt sie live.
 - **Radius und Suche:** höchstens 5 km Umkreis. Die Suche findet nur Lokale mit Namen und erkennt „Prenzlauer Berg“ & Co. nicht im Suchtext.
 - **Keine Kombination:** Google und OSM werden nicht zusammengeführt, die Suche läuft immer über eine Quelle.
 
@@ -495,7 +499,7 @@ Nach Priorität:
    - Development Build mit `npx expo run:ios` / `run:android` oder EAS (`eas.json` anlegen).
    - Einmal alle Abläufe durchgehen, VoiceOver/TalkBack und große Schrift prüfen.
    - Ersten Lauf gegen die echte Places API beobachten: Feldnamen, Typen, Kosten pro Suche in der Cloud Console.
-2. **OpenStreetMap live prüfen:** `overpass-api.de` in den Netzwerkeinstellungen der Cloud-Umgebung freigeben oder direkt auf dem Gerät testen.
+2. **OSM-Datensatz beobachten:** Im Protokoll der Action „Web-App veröffentlichen“ steht beim Schritt „OpenStreetMap-Datensatz für Berlin laden“, wie viele Orte geladen wurden und wie groß die Datei ist.
 3. **API-Key aus der App nehmen**, sobald die App nicht mehr nur privat genutzt wird. Ein kleiner Proxy (z. B. Cloudflare Worker) hält den Key, setzt Feldmasken serverseitig und begrenzt Anfragen pro Gerät. Die App ändert dafür nur die Basis-URL im `GooglePlacesProvider`. Für den persönlichen Gebrauch nicht nötig.
 4. **Ende-zu-Ende-Tests** mit Maestro für die Hauptabläufe auf Simulator/Emulator.
 

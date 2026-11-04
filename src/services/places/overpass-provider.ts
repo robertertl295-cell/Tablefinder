@@ -44,11 +44,21 @@ export type OverpassProviderOptions = {
   timeoutMs?: number;
   /** Wie lange ein geladenes Gebiet wiederverwendet wird. */
   areaTtlMs?: number;
+  /**
+   * Vorab erzeugter Datensatz aller Berliner Lokale (siehe scripts/fetch-osm-berlin.mjs).
+   * Wird einmal geladen und lokal durchsucht; ohne ihn fragt die App live bei Overpass.
+   */
+  datasetUrl?: string | null;
+  /** Zeitlimit für den Datensatz-Download. */
+  datasetTimeoutMs?: number;
   pageSize?: number;
   now?: () => Date;
 };
 
 type OsmEntry = { place: PlaceDetails; text: string };
+
+/** Nach einem Fehlschlag den Datensatz so lange nicht erneut versuchen (dann live). */
+const DATASET_RETRY_MS = 5 * 60_000;
 
 /**
  * Overpass-Abfrage für alle Gastronomie-Orte mit Namen im Umkreis.
@@ -93,6 +103,11 @@ export class OverpassPlacesProvider implements PlacesProvider {
   private readonly areaRequests = new Map<string, Promise<OsmEntry[]>>();
   /** Zuletzt gesehene Orte – Details ohne erneute Abfrage. */
   private readonly known = new Map<string, PlaceDetails>();
+  private readonly datasetUrl: string | null;
+  private readonly datasetTimeoutMs: number;
+  private dataset: Promise<OsmEntry[]> | null = null;
+  private datasetById = new Map<string, PlaceDetails>();
+  private datasetFailedAt = 0;
 
   constructor(options: OverpassProviderOptions = {}) {
     this.endpoints = options.endpoints?.length ? options.endpoints : OVERPASS_ENDPOINTS;
@@ -102,6 +117,8 @@ export class OverpassPlacesProvider implements PlacesProvider {
     this.pageSize = options.pageSize ?? 20;
     this.now = options.now ?? (() => new Date());
     this.areas = new TtlCache(options.areaTtlMs ?? 10 * 60_000, 20);
+    this.datasetUrl = options.datasetUrl ?? null;
+    this.datasetTimeoutMs = options.datasetTimeoutMs ?? 30_000;
   }
 
   async search(query: SearchQuery): Promise<SearchResult> {
@@ -134,8 +151,13 @@ export class OverpassPlacesProvider implements PlacesProvider {
   }
 
   async getDetails(id: string): Promise<PlaceDetails> {
-    const known = this.known.get(id);
+    const known = this.known.get(id) ?? this.datasetById.get(id);
     if (known) return this.withOpenNow(known);
+    // Favoriten: zuerst im Datensatz nachsehen, das spart eine langsame Live-Abfrage.
+    if (await this.loadDataset()) {
+      const fromDataset = this.datasetById.get(id);
+      if (fromDataset) return this.withOpenNow(fromDataset);
+    }
     const ref = parseOsmId(id);
     if (!ref) throw new PlacesError('not_found', `Keine OSM-ID: ${id}`);
     const response = await this.request(buildElementQuery(ref.type, ref.id));
@@ -153,7 +175,66 @@ export class OverpassPlacesProvider implements PlacesProvider {
     return null; // OSM hat keine Fotos
   }
 
-  private loadArea(lat: number, lon: number, radius: number): Promise<OsmEntry[]> {
+  private async loadArea(lat: number, lon: number, radius: number): Promise<OsmEntry[]> {
+    const all = await this.loadDataset();
+    if (all) {
+      const center = { latitude: lat, longitude: lon };
+      const { low, high } = boundingBox(center, radius);
+      // Erst grob per Box (schnell), den genauen Kreis prüft matchesQuery.
+      return all.filter(({ place: { location: l } }) => {
+        return (
+          l.latitude >= low.latitude &&
+          l.latitude <= high.latitude &&
+          l.longitude >= low.longitude &&
+          l.longitude <= high.longitude
+        );
+      });
+    }
+    return this.loadAreaLive(lat, lon, radius);
+  }
+
+  /** Datensatz einmal laden; `null`, wenn keiner konfiguriert oder er gerade nicht erreichbar ist. */
+  private async loadDataset(): Promise<OsmEntry[] | null> {
+    if (!this.datasetUrl) return null;
+    if (Date.now() - this.datasetFailedAt < DATASET_RETRY_MS) return null;
+    if (!this.dataset) {
+      this.dataset = this.fetchDataset(this.datasetUrl).catch((error: unknown) => {
+        console.warn('OSM-Datensatz nicht verfügbar, frage live', error);
+        this.datasetFailedAt = Date.now();
+        this.dataset = null;
+        return [];
+      });
+    }
+    const entries = await this.dataset;
+    return entries.length ? entries : null;
+  }
+
+  private async fetchDataset(url: string): Promise<OsmEntry[]> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.datasetTimeoutMs);
+    try {
+      const response = await this.fetchFn(url, { signal: controller.signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = (await response.json()) as { elements?: OverpassElement[] };
+      if (!Array.isArray(data.elements) || data.elements.length === 0) {
+        throw new Error('Datensatz leer oder ungültig');
+      }
+      const entries: OsmEntry[] = [];
+      const byId = new Map<string, PlaceDetails>();
+      for (const el of data.elements) {
+        const place = mapOsmElement(el);
+        if (!place) continue;
+        byId.set(place.id, place);
+        entries.push({ place, text: osmSearchText(place, el) });
+      }
+      this.datasetById = byId;
+      return entries;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private loadAreaLive(lat: number, lon: number, radius: number): Promise<OsmEntry[]> {
     // ~10 m Raster, damit kleine GPS-Schwankungen dasselbe Gebiet treffen.
     const key = `${lat.toFixed(4)},${lon.toFixed(4)},${radius}`;
     const cached = this.areas.get(key);
