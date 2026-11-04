@@ -18,6 +18,7 @@ import {
   RADIUS_SETTING_OPTIONS,
   settingsStore,
   useSettings,
+  type ListPhotos,
   type SourcePreference,
 } from '@/store/settings-store';
 import type { DataSource } from '@/types/place';
@@ -38,6 +39,11 @@ const SOURCE_DESCRIPTION: Record<DataSource, string> = {
   mock: '18 erfundene Berliner Lokale zum Ausprobieren, ohne Internet.',
 };
 
+const LIST_PHOTO_CHOICES: { value: ListPhotos; label: string }[] = [
+  { value: 'symbol', label: 'Symbolbilder (kostenlos)' },
+  { value: 'real', label: 'Echte Fotos' },
+];
+
 const UNIT_OPTIONS: { value: Units; label: string }[] = [
   { value: 'metric', label: 'Kilometer' },
   { value: 'imperial', label: 'Meilen' },
@@ -48,6 +54,7 @@ export default function SettingsScreen() {
   const units = useSettings((s) => s.units);
   const version = Constants.expoConfig?.version ?? '–';
   const dataSource = useSettings((s) => s.dataSource);
+  const listPhotos = useSettings((s) => s.listPhotos);
   const activeSource = useActiveSource();
   const hasGoogleKey = config.placesApiKey !== null;
 
@@ -150,6 +157,24 @@ export default function SettingsScreen() {
           <Paragraph>
             Favoriten aus allen Quellen bleiben erhalten und werden jeweils aus ihrer Quelle
             geladen.
+          </Paragraph>
+
+          <ThemedText type="smallBold" style={styles.subheading}>
+            Fotos in der Trefferliste
+          </ThemedText>
+          <View style={styles.wrap}>
+            {LIST_PHOTO_CHOICES.map((o) => (
+              <Chip
+                key={o.value}
+                label={o.label}
+                selected={listPhotos === o.value}
+                onPress={() => settingsStore.getState().setListPhotos(o.value)}
+              />
+            ))}
+          </View>
+          <Paragraph>
+            Jedes angezeigte Google-Foto ist ein kostenpflichtiger Abruf. Mit Symbolbildern zeigt
+            die Liste KI-Bilder passend zur Küche; echte Fotos gibt es auf der Detailseite.
           </Paragraph>
         </Section>
 

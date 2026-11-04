@@ -4,7 +4,7 @@ import { FavoriteButton } from '@/components/favorites/favorite-button';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { useUnits } from '@/store/settings-store';
+import { useSettings, useUnits } from '@/store/settings-store';
 import type { PlaceSummary } from '@/types/place';
 import { formatDistance, formatPriceLevel, formatRating } from '@/utils/format';
 import { placeAccessibilityLabel, placeStatus, type StatusTone } from '@/utils/place-labels';
@@ -54,7 +54,11 @@ export function PlaceCard({
     distanceMeters !== null ? formatDistance(distanceMeters, units) : null,
   ].filter(Boolean);
   const isClosed = place.businessStatus === 'closed_permanently';
-  const placeholder = place.photo ? null : placeholderFor(place);
+  const listPhotos = useSettings((s) => s.listPhotos);
+  // Foto-Sparmodus: Google-Fotos kosten pro Anzeige – in der Liste daher Symbolbilder.
+  const savePhoto = listPhotos === 'symbol' && place.source === 'google';
+  const photo = savePhoto ? null : place.photo;
+  const placeholder = photo ? null : placeholderFor(place);
   const score = showTrustScore ? trustScore(place.rating, place.ratingCount) : null;
 
   return (
@@ -76,10 +80,10 @@ export function PlaceCard({
             opacity: pressed ? 0.85 : 1,
           },
         ]}>
-        {/* OSM hat keine Fotos: dann KI-Symbolbild, sonst keine leere Fläche. */}
-        {(place.photo || place.source !== 'osm' || placeholder) && (
+        {/* Ohne Foto (OSM, Sparmodus): KI-Symbolbild, sonst keine leere Fläche. */}
+        {(photo || placeholder || (place.source !== 'osm' && !savePhoto)) && (
           <PlacePhoto
-            photo={place.photo}
+            photo={photo}
             placeholder={placeholder}
             width={compact ? 96 : width}
             style={[compact ? styles.photoCompact : styles.photo, isClosed && styles.dimmed]}

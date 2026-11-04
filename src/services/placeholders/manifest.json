@@ -5,40 +5,27 @@
     "pizza": [
       {
         "file": "pizza-1.webp",
-        "tags": [
-          "dish"
-        ]
+        "tags": ["dish"]
       },
       {
         "file": "pizza-2.webp",
-        "tags": [
-          "dish"
-        ]
+        "tags": ["dish"]
       },
       {
         "file": "pizza-3.webp",
-        "tags": [
-          "interior"
-        ]
+        "tags": ["interior"]
       },
       {
         "file": "pizza-4.webp",
-        "tags": [
-          "terrace"
-        ]
+        "tags": ["terrace"]
       },
       {
         "file": "pizza-5.webp",
-        "tags": [
-          "veggie",
-          "dish"
-        ]
+        "tags": ["veggie", "dish"]
       },
       {
         "file": "pizza-6.webp",
-        "tags": [
-          "detail"
-        ]
+        "tags": ["detail"]
       }
     ]
   }

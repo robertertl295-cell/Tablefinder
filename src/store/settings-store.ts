@@ -14,12 +14,21 @@ export const RADIUS_SETTING_OPTIONS = RADIUS_OPTIONS;
 export type SourcePreference = 'auto' | 'google' | 'osm' | 'mock';
 export const SOURCE_PREFERENCES: readonly SourcePreference[] = ['auto', 'google', 'osm', 'mock'];
 
+/**
+ * Fotos in Trefferliste und Karte: „symbol“ = KI-Symbolbilder statt Google-Fotos (jedes
+ * angezeigte Google-Foto ist ein kostenpflichtiger Abruf), „real“ = echte Fotos.
+ * Die Detailseite zeigt immer echte Fotos.
+ */
+export type ListPhotos = 'symbol' | 'real';
+export const LIST_PHOTO_OPTIONS: readonly ListPhotos[] = ['symbol', 'real'];
+
 export type Settings = {
   defaultRadiusMeters: number;
   units: Units;
   /** Sortierung der Suchtreffer. */
   resultSort: ResultSort;
   dataSource: SourcePreference;
+  listPhotos: ListPhotos;
 };
 
 export type SettingsState = Settings & {
@@ -28,6 +37,7 @@ export type SettingsState = Settings & {
   setUnits: (units: Units) => void;
   setResultSort: (sort: ResultSort) => void;
   setDataSource: (source: SourcePreference) => void;
+  setListPhotos: (mode: ListPhotos) => void;
   reset: () => void;
 };
 
@@ -36,6 +46,7 @@ export const DEFAULT_SETTINGS: Settings = {
   units: 'metric',
   resultSort: 'relevance',
   dataSource: 'auto',
+  listPhotos: 'symbol',
 };
 
 export const SETTINGS_STORAGE_KEY = 'tablefinder.settings';
@@ -55,6 +66,9 @@ export function sanitizeSettings(input: unknown): Settings {
     dataSource: SOURCE_PREFERENCES.includes(raw.dataSource as SourcePreference)
       ? (raw.dataSource as SourcePreference)
       : DEFAULT_SETTINGS.dataSource,
+    listPhotos: LIST_PHOTO_OPTIONS.includes(raw.listPhotos as ListPhotos)
+      ? (raw.listPhotos as ListPhotos)
+      : DEFAULT_SETTINGS.listPhotos,
   };
 }
 
@@ -81,6 +95,8 @@ export function createSettingsStore(
         setUnits: (units) => set({ units: units === 'imperial' ? 'imperial' : 'metric' }),
         setDataSource: (dataSource) =>
           set({ dataSource: sanitizeSettings({ dataSource }).dataSource }),
+        setListPhotos: (listPhotos) =>
+          set({ listPhotos: sanitizeSettings({ listPhotos }).listPhotos }),
         setResultSort: (resultSort) =>
           set({ resultSort: sanitizeSettings({ resultSort }).resultSort }),
         reset: () => set(DEFAULT_SETTINGS),
@@ -94,6 +110,7 @@ export function createSettingsStore(
           units: s.units,
           resultSort: s.resultSort,
           dataSource: s.dataSource,
+          listPhotos: s.listPhotos,
         }),
         merge: (persisted, current) => ({ ...current, ...sanitizeSettings(persisted) }),
         onRehydrateStorage: () => (_state, error) => {

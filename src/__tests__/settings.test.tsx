@@ -64,6 +64,7 @@ describe('Einstellungen-Store', () => {
       units: 'imperial',
       resultSort: 'trust',
       dataSource: 'auto',
+      listPhotos: 'symbol',
     });
     // Ältere gespeicherte Stände ohne Sortierung bekommen den Standard.
     expect(sanitizeSettings({ defaultRadiusMeters: 3000 }).resultSort).toBe('relevance');
@@ -81,12 +82,14 @@ describe('Einstellungen-Store', () => {
     first.getState().setUnits('imperial');
     first.getState().setDefaultRadius(5000);
     first.getState().setResultSort('trust');
+    first.getState().setListPhotos('real');
     await new Promise((r) => setTimeout(r, 0));
     expect(JSON.parse(data.get(SETTINGS_STORAGE_KEY)!).state).toEqual({
       defaultRadiusMeters: 5000,
       units: 'imperial',
       resultSort: 'trust',
       dataSource: 'auto',
+      listPhotos: 'real',
     });
 
     const second = createSettingsStore(storage);
@@ -97,6 +100,7 @@ describe('Einstellungen-Store', () => {
       defaultRadiusMeters: 5000,
       units: 'imperial',
       resultSort: 'trust',
+      listPhotos: 'real',
     });
   });
 });

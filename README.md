@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 365 Tests laufen ohne Fehler.
+- Typecheck, Lint und 369 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -384,6 +384,7 @@ OpenStreetMap hat keine Fotos. Damit die Liste nicht leer wirkt, zeigt die App f
 - **Standard-Umkreis:** Gilt für neue Suchen und beim Zurücksetzen der Filter. Wurde der Umkreis im Filter nie geändert, übernimmt die Suche den neuen Wert sofort.
 - **Einheiten:** Kilometer oder Meilen. Gilt überall, auch in den Texten für Screenreader.
 - **Sprache:** Deutsch, auch bei den Abfragen an Google (`languageCode: de`).
+- **Fotos in der Trefferliste (Foto-Sparmodus):** Standard „Symbolbilder (kostenlos)“: Liste und Karte zeigen bei Google-Orten KI-Symbolbilder statt Google-Fotos, denn jedes angezeigte Google-Foto ist ein kostenpflichtiger Abruf (Place Details Photos). Echte Fotos gibt es auf der Detailseite. „Echte Fotos“ lädt sie auch in der Liste. Gespeichert als `listPhotos` in `tablefinder.settings`.
 - **Daten:**
   - Link zur Favoriten-Sicherung.
   - „Alle lokalen Daten löschen“ entfernt nach Rückfrage Favoriten, Listen, Notizen, Filter, Einstellungen, den Zwischenspeicher und erzeugte Sicherungsdateien.
@@ -410,7 +411,7 @@ OpenStreetMap hat keine Fotos. Damit die Liste nicht leer wirkt, zeigt die App f
 
 ## Tests
 
-365 Tests in 37 Dateien (`npm test`):
+369 Tests in 38 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
