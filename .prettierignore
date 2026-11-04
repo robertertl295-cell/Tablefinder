@@ -5,3 +5,6 @@ coverage
 ios
 android
 assets
+
+# Von scripts/generate-placeholders.mjs automatisch geschrieben
+src/services/placeholders/manifest.json
