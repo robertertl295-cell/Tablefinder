@@ -1,5 +1,45 @@
 {
   "version": 1,
-  "generator": null,
-  "images": {}
+  "generator": "gpt-image-2",
+  "images": {
+    "pizza": [
+      {
+        "file": "pizza-1.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "pizza-2.webp",
+        "tags": [
+          "dish"
+        ]
+      },
+      {
+        "file": "pizza-3.webp",
+        "tags": [
+          "interior"
+        ]
+      },
+      {
+        "file": "pizza-4.webp",
+        "tags": [
+          "terrace"
+        ]
+      },
+      {
+        "file": "pizza-5.webp",
+        "tags": [
+          "veggie",
+          "dish"
+        ]
+      },
+      {
+        "file": "pizza-6.webp",
+        "tags": [
+          "detail"
+        ]
+      }
+    ]
+  }
 }
