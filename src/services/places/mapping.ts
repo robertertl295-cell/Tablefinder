@@ -68,6 +68,15 @@ export function mapPhoto(photo: GPhoto): PhotoRef {
   };
 }
 
+/** Karte möglich, wenn eine Kartenart ausdrücklich angenommen wird; „nur bar“ = nein. */
+function cardsAccepted(o: GPlace['paymentOptions']): boolean | null {
+  if (!o) return null;
+  if (o.acceptsCreditCards || o.acceptsDebitCards || o.acceptsNfc) return true;
+  if (o.acceptsCashOnly) return false;
+  if (o.acceptsCreditCards === false && o.acceptsDebitCards === false) return false;
+  return null;
+}
+
 function mapAttributes(p: GPlace): PlaceAttributes {
   return {
     vegetarian: bool(p.servesVegetarianFood),
@@ -76,6 +85,15 @@ function mapAttributes(p: GPlace): PlaceAttributes {
     dogsAllowed: bool(p.allowsDogs),
     goodForGroups: bool(p.goodForGroups),
     goodForChildren: bool(p.goodForChildren),
+    glutenFree: null, // kennt die Places API nicht
+    halal: null,
+    wheelchair: bool(p.accessibilityOptions?.wheelchairAccessibleEntrance),
+    wifi: null,
+    takeaway: bool(p.takeout),
+    delivery: bool(p.delivery),
+    reservable: bool(p.reservable),
+    cards: cardsAccepted(p.paymentOptions),
+    smokeFree: null,
     breakfast: bool(p.servesBreakfast),
     lunch: bool(p.servesLunch),
     dinner: bool(p.servesDinner),
@@ -106,7 +124,37 @@ export function mapPlaceSummary(p: GPlace): PlaceSummary {
     businessStatus: p.businessStatus ? BUSINESS_STATUS[p.businessStatus] : 'unknown',
     photo: firstPhoto ? mapPhoto(firstPhoto) : null,
     attributes: mapAttributes(p),
+    periods: periodsOf(p),
+    cuisines: cuisinesFromTypes(p.types ?? []),
   };
+}
+
+/** Typen, die keine Küche, sondern eine Art oder Mahlzeit beschreiben. */
+const NOT_A_CUISINE = new Set([
+  'fast_food',
+  'fine_dining',
+  'vegan',
+  'vegetarian',
+  'breakfast',
+  'brunch',
+  'dessert',
+  'buffet',
+]);
+
+/** Google-Typen → Küchen: `italian_restaurant` → `italian`. */
+export function cuisinesFromTypes(types: readonly string[]): string[] {
+  const out = new Set<string>();
+  for (const t of types) {
+    if (!t.endsWith('_restaurant')) continue;
+    const c = t.slice(0, -'_restaurant'.length);
+    if (c && !NOT_A_CUISINE.has(c)) out.add(c);
+  }
+  return [...out];
+}
+
+function periodsOf(p: GPlace): OpeningPeriod[] | null {
+  const hours = mapOpeningHours(p.currentOpeningHours ?? p.regularOpeningHours);
+  return hours && hours.periods.length ? hours.periods : null;
 }
 
 function mapPoint(point: GPoint | undefined): DayTime | null {

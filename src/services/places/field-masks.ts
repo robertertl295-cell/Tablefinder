@@ -17,6 +17,7 @@ export const SUMMARY_FIELDS = [
   'priceLevel',
   'businessStatus',
   'currentOpeningHours.openNow',
+  'currentOpeningHours.periods',
   'photos',
 ] as const;
 
@@ -30,6 +31,11 @@ export const ATTRIBUTE_FIELDS = [
   'servesBreakfast',
   'servesLunch',
   'servesDinner',
+  'takeout',
+  'delivery',
+  'reservable',
+  'accessibilityOptions',
+  'paymentOptions',
 ] as const;
 
 /** Zusätzliche Felder für die Detailseite. */
@@ -58,7 +64,7 @@ export function searchFieldMask(options: {
 
 /** Feldmaske für Place Details. `currentOpeningHours` ersetzt dort `currentOpeningHours.openNow`. */
 export function detailsFieldMask(): string {
-  const summary = SUMMARY_FIELDS.filter((f) => f !== 'currentOpeningHours.openNow');
+  const summary = SUMMARY_FIELDS.filter((f) => !f.startsWith('currentOpeningHours.'));
   return [...summary, ...ATTRIBUTE_FIELDS, ...DETAIL_ONLY_FIELDS].join(',');
 }
 

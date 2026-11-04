@@ -32,6 +32,8 @@ function toSummary(p: MockPlace): PlaceSummary {
     businessStatus: p.businessStatus,
     photo: p.photo,
     attributes: p.attributes,
+    periods: p.periods,
+    cuisines: p.cuisines,
   };
 }
 

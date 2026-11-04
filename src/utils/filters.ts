@@ -3,8 +3,8 @@ import type { SourceCapabilities } from '@/services/places/capabilities';
 import { CATEGORY_LABEL, categoryOf } from '@/services/places/place-types';
 import type { SearchQuery } from '@/services/places/provider';
 import { normalizeMinRating } from '@/services/places/query-filter';
-import type { AttributeKey, Filters, MealKey } from '@/types/filters';
-import type { PlaceCategory, PlaceSummary, PriceLevel } from '@/types/place';
+import type { AttributeKey, CuisineKey, Filters, HoursKey, MealKey } from '@/types/filters';
+import type { OpeningPeriod, PlaceCategory, PlaceSummary, PriceLevel } from '@/types/place';
 
 import { formatCount, formatDistance, formatPriceLevel, formatRating, type Units } from './format';
 
@@ -20,13 +20,27 @@ export const RATING_OPTIONS = [3.5, 4, 4.5] as const;
 export const RATING_COUNT_OPTIONS = [30, 100, 500] as const;
 export const PRICE_OPTIONS: readonly PriceLevel[] = [1, 2, 3, 4];
 export const RADIUS_OPTIONS = [500, 1000, 1500, 3000, 5000] as const;
-export const ATTRIBUTE_OPTIONS: readonly AttributeKey[] = [
-  'vegetarian',
-  'vegan',
+/** Merkmale, gruppiert wie im Filter-Sheet. */
+export const DIET_OPTIONS: readonly AttributeKey[] = ['vegetarian', 'vegan', 'glutenFree', 'halal'];
+export const AMENITY_OPTIONS: readonly AttributeKey[] = [
   'outdoorSeating',
   'dogsAllowed',
+  'wheelchair',
+  'wifi',
+  'smokeFree',
   'goodForGroups',
   'goodForChildren',
+];
+export const SERVICE_OPTIONS: readonly AttributeKey[] = [
+  'takeaway',
+  'delivery',
+  'reservable',
+  'cards',
+];
+export const ATTRIBUTE_OPTIONS: readonly AttributeKey[] = [
+  ...DIET_OPTIONS,
+  ...AMENITY_OPTIONS,
+  ...SERVICE_OPTIONS,
 ];
 export const MEAL_OPTIONS: readonly MealKey[] = ['breakfast', 'lunch', 'dinner'];
 
@@ -35,9 +49,80 @@ export const ATTRIBUTE_LABEL: Record<AttributeKey, string> = {
   vegan: 'Vegan',
   outdoorSeating: 'Außenplätze',
   dogsAllowed: 'Hundefreundlich',
+  glutenFree: 'Glutenfrei',
+  halal: 'Halal',
+  wheelchair: 'Barrierefrei',
+  wifi: 'WLAN',
+  smokeFree: 'Rauchfrei',
   goodForGroups: 'Gut für Gruppen',
   goodForChildren: 'Kinderfreundlich',
+  takeaway: 'Zum Mitnehmen',
+  delivery: 'Lieferung',
+  reservable: 'Reservierung möglich',
+  cards: 'Kartenzahlung',
 };
+
+/** Küchen-Filter: Gruppe → passende Küchen (OSM-`cuisine`-Werte bzw. aus Google-Typen). */
+export const CUISINE_GROUPS: Record<CuisineKey, { label: string; cuisines: readonly string[] }> = {
+  italian: { label: 'Italienisch', cuisines: ['italian', 'pizza'] },
+  pizza: { label: 'Pizza', cuisines: ['pizza'] },
+  asian: {
+    label: 'Asiatisch',
+    cuisines: [
+      'asian',
+      'chinese',
+      'japanese',
+      'sushi',
+      'ramen',
+      'thai',
+      'vietnamese',
+      'korean',
+      'indonesian',
+      'noodle',
+      'dumpling',
+    ],
+  },
+  japanese: { label: 'Japanisch & Sushi', cuisines: ['japanese', 'sushi', 'ramen'] },
+  vietnamese: { label: 'Vietnamesisch', cuisines: ['vietnamese'] },
+  indian: { label: 'Indisch', cuisines: ['indian', 'pakistani', 'nepalese'] },
+  turkish: { label: 'Türkisch & Döner', cuisines: ['turkish', 'kebab'] },
+  middleEastern: {
+    label: 'Orientalisch',
+    cuisines: ['middle_eastern', 'lebanese', 'arab', 'falafel', 'syrian', 'persian', 'israeli'],
+  },
+  german: { label: 'Deutsch', cuisines: ['german', 'regional', 'bavarian'] },
+  burger: { label: 'Burger', cuisines: ['burger', 'hamburger'] },
+  mexican: { label: 'Mexikanisch', cuisines: ['mexican', 'tex-mex', 'tacos'] },
+  greek: { label: 'Griechisch', cuisines: ['greek'] },
+};
+export const CUISINE_OPTIONS = Object.keys(CUISINE_GROUPS) as CuisineKey[];
+
+export const HOURS_OPTIONS: readonly HoursKey[] = ['lateOpen', 'sundayOpen'];
+export const HOURS_LABEL: Record<HoursKey, string> = {
+  lateOpen: 'Heute spät geöffnet',
+  sundayOpen: 'Sonntags geöffnet',
+};
+
+/** Ab dieser Uhrzeit (Minuten nach Mitternacht) gilt ein Lokal als „spät geöffnet“. */
+const LATE_FROM_MINUTES = 23 * 60;
+
+/**
+ * Hat das Lokal heute bis mindestens 23 Uhr geöffnet? Zeiträume über Mitternacht
+ * (z. B. 18:00–02:00) zählen dazu. Grundlage ist die Gerätezeit.
+ */
+export function isOpenLateToday(periods: readonly OpeningPeriod[], now: Date): boolean {
+  const today = now.getDay();
+  return periods.some((p) => {
+    if (p.open.day !== today) return false;
+    if (p.close === null) return true; // durchgehend geöffnet
+    if (p.close.day !== today) return true; // schließt erst nach Mitternacht
+    return p.close.hour * 60 + p.close.minute >= LATE_FROM_MINUTES;
+  });
+}
+
+export function isOpenOnSunday(periods: readonly OpeningPeriod[]): boolean {
+  return periods.some((p) => p.open.day === 0 || p.close === null);
+}
 
 export const MEAL_LABEL: Record<MealKey, string> = {
   breakfast: 'Frühstück',
@@ -55,6 +140,8 @@ export function createDefaultFilters(radiusMeters = DEFAULT_RADIUS_METERS): Filt
     radiusMeters,
     attributes: [],
     meals: [],
+    cuisines: [],
+    hours: [],
   };
 }
 
@@ -100,7 +187,7 @@ export function filtersToQuery(
  * Fehlt eine Angabe (`null`), gilt das Merkmal als nicht erfüllt: lieber ein Treffer zu wenig
  * als ein Lokal, das sich vor Ort als unpassend herausstellt.
  */
-export function matchesFilters(place: PlaceSummary, f: Filters): boolean {
+export function matchesFilters(place: PlaceSummary, f: Filters, now: Date = new Date()): boolean {
   if (f.categories.length > 0) {
     const cats = categoryOf(place.primaryType, place.types);
     if (!f.categories.some((c) => cats.includes(c))) return false;
@@ -114,6 +201,16 @@ export function matchesFilters(place: PlaceSummary, f: Filters): boolean {
   if (f.openNow && place.openNow !== true) return false;
   if (f.attributes.some((a) => place.attributes[a] !== true)) return false;
   if (f.meals.some((m) => place.attributes[m] !== true)) return false;
+  if (f.cuisines.length > 0) {
+    const wanted = new Set(f.cuisines.flatMap((c) => CUISINE_GROUPS[c].cuisines));
+    if (!place.cuisines.some((c) => wanted.has(c))) return false;
+  }
+  if (f.hours.length > 0) {
+    // Ohne bekannte Öffnungszeiten lässt sich nichts zusagen → ausschließen.
+    if (!place.periods) return false;
+    if (f.hours.includes('lateOpen') && !isOpenLateToday(place.periods, now)) return false;
+    if (f.hours.includes('sundayOpen') && !isOpenOnSunday(place.periods)) return false;
+  }
   return true;
 }
 
@@ -128,6 +225,13 @@ export function activeFilterChips(
   units: Units = 'metric',
 ): FilterChip[] {
   const chips: FilterChip[] = [];
+  for (const c of f.cuisines) {
+    chips.push({
+      id: `cuisine:${c}`,
+      label: CUISINE_GROUPS[c].label,
+      remove: (x) => ({ ...x, cuisines: without(x.cuisines, c) }),
+    });
+  }
   for (const c of f.categories) {
     chips.push({
       id: `category:${c}`,
@@ -140,6 +244,13 @@ export function activeFilterChips(
       id: 'openNow',
       label: 'Jetzt geöffnet',
       remove: (x) => ({ ...x, openNow: false }),
+    });
+  }
+  for (const h of f.hours) {
+    chips.push({
+      id: `hours:${h}`,
+      label: HOURS_LABEL[h],
+      remove: (x) => ({ ...x, hours: without(x.hours, h) }),
     });
   }
   if (f.minRating !== null) {
@@ -198,6 +309,8 @@ export function filtersKey(f: Filters): string {
     f.radiusMeters,
     [...f.attributes].sort(),
     [...f.meals].sort(),
+    [...f.cuisines].sort(),
+    [...f.hours].sort(),
   ]);
 }
 
@@ -228,5 +341,7 @@ export function sanitizeFilters(input: unknown, defaultRadius = DEFAULT_RADIUS_M
     radiusMeters: oneOf(raw.radiusMeters, RADIUS_OPTIONS) ?? d.radiusMeters,
     attributes: pick(raw.attributes, ATTRIBUTE_OPTIONS),
     meals: pick(raw.meals, MEAL_OPTIONS),
+    cuisines: pick(raw.cuisines, CUISINE_OPTIONS),
+    hours: pick(raw.hours, HOURS_OPTIONS),
   };
 }

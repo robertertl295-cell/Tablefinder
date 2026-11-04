@@ -54,6 +54,24 @@ const KEEP_TAGS = [
   'contact:phone',
   'website',
   'contact:website',
+  // Filter: Ernährung, Ausstattung, Service
+  'diet:gluten_free',
+  'diet:halal',
+  'wheelchair',
+  'internet_access',
+  'smoking',
+  'delivery',
+  'reservation',
+  'payment:cash',
+  'payment:cards',
+  'payment:credit_cards',
+  'payment:debit_cards',
+  'payment:visa',
+  'payment:mastercard',
+  'payment:maestro',
+  'payment:girocard',
+  'payment:contactless',
+  'payment:american_express',
 ];
 
 const ENDPOINTS = [

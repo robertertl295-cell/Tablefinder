@@ -11,18 +11,24 @@ import { filterStore } from '@/store/filter-store';
 import { useActiveSource, useSourceCapabilities } from '@/hooks/use-active-source';
 import { SOURCE_LABEL } from '@/services/places/capabilities';
 import { settingsStore, useSettings, useUnits } from '@/store/settings-store';
-import type { Filters } from '@/types/filters';
+import type { AttributeKey, Filters } from '@/types/filters';
 import {
+  AMENITY_OPTIONS,
   ATTRIBUTE_LABEL,
-  ATTRIBUTE_OPTIONS,
   CATEGORY_OPTIONS,
   createDefaultFilters,
+  CUISINE_GROUPS,
+  CUISINE_OPTIONS,
+  DIET_OPTIONS,
+  HOURS_LABEL,
+  HOURS_OPTIONS,
   MEAL_LABEL,
   MEAL_OPTIONS,
   PRICE_OPTIONS,
   RADIUS_OPTIONS,
   RATING_COUNT_OPTIONS,
   RATING_OPTIONS,
+  SERVICE_OPTIONS,
   toggle,
 } from '@/utils/filters';
 import {
@@ -61,6 +67,21 @@ export default function FiltersSheet() {
   }, []);
 
   const update = (patch: Partial<Filters>) => setDraft((d) => ({ ...d, ...patch }));
+
+  /** Merkmal-Gruppe mit nur den Optionen, die die aktive Quelle liefert. */
+  const attributeSection = (title: string, options: readonly AttributeKey[], hint?: string) => {
+    const supported = options.filter((a) => caps.attributes.includes(a));
+    if (supported.length === 0) return null;
+    return (
+      <FilterSection title={title} hint={hint}>
+        <MultiChoice
+          options={supported.map((a) => ({ value: a, label: ATTRIBUTE_LABEL[a] }))}
+          values={draft.attributes}
+          onToggle={(a) => update({ attributes: toggle(draft.attributes, a) })}
+        />
+      </FilterSection>
+    );
+  };
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
@@ -121,16 +142,31 @@ export default function FiltersSheet() {
           />
         </FilterSection>
 
-        <View style={styles.switchRow}>
-          <ThemedText type="smallBold">Jetzt geöffnet</ThemedText>
-          <Switch
-            value={draft.openNow}
-            onValueChange={(openNow) => update({ openNow })}
-            trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
-            thumbColor="#FFFFFF"
-            accessibilityLabel="Nur jetzt geöffnete Lokale"
+        <FilterSection title="Küche">
+          <MultiChoice
+            options={CUISINE_OPTIONS.map((c) => ({ value: c, label: CUISINE_GROUPS[c].label }))}
+            values={draft.cuisines}
+            onToggle={(c) => update({ cuisines: toggle(draft.cuisines, c) })}
           />
-        </View>
+        </FilterSection>
+
+        <FilterSection title="Öffnungszeiten">
+          <View style={styles.switchRow}>
+            <ThemedText>Jetzt geöffnet</ThemedText>
+            <Switch
+              value={draft.openNow}
+              onValueChange={(openNow) => update({ openNow })}
+              trackColor={{ true: theme.accent, false: theme.backgroundSelected }}
+              thumbColor="#FFFFFF"
+              accessibilityLabel="Nur jetzt geöffnete Lokale"
+            />
+          </View>
+          <MultiChoice
+            options={HOURS_OPTIONS.map((h) => ({ value: h, label: HOURS_LABEL[h] }))}
+            values={draft.hours}
+            onToggle={(h) => update({ hours: toggle(draft.hours, h) })}
+          />
+        </FilterSection>
 
         {caps.ratings && (
           <>
@@ -184,18 +220,13 @@ export default function FiltersSheet() {
           />
         </FilterSection>
 
-        <FilterSection
-          title="Angebot"
-          hint="Zeigt nur Lokale, bei denen die Angabe ausdrücklich vorliegt.">
-          <MultiChoice
-            options={ATTRIBUTE_OPTIONS.filter((a) => caps.attributes.includes(a)).map((a) => ({
-              value: a,
-              label: ATTRIBUTE_LABEL[a],
-            }))}
-            values={draft.attributes}
-            onToggle={(a) => update({ attributes: toggle(draft.attributes, a) })}
-          />
-        </FilterSection>
+        {attributeSection('Ernährung', DIET_OPTIONS)}
+        {attributeSection('Ausstattung', AMENITY_OPTIONS)}
+        {attributeSection(
+          'Service',
+          SERVICE_OPTIONS,
+          'Bei Ernährung, Ausstattung und Service zählen nur ausdrückliche Angaben – Lokale ohne Angabe werden nicht angezeigt.',
+        )}
 
         {caps.meals && (
           <FilterSection title="Mahlzeit">

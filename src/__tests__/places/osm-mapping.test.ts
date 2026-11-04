@@ -117,3 +117,57 @@ describe('Suchtext', () => {
     expect(withoutPlaceWords(['ramen', 'prenzlauer', 'berg', 'berlin'])).toEqual(['ramen']);
   });
 });
+
+describe('Neue OSM-Angaben', () => {
+  const el = (tags: Record<string, string>) =>
+    mapOsmElement({
+      type: 'node',
+      id: 9,
+      lat: 52.5,
+      lon: 13.4,
+      tags: { amenity: 'restaurant', name: 'X', ...tags },
+    })!;
+
+  it('liest Ernährung, Ausstattung und Service', () => {
+    const a = el({
+      'diet:gluten_free': 'limited',
+      'diet:halal': 'yes',
+      wheelchair: 'yes',
+      internet_access: 'wlan',
+      smoking: 'outside',
+      takeaway: 'only',
+      delivery: 'no',
+      reservation: 'recommended',
+      'payment:girocard': 'yes',
+    }).attributes;
+    expect(a).toMatchObject({
+      glutenFree: true,
+      halal: true,
+      wheelchair: true,
+      wifi: true,
+      smokeFree: true,
+      takeaway: true,
+      delivery: false,
+      reservable: true,
+      cards: true,
+    });
+  });
+
+  it('„teilweise barrierefrei“ zählt nicht, Rauchen erlaubt ist nicht rauchfrei, nur bar = keine Karte', () => {
+    const a = el({ wheelchair: 'limited', smoking: 'yes', 'payment:cash': 'only' }).attributes;
+    expect(a).toMatchObject({ wheelchair: false, smokeFree: false, cards: false });
+  });
+
+  it('unbekannte Werte bleiben unbekannt', () => {
+    const a = el({ wheelchair: 'vielleicht', internet_access: 'terminal' }).attributes;
+    expect(a.wheelchair).toBeNull();
+    expect(a.wifi).toBeNull();
+    expect(a.cards).toBeNull();
+  });
+
+  it('übernimmt alle Küchen und die Öffnungszeiträume', () => {
+    const p = el({ cuisine: 'pizza;italian', opening_hours: 'Mo-Su 12:00-23:00' });
+    expect(p.cuisines).toEqual(['pizza', 'italian']);
+    expect(p.periods).toHaveLength(7);
+  });
+});

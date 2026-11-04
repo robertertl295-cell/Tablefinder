@@ -41,6 +41,21 @@ export type PlaceAttributes = {
   dogsAllowed: boolean | null;
   goodForGroups: boolean | null;
   goodForChildren: boolean | null;
+  /** Ernährung (nur OpenStreetMap: `diet:gluten_free`, `diet:halal`) */
+  glutenFree: boolean | null;
+  halal: boolean | null;
+  /** Rollstuhlgerecht (OSM `wheelchair`, Google `accessibilityOptions`) */
+  wheelchair: boolean | null;
+  /** WLAN für Gäste (nur OSM `internet_access`) */
+  wifi: boolean | null;
+  /** Zum Mitnehmen / Lieferung / Reservierung möglich */
+  takeaway: boolean | null;
+  delivery: boolean | null;
+  reservable: boolean | null;
+  /** Kartenzahlung (Kredit-, Debit- oder kontaktlos) */
+  cards: boolean | null;
+  /** Rauchfrei (nur OSM `smoking`) */
+  smokeFree: boolean | null;
   breakfast: boolean | null;
   lunch: boolean | null;
   dinner: boolean | null;
@@ -65,6 +80,10 @@ export type PlaceSummary = {
   businessStatus: BusinessStatus;
   photo: PhotoRef | null;
   attributes: PlaceAttributes;
+  /** Öffnungszeiträume (für Filter wie „sonntags geöffnet“); `null` = unbekannt. */
+  periods: OpeningPeriod[] | null;
+  /** Küchen im OSM-Stil, z. B. ["ramen", "japanese"] (für den Küchen-Filter). */
+  cuisines: string[];
 };
 
 export type DayTime = {
@@ -117,6 +136,15 @@ export const EMPTY_ATTRIBUTES: PlaceAttributes = {
   dogsAllowed: null,
   goodForGroups: null,
   goodForChildren: null,
+  glutenFree: null,
+  halal: null,
+  wheelchair: null,
+  wifi: null,
+  takeaway: null,
+  delivery: null,
+  reservable: null,
+  cards: null,
+  smokeFree: null,
   breakfast: null,
   lunch: null,
   dinner: null,

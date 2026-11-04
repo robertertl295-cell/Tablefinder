@@ -1,4 +1,5 @@
 import {
+  cuisinesFromTypes,
   mapPlaceDetails,
   mapPlaceSummary,
   mapPriceLevel,
@@ -149,5 +150,49 @@ describe('sortReviewsNewestFirst', () => {
       ],
     });
     expect(d.reviews.map((x) => x.id)).toEqual(['b', 'a']);
+  });
+});
+
+describe('Google: neue Angaben', () => {
+  it('leitet Küchen aus Typen ab (ohne Art/Mahlzeit-Typen)', () => {
+    expect(
+      cuisinesFromTypes([
+        'ramen_restaurant',
+        'japanese_restaurant',
+        'fast_food_restaurant',
+        'restaurant',
+        'food',
+      ]),
+    ).toEqual(['ramen', 'japanese']);
+  });
+
+  it('liest Service, Barrierefreiheit, Kartenzahlung und Öffnungszeiträume', () => {
+    const s = mapPlaceSummary({
+      ...FULL_PLACE,
+      takeout: true,
+      delivery: false,
+      reservable: true,
+      accessibilityOptions: { wheelchairAccessibleEntrance: true },
+      paymentOptions: { acceptsCreditCards: false, acceptsDebitCards: true },
+    });
+    expect(s.attributes).toMatchObject({
+      takeaway: true,
+      delivery: false,
+      reservable: true,
+      wheelchair: true,
+      cards: true,
+      vegan: null,
+      wifi: null,
+    });
+    expect(s.cuisines).toEqual(['ramen']);
+    expect(s.periods).toHaveLength(1);
+  });
+
+  it('„nur Barzahlung“ heißt keine Karte; fehlende Angaben bleiben unbekannt', () => {
+    expect(
+      mapPlaceSummary({ ...FULL_PLACE, paymentOptions: { acceptsCashOnly: true } }).attributes
+        .cards,
+    ).toBe(false);
+    expect(mapPlaceSummary({ ...FULL_PLACE }).attributes.cards).toBeNull();
   });
 });

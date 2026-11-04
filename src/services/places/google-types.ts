@@ -71,6 +71,21 @@ export type GPlace = {
   servesBreakfast?: boolean;
   servesLunch?: boolean;
   servesDinner?: boolean;
+  takeout?: boolean;
+  delivery?: boolean;
+  reservable?: boolean;
+  accessibilityOptions?: {
+    wheelchairAccessibleEntrance?: boolean;
+    wheelchairAccessibleSeating?: boolean;
+    wheelchairAccessibleRestroom?: boolean;
+    wheelchairAccessibleParking?: boolean;
+  };
+  paymentOptions?: {
+    acceptsCreditCards?: boolean;
+    acceptsDebitCards?: boolean;
+    acceptsCashOnly?: boolean;
+    acceptsNfc?: boolean;
+  };
 };
 
 export type GSearchResponse = { places?: GPlace[]; nextPageToken?: string };

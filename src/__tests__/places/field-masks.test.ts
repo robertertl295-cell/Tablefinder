@@ -32,3 +32,22 @@ describe('detailsFieldMask', () => {
     expect(new Set(fields).size).toBe(fields.length);
   });
 });
+
+describe('neue Felder', () => {
+  it('lädt Service-Felder nur mit Merkmalen, Öffnungszeiträume immer', () => {
+    const basic = searchFieldMask({ includeAttributes: false, withPageToken: false });
+    const full = searchFieldMask({ includeAttributes: true, withPageToken: false });
+    expect(basic).toContain('places.currentOpeningHours.periods');
+    expect(basic).not.toContain('takeout');
+    for (const f of [
+      'takeout',
+      'delivery',
+      'reservable',
+      'accessibilityOptions',
+      'paymentOptions',
+    ]) {
+      expect(full).toContain(`places.${f}`);
+    }
+    expect(detailsFieldMask()).not.toContain('currentOpeningHours.periods');
+  });
+});

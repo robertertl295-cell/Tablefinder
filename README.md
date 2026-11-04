@@ -10,7 +10,7 @@ Mobile App (iOS und Android) zur Suche nach Restaurants, Cafés, Bars, Bäckerei
 **Was Tablefinder von anderen Apps unterscheidet:**
 
 1. **Bewertungen ehrlich darstellen:** Sterne stehen immer zusammen mit der Anzahl der Bewertungen. Unter 30 Bewertungen erscheint deutlich „Wenig Datenbasis“. Die Detailseite zeigt, wie belastbar der Schnitt ist, und einen **Vertrauensscore**, nach dem sich die Treffer auch sortieren lassen.
-2. **Feine Filter:** Art, Mindestbewertung, Mindestanzahl Bewertungen, Preis, Umkreis, jetzt geöffnet, vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder, Frühstück, Mittag- und Abendessen.
+2. **Feine Filter:** Art, Küche, Öffnungszeiten (jetzt, spät, sonntags), Bewertung, Preis, Umkreis, Ernährung (vegetarisch, vegan, glutenfrei, halal), Ausstattung (Außenplätze, Hund, barrierefrei, WLAN, rauchfrei, Gruppen, Kinder), Service (Mitnehmen, Lieferung, Reservierung, Kartenzahlung) und Mahlzeiten.
 3. **Schnelle Favoriten:** eigene Listen, Notiz, „besucht“, eigene Bewertung und eine Sicherung als JSON-Datei.
 
 **Zwei Datenquellen:** Google Places (mit Bewertungen und Fotos, API-Key nötig) oder kostenlos OpenStreetMap (ohne Key, mit Vegan-Filter).
@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 329 Tests laufen ohne Fehler.
+- Typecheck, Lint und 349 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -233,19 +233,19 @@ placesProvider (index.ts)
 CachedPlacesProvider: Suche 2 Min., Details/Kurzdaten 5 Min.; bündelt gleichzeitige Anfragen
 ```
 
-| Datei                  | Aufgabe                                                                                                                                                       |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `google-provider.ts`   | Text Search (mit Suchbegriff), Nearby Search (ohne Suchbegriff), Place Details, Foto-URLs, Timeout nach 10 s                                                  |
-| `field-masks.ts`       | Feldmasken. Angebots-Merkmale (vegetarisch, Außenplätze …) werden nur mit `includeAttributes: true` geladen, weil sie eine teurere Abrechnungsstufe auslösen. |
-| `mapping.ts`           | Wandelt Google-Formate in eigene Typen um. Fehlende Angaben werden `null`, nie geraten. Rezensionen werden nach Datum sortiert.                               |
-| `place-types.ts`       | Welche Typen als Gastronomie gelten. Maßgeblich ist der Haupttyp, so fliegt z. B. ein Hotel mit Restaurant raus.                                              |
-| `query-filter.ts`      | Gemeinsame Prüfung (Gastronomie, Radius, Kategorie, Bewertung, Preis, geöffnet) für alle Anbieter                                                             |
-| `errors.ts`            | `PlacesError` mit `kind` (`network`, `timeout`, `quota`, `auth`, `not_found` …) und deutschen Meldungen für die Oberfläche                                    |
-| `overpass-provider.ts` | OpenStreetMap über die Overpass API: eine Abfrage pro Gebiet (10 Min. wiederverwendet), Suche, Filter und Seiten lokal, Sortierung nach Entfernung            |
-| `osm-mapping.ts`       | OSM-Tags → App-Modell: Art und Küche auf Deutsch, Adresse, `diet:vegan`/`diet:vegetarian`, `outdoor_seating`, `dog`, Öffnungszeiten                           |
-| `routing-provider.ts`  | Wählt pro Anfrage die richtige Quelle                                                                                                                         |
-| `capabilities.ts`      | Was jede Quelle kann (Bewertungen, Preise, Fotos, Merkmale) – steuert Filter und Anzeige                                                                      |
-| `mock-data.ts`         | Beispieldaten mit Sonderfällen: wenige oder keine Bewertungen, vorübergehend oder dauerhaft geschlossen, ein Hotel als Negativbeispiel                        |
+| Datei                  | Aufgabe                                                                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `google-provider.ts`   | Text Search (mit Suchbegriff), Nearby Search (ohne Suchbegriff), Place Details, Foto-URLs, Timeout nach 10 s                                                                                                  |
+| `field-masks.ts`       | Feldmasken. Angebots-Merkmale (vegetarisch, Außenplätze …) werden nur mit `includeAttributes: true` geladen, weil sie eine teurere Abrechnungsstufe auslösen.                                                 |
+| `mapping.ts`           | Wandelt Google-Formate in eigene Typen um. Fehlende Angaben werden `null`, nie geraten. Rezensionen werden nach Datum sortiert.                                                                               |
+| `place-types.ts`       | Welche Typen als Gastronomie gelten. Maßgeblich ist der Haupttyp, so fliegt z. B. ein Hotel mit Restaurant raus.                                                                                              |
+| `query-filter.ts`      | Gemeinsame Prüfung (Gastronomie, Radius, Kategorie, Bewertung, Preis, geöffnet) für alle Anbieter                                                                                                             |
+| `errors.ts`            | `PlacesError` mit `kind` (`network`, `timeout`, `quota`, `auth`, `not_found` …) und deutschen Meldungen für die Oberfläche                                                                                    |
+| `overpass-provider.ts` | OpenStreetMap über die Overpass API: eine Abfrage pro Gebiet (10 Min. wiederverwendet), Suche, Filter und Seiten lokal, Sortierung nach Entfernung                                                            |
+| `osm-mapping.ts`       | OSM-Tags → App-Modell: Art und Küche auf Deutsch, Adresse, `diet:*`, `outdoor_seating`, `dog`, `wheelchair`, `internet_access`, `smoking`, `takeaway`, `delivery`, `reservation`, `payment:*`, Öffnungszeiten |
+| `routing-provider.ts`  | Wählt pro Anfrage die richtige Quelle                                                                                                                                                                         |
+| `capabilities.ts`      | Was jede Quelle kann (Bewertungen, Preise, Fotos, Merkmale) – steuert Filter und Anzeige                                                                                                                      |
+| `mock-data.ts`         | Beispieldaten mit Sonderfällen: wenige oder keine Bewertungen, vorübergehend oder dauerhaft geschlossen, ein Hotel als Negativbeispiel                                                                        |
 
 **Mock-Daten:** Die Suche prüft, ob alle Wörter vorkommen, unabhängig von Groß-/Kleinschreibung und Akzenten. „vegan Kreuzberg“ findet also nur Lokale, die zu beiden Wörtern passen. Fotos sind neutrale Platzhalterbilder von picsum.photos und brauchen eine Internetverbindung.
 
@@ -313,19 +313,21 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Filter
 
-| Filter                                                     | Wo ausgewertet                                                |
-| ---------------------------------------------------------- | ------------------------------------------------------------- |
-| Art (Restaurant, Café, Bar, Bäckerei, Imbiss, Fast Food)   | API, wenn genau eine Art gewählt ist; bei mehreren in der App |
-| Mindestbewertung (3,5 / 4,0 / 4,5 ★)                       | API (Text Search) und App                                     |
-| Mindestanzahl Bewertungen (30+ / 100+ / 500+)              | App                                                           |
-| Preisniveau (€ bis €€€€, Mehrfachauswahl)                  | API (Text Search) und App                                     |
-| Jetzt geöffnet                                             | API (Text Search) und App                                     |
-| Umkreis (500 m bis 5 km)                                   | API                                                           |
-| Vegetarisch, Außenplätze, hundefreundlich, Gruppen, Kinder | App, Felder werden nur dann von Google geladen                |
-| Vegan                                                      | App, nur mit OpenStreetMap                                    |
-| Frühstück / Mittagessen / Abendessen                       | App, Felder werden nur dann von Google geladen                |
+| Bereich        | Filter                                                                                                                             | Wo ausgewertet                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Art            | Restaurant, Café, Bar, Bäckerei, Imbiss, Fast Food                                                                                 | API, wenn genau eine Art gewählt ist; bei mehreren in der App |
+| Küche          | Italienisch, Pizza, Asiatisch, Japanisch, Vietnamesisch, Indisch, Türkisch, Orientalisch, Deutsch, Burger, Mexikanisch, Griechisch | App (Google: Ortstypen, OSM: `cuisine`)                       |
+| Öffnungszeiten | Jetzt geöffnet                                                                                                                     | API (Text Search) und App                                     |
+|                | Heute spät geöffnet (bis mind. 23 Uhr), Sonntags geöffnet                                                                          | App, aus den Öffnungszeiten                                   |
+| Bewertung      | Mindestbewertung (3,5 / 4,0 / 4,5 ★), Mindestanzahl Bewertungen (30+ / 100+ / 500+)                                                | API und App; nur Google                                       |
+| Preis          | € bis €€€€, Mehrfachauswahl                                                                                                        | API (Text Search) und App; nur Google                         |
+| Umkreis        | 500 m bis 5 km                                                                                                                     | API                                                           |
+| Ernährung      | Vegetarisch, Vegan, Glutenfrei, Halal                                                                                              | App; Vegan, Glutenfrei, Halal nur mit OpenStreetMap           |
+| Ausstattung    | Außenplätze, hundefreundlich, barrierefrei, WLAN, rauchfrei, Gruppen, Kinder                                                       | App; WLAN/rauchfrei nur OSM, Gruppen/Kinder nur Google        |
+| Service        | Zum Mitnehmen, Lieferung, Reservierung möglich, Kartenzahlung                                                                      | App                                                           |
+| Mahlzeit       | Frühstück / Mittagessen / Abendessen                                                                                               | App, nur Google                                               |
 
-- **Fehlende Angaben:** Bei Merkmalen und Mahlzeiten gilt nur ein ausdrückliches „ja“. Fehlt die Angabe, fällt das Lokal heraus. Lieber ein Treffer zu wenig als ein Lokal, das sich vor Ort als unpassend herausstellt.
+- **Fehlende Angaben:** Bei Ernährung, Ausstattung, Service, Mahlzeiten und Öffnungszeiten gilt nur ein ausdrückliches „ja“. Fehlt die Angabe, fällt das Lokal heraus. Lieber ein Treffer zu wenig als ein Lokal, das sich vor Ort als unpassend herausstellt.
 - **Übernahme:** Änderungen im Filter-Sheet greifen erst beim Schließen, per „Fertig“ oder Wischgeste. So löst nicht jeder einzelne Tipp eine kostenpflichtige Anfrage aus.
 - **Nachladen beim Filtern:** Filtert die App selbst, lädt sie automatisch weitere Seiten, bis mindestens 8 Treffer da sind. Pro Suche sind es höchstens 3 Seiten (Kostenbremse).
 - **Bedienung:** Aktive Filter stehen als Chips unter der Suche, ein Tipp entfernt sie. Ab zwei Filtern gibt es „Zurücksetzen“, im Leerzustand „Filter zurücksetzen“.
@@ -399,7 +401,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Tests
 
-329 Tests in 34 Dateien (`npm test`):
+349 Tests in 35 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -458,7 +460,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
   - Die Umgebungssuche (ohne Begriff) liefert höchstens 20 Treffer und kein Nachladen.
   - Die Textsuche liefert bis zu 60 Treffer.
   - Die Textsuche lässt sich nur auf ein Rechteck begrenzen. Treffer außerhalb des Kreises filtert die App heraus, Seiten können daher kürzer sein.
-- **Vegan:** Google kennt nur „vegetarisch“. Den Vegan-Filter gibt es daher nur mit OpenStreetMap.
+- **Vegan, glutenfrei, halal, WLAN, rauchfrei:** Kennt Google nicht. Diese Filter gibt es daher nur mit OpenStreetMap.
 - **Mindestbewertung:** Sie wird wie bei Google auf halbe Sterne abgerundet (4,7 → 4,5).
 - **Teure Filter:** Merkmal-Filter (vegetarisch, Außenplätze …) lösen bei Google eine teurere Abrechnungsstufe aus.
 

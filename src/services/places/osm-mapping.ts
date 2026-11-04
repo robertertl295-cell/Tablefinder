@@ -74,6 +74,30 @@ const AMENITY: Record<string, { label: string; type: string }> = {
 /** Für die Overpass-Abfrage: alle berücksichtigten `amenity`-Werte. */
 export const OSM_AMENITIES = Object.keys(AMENITY);
 
+/** Nur ausdrückliche Angaben zählen; unbekannte Werte bleiben `null`. */
+const oneOf = (v: string | undefined, yes: string[], no: string[]): boolean | null =>
+  v === undefined ? null : yes.includes(v) ? true : no.includes(v) ? false : null;
+
+const CARD_TAGS = [
+  'payment:credit_cards',
+  'payment:debit_cards',
+  'payment:cards',
+  'payment:visa',
+  'payment:mastercard',
+  'payment:maestro',
+  'payment:girocard',
+  'payment:contactless',
+  'payment:american_express',
+];
+
+/** Karte: eine Kartenart ausdrücklich ja → ja; „nur bar“ oder alle Karten nein → nein. */
+function cardsFromTags(tags: Record<string, string>): boolean | null {
+  if (CARD_TAGS.some((k) => tags[k] === 'yes')) return true;
+  if (tags['payment:cash'] === 'only' || tags['payment:cards'] === 'no') return false;
+  if (tags['payment:credit_cards'] === 'no' && tags['payment:debit_cards'] === 'no') return false;
+  return null;
+}
+
 const yesNo = (v: string | undefined): boolean | null => {
   if (v === undefined) return null;
   if (['yes', 'only', 'limited', 'leashed', 'outside'].includes(v)) return true;
@@ -147,6 +171,20 @@ export function mapOsmElement(el: OverpassElement): PlaceDetails | null {
     vegan: veganTag,
     outdoorSeating: yesNo(tags.outdoor_seating),
     dogsAllowed: yesNo(tags.dog),
+    glutenFree: oneOf(tags['diet:gluten_free'], ['yes', 'only', 'limited'], ['no']),
+    halal: oneOf(tags['diet:halal'], ['yes', 'only'], ['no']),
+    // „limited“ = nur teilweise zugänglich → nicht barrierefrei
+    wheelchair: oneOf(tags.wheelchair, ['yes', 'designated'], ['no', 'limited']),
+    wifi: oneOf(tags.internet_access, ['wlan', 'yes', 'wifi'], ['no']),
+    smokeFree: oneOf(
+      tags.smoking,
+      ['no', 'outside'],
+      ['yes', 'isolated', 'separated', 'dedicated'],
+    ),
+    takeaway: oneOf(tags.takeaway, ['yes', 'only'], ['no']),
+    delivery: oneOf(tags.delivery, ['yes', 'only'], ['no']),
+    reservable: oneOf(tags.reservation, ['yes', 'recommended', 'required'], ['no']),
+    cards: cardsFromTags(tags),
   };
 
   const hours = parseOsmOpeningHours(tags.opening_hours);
@@ -174,6 +212,8 @@ export function mapOsmElement(el: OverpassElement): PlaceDetails | null {
     website: withScheme(tags.website ?? tags['contact:website']),
     mapsUri: `https://www.openstreetmap.org/${el.type}/${el.id}`,
     openingHours: hours ? { openNow: null, ...hours } : null,
+    periods: hours && hours.periods.length ? hours.periods : null,
+    cuisines,
     photos: [],
     reviews: [],
   };

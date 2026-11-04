@@ -14,6 +14,8 @@ import {
   type Review,
 } from '@/types/place';
 
+import { cuisinesFromTypes } from './mapping';
+
 export type MockPlace = PlaceDetails & {
   /** Zusätzliche Suchbegriffe (Küche, Stichworte). */
   keywords: string[];
@@ -99,6 +101,27 @@ type Input = {
   reviews?: Review[];
 };
 
+/** Zusätzliche Angaben zu Service und Ausstattung (wie Google sie liefern würde). */
+const EXTRA: Record<string, Partial<PlaceAttributes>> = {
+  'mock-ramen-kreuzberg': { takeaway: true, reservable: false, cards: true, wheelchair: false },
+  'mock-vegan-kreuzberg': { takeaway: true, cards: true, wheelchair: true },
+  'mock-cafe-mitte': { takeaway: true, cards: true, wheelchair: true },
+  'mock-bakery-prenzlauer': { takeaway: true, cards: false },
+  'mock-doener-kreuzberg': { takeaway: true, delivery: true, cards: false },
+  'mock-italian-charlottenburg': {
+    reservable: true,
+    delivery: true,
+    cards: true,
+    wheelchair: true,
+  },
+  'mock-vietnamese-friedrichshain': { takeaway: true, delivery: true, cards: true },
+  'mock-burger-friedrichshain': { takeaway: true, delivery: true, cards: true, wheelchair: true },
+  'mock-fine-mitte': { reservable: true, cards: true, wheelchair: true },
+  'mock-sushi-prenzlauer': { reservable: true, delivery: true, cards: true },
+  'mock-lunch-mitte': { takeaway: true, cards: true },
+  'mock-wine-schoeneberg': { reservable: true, cards: true },
+};
+
 function place(i: Input): MockPlace {
   const photos = Array.from({ length: i.photoCount ?? 3 }, (_, n) => ({
     name: `mock/${i.id}/${n}`,
@@ -121,7 +144,7 @@ function place(i: Input): MockPlace {
     openNow: i.openNow,
     businessStatus: i.businessStatus ?? 'operational',
     photo: photos[0] ?? null,
-    attributes: { ...EMPTY_ATTRIBUTES, ...i.attributes },
+    attributes: { ...EMPTY_ATTRIBUTES, ...i.attributes, ...EXTRA[i.id] },
     source: 'mock',
     formattedAddress,
     phone: i.phone ?? null,
@@ -129,6 +152,8 @@ function place(i: Input): MockPlace {
     website: i.website ?? null,
     mapsUri: null,
     openingHours: i.schedules.length ? hours(i.schedules, i.openNow) : null,
+    periods: i.schedules.length ? hours(i.schedules, i.openNow).periods : null,
+    cuisines: cuisinesFromTypes(i.types ?? [i.primaryType]),
     photos,
     reviews: i.reviews ?? [],
     keywords: i.keywords,
