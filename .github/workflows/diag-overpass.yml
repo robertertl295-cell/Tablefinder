@@ -1,0 +1,46 @@
+name: Diagnose Overpass
+
+# Vorübergehend: prüft, welche Anfragen die Overpass-Server annehmen.
+on:
+  push:
+    branches: [diag/overpass]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Varianten testen
+        run: |
+          Q="$(cat scripts/diag-query.overpassql)"
+          UA_BROWSER='Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+          UA_APP='Tablefinder/0.1 (+https://github.com/robertertl295-cell/Tablefinder)'
+          probe () {
+            label="$1"; shift
+            out=$(curl -sS -m 40 -o body.txt -w '%{http_code} %{time_total}s %{size_download}B' "$@" 2>&1) || true
+            echo "== $label → $out"
+            head -c 300 body.txt | tr '\n' ' '; echo; echo
+          }
+          for EP in https://overpass-api.de/api/interpreter https://overpass.private.coffee/api/interpreter https://overpass.kumi.systems/api/interpreter; do
+            echo "################ $EP"
+            probe "POST wie App (Browser-UA, Accept json, Origin github.io)" -X POST "$EP" \
+              -H "User-Agent: $UA_BROWSER" -H 'Accept: application/json' \
+              -H 'Origin: https://robertertl295-cell.github.io' -H 'Referer: https://robertertl295-cell.github.io/' \
+              -H 'Content-Type: application/x-www-form-urlencoded;charset=UTF-8' --data-urlencode "data=$Q"
+            probe "POST ohne Accept-json (Browser-UA, Origin)" -X POST "$EP" \
+              -H "User-Agent: $UA_BROWSER" -H 'Accept: */*' \
+              -H 'Origin: https://robertertl295-cell.github.io' \
+              -H 'Content-Type: application/x-www-form-urlencoded;charset=UTF-8' --data-urlencode "data=$Q"
+            probe "POST App-UA, kein Origin" -X POST "$EP" \
+              -H "User-Agent: $UA_APP" -H 'Accept: */*' --data-urlencode "data=$Q"
+            probe "GET Browser-Navigation (text/html)" -G "$EP" \
+              -H "User-Agent: $UA_BROWSER" -H 'Accept: text/html,application/xhtml+xml,*/*;q=0.8' --data-urlencode "data=$Q"
+            probe "GET App-UA, Accept */*" -G "$EP" \
+              -H "User-Agent: $UA_APP" -H 'Accept: */*' --data-urlencode "data=$Q"
+            probe "OPTIONS Preflight (CORS)" -X OPTIONS "$EP" -i \
+              -H 'Origin: https://robertertl295-cell.github.io' -H 'Access-Control-Request-Method: POST'
+          done
