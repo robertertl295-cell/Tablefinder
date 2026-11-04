@@ -20,7 +20,7 @@ const CATALOG = JSON.parse(readFileSync('scripts/placeholder-catalog.json', 'utf
 const OUT_DIR = 'public/placeholders';
 const MANIFEST = 'src/services/placeholders/manifest.json';
 
-const MODEL = process.env.IMAGE_MODEL || 'gpt-image-1';
+const MODEL = process.env.IMAGE_MODEL || 'gpt-image-2';
 const QUALITY = process.env.IMAGE_QUALITY || 'medium';
 const MAX_IMAGES = Number(process.env.MAX_IMAGES || 200);
 const CONCURRENCY = Number(process.env.CONCURRENCY || 3);

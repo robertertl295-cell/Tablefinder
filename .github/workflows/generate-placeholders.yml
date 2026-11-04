@@ -19,6 +19,11 @@ on:
         type: choice
         options: [medium, low, high]
         default: medium
+      model:
+        description: 'Bildmodell der OpenAI-API'
+        type: choice
+        options: [gpt-image-2, gpt-image-1.5, gpt-image-1]
+        default: gpt-image-2
       dry_run:
         description: 'Probelauf: nur Prompts anzeigen, nichts erzeugen'
         type: boolean
@@ -56,6 +61,7 @@ jobs:
           ONLY: ${{ inputs.only }}
           FORCE: ${{ inputs.force && '1' || '' }}
           IMAGE_QUALITY: ${{ inputs.quality }}
+          IMAGE_MODEL: ${{ inputs.model }}
           DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
 
       - name: Bilder committen
