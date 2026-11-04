@@ -14,16 +14,24 @@ export type AppConfig = {
   placesApiKey: string | null;
   /** Täglicher OSM-Datensatz für Berlin; `null` = live bei Overpass fragen. */
   osmDatasetUrl: string | null;
+  /** Ordner mit den KI-Symbolbildern (public/placeholders); `null` = keine Symbolbilder. */
+  placeholderBaseUrl: string | null;
 };
 
 export function readConfig(env: Record<string, string | undefined> = process.env): AppConfig {
   const key = env.EXPO_PUBLIC_PLACES_API_KEY?.trim();
   const dataset = env.EXPO_PUBLIC_OSM_DATASET_URL?.trim();
-  return { placesApiKey: key ? key : null, osmDatasetUrl: dataset ? dataset : null };
+  const placeholders = env.EXPO_PUBLIC_PLACEHOLDER_BASE_URL?.trim();
+  return {
+    placesApiKey: key ? key : null,
+    osmDatasetUrl: dataset ? dataset : null,
+    placeholderBaseUrl: placeholders ? placeholders : null,
+  };
 }
 
 export const config: AppConfig = readConfig({
   // Expo ersetzt nur direkte Zugriffe auf process.env.EXPO_PUBLIC_* statisch.
   EXPO_PUBLIC_PLACES_API_KEY: process.env.EXPO_PUBLIC_PLACES_API_KEY,
   EXPO_PUBLIC_OSM_DATASET_URL: process.env.EXPO_PUBLIC_OSM_DATASET_URL,
+  EXPO_PUBLIC_PLACEHOLDER_BASE_URL: process.env.EXPO_PUBLIC_PLACEHOLDER_BASE_URL,
 });

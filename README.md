@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 351 Tests laufen ohne Fehler.
+- Typecheck, Lint und 365 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -349,6 +349,15 @@ Vertrauensscore = (k · m + n · r) / (k + n)
   - Rezensionen, neueste zuerst, mit Autor und Quellenangabe
 - **Dauerhaft geschlossen:** Solche Lokale bekommen einen deutlichen Hinweis.
 
+## Symbolbilder (KI)
+
+OpenStreetMap hat keine Fotos. Damit die Liste nicht leer wirkt, zeigt die App für Lokale ohne Foto ein KI-erzeugtes **Symbolbild** mit dem Hinweis „Symbolbild (KI)“.
+
+- **Katalog:** `scripts/placeholder-catalog.json` – 23 Typen (Pizza, Italienisch, Japanisch, Vietnamesisch, Thai, Chinesisch, Koreanisch, Asiatisch, Indisch, Türkisch/Döner, Orientalisch, Deutsch, Burger, Mexikanisch, Griechisch, Restaurant, Café, Bäckerei, Bar, Kneipe, Biergarten, Eisdiele, Imbiss) mit je 6 Szenen (Gericht, Gastraum, Terrasse, vegetarisch, Detail) und wechselndem Licht, aber einheitlichem Fotostil.
+- **Erzeugen:** GitHub Action „Symbolbilder erzeugen“ (nur per Hand) mit `scripts/generate-placeholders.mjs` und der OpenAI-Bild-API (Secret `OPENAI_API_KEY`, ca. 138 Bilder, wenige Euro). Vorhandene Bilder werden übersprungen; `DRY_RUN` zeigt nur die Prompts. Die Bilder landen verkleinert (1200 px, WebP) in `public/placeholders/`, `src/services/placeholders/manifest.json` listet sie; danach wird die Web-App neu veröffentlicht.
+- **Zuordnung:** `src/services/placeholders/placeholders.ts` – Typ aus Küche (spezifisch vor allgemein), sonst aus Art; Variante per Hash der Orts-ID, also stabil pro Lokal und verschieden zwischen Nachbarn. Terrassen-Motive nur bei Lokalen mit Außenplätzen, vegetarische Lokale bekommen häufig ein vegetarisches Motiv. Fehlt ein Typ, nimmt die App ein allgemeines Restaurant-Bild; ohne Bilder bleibt alles wie vorher.
+- **Native App:** `EXPO_PUBLIC_PLACEHOLDER_BASE_URL` auf die veröffentlichte Adresse setzen (siehe `.env.example`).
+
 ## Favoriten
 
 - **Merken:** Das Herz sitzt auf jeder Ergebniskarte, in der Kartenansicht und auf der Detailseite. Hat ein Favorit schon eigene Angaben, fragt die App vor dem Entfernen nach.
@@ -401,7 +410,7 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 
 ## Tests
 
-351 Tests in 36 Dateien (`npm test`):
+365 Tests in 37 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

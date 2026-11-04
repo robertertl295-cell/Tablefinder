@@ -10,6 +10,8 @@ import { formatDistance, formatPriceLevel, formatRating } from '@/utils/format';
 import { placeAccessibilityLabel, placeStatus, type StatusTone } from '@/utils/place-labels';
 import { trustScore } from '@/utils/trust-score';
 
+import { placeholderFor } from '@/services/placeholders/placeholders';
+
 import { PlacePhoto } from './place-photo';
 import { RatingLine } from './rating-line';
 
@@ -52,6 +54,7 @@ export function PlaceCard({
     distanceMeters !== null ? formatDistance(distanceMeters, units) : null,
   ].filter(Boolean);
   const isClosed = place.businessStatus === 'closed_permanently';
+  const placeholder = place.photo ? null : placeholderFor(place);
   const score = showTrustScore ? trustScore(place.rating, place.ratingCount) : null;
 
   return (
@@ -73,10 +76,11 @@ export function PlaceCard({
             opacity: pressed ? 0.85 : 1,
           },
         ]}>
-        {/* OSM hat keine Fotos – dann keine leere Fläche zeigen. */}
-        {(place.photo || place.source !== 'osm') && (
+        {/* OSM hat keine Fotos: dann KI-Symbolbild, sonst keine leere Fläche. */}
+        {(place.photo || place.source !== 'osm' || placeholder) && (
           <PlacePhoto
             photo={place.photo}
+            placeholder={placeholder}
             width={compact ? 96 : width}
             style={[compact ? styles.photoCompact : styles.photo, isClosed && styles.dimmed]}
           />

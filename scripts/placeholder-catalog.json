@@ -1,0 +1,704 @@
+{
+  "$comment": "Symbolbilder (KI) je Restaurant-Typ. Jede Gruppe hat 6 Szenen. tags steuern die Auswahl in der App (terrace = Außenplätze, veggie = vegetarisch/vegan). Gruppen-Schlüssel müssen zu src/services/placeholders/groups.ts passen (Test prüft das).",
+  "style": "Editorial food and restaurant photography, shot on a full-frame camera with a 35mm lens, natural light, shallow depth of field, authentic and slightly imperfect, warm but muted colours, Berlin setting. No text, no lettering, no signs with words, no logos, no watermark, no recognisable faces.",
+  "lighting": [
+    "soft morning daylight from a window",
+    "bright overcast midday light",
+    "golden late-afternoon sun",
+    "warm evening light with candles and pendant lamps",
+    "cool blue-hour light outside mixed with warm interior light",
+    "dappled light through leaves"
+  ],
+  "groups": {
+    "pizza": {
+      "label": "Pizzeria",
+      "place": "pizzeria",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a Neapolitan margherita pizza with blistered crust on a marble table, seen from above"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a wood-fired oven with a pizza peel sliding a pizza in, flames glowing"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a small casual pizzeria interior with tiled walls and wooden stools"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "two pizzas and drinks on a small table on a Berlin sidewalk terrace"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a vegetable pizza with grilled courgette, peppers and fresh basil, close-up"
+        },
+        {
+          "tags": ["detail"],
+          "text": "hands stretching pizza dough on a floured counter, close-up without faces"
+        }
+      ]
+    },
+    "italian": {
+      "label": "Italienisches Restaurant",
+      "place": "Italian trattoria",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a plate of fresh tagliatelle with ragù and parmesan on a linen tablecloth"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a shared table with antipasti, burrata, olives and bread, seen from above"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a warm Italian trattoria interior with wooden tables, wine bottles on shelves"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "an outdoor table with pasta and a glass of red wine under a canvas awning in a Berlin street"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a creamy mushroom risotto with herbs in a ceramic bowl"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a glass of espresso and a tiramisu on a small marble table"
+        }
+      ]
+    },
+    "japanese": {
+      "label": "Japanisches Restaurant",
+      "place": "Japanese restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "an assortment of nigiri and maki sushi on a dark wooden board"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a steaming bowl of tonkotsu ramen with egg, chashu and spring onions"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a minimalist Japanese restaurant counter with light wood and paper lamps"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a bento box and green tea on a small outdoor table on a quiet Berlin street"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a vegetarian ramen bowl with tofu, corn, mushrooms and nori"
+        },
+        {
+          "tags": ["detail"],
+          "text": "chopsticks resting on a ceramic holder next to a bowl of miso soup"
+        }
+      ]
+    },
+    "vietnamese": {
+      "label": "Vietnamesisches Restaurant",
+      "place": "Vietnamese restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a large bowl of pho with fresh herbs, lime and chili on the side"
+        },
+        {
+          "tags": ["dish"],
+          "text": "fresh summer rolls with peanut dipping sauce on a bamboo plate"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a bright Vietnamese canteen interior with plants and simple wooden tables"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "bowls of bun noodle salad on an outdoor table with green plants in a Berlin street"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a colourful tofu and vegetable bowl with rice noodles and herbs"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a glass of Vietnamese iced coffee with condensed milk"
+        }
+      ]
+    },
+    "thai": {
+      "label": "Thailändisches Restaurant",
+      "place": "Thai restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a plate of pad thai with shrimp, peanuts and lime"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a bowl of green curry with jasmine rice on the side"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a cosy Thai restaurant interior with warm lanterns and teak wood"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "Thai dishes shared on an outdoor table under string lights"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a red curry with tofu and vegetables in a clay bowl"
+        },
+        {
+          "tags": ["detail"],
+          "text": "fresh lemongrass, chilies and Thai basil on a wooden board"
+        }
+      ]
+    },
+    "chinese": {
+      "label": "Chinesisches Restaurant",
+      "place": "Chinese restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "bamboo steamers with dumplings, seen from above"
+        },
+        {
+          "tags": ["dish"],
+          "text": "hand-pulled noodles with chili oil and spring onions in a bowl"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a lively Chinese restaurant interior with round tables and a lazy susan"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "several Chinese dishes on an outdoor table in a Berlin courtyard"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "mapo tofu and stir-fried green vegetables in bowls"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a teapot and small cups of jasmine tea on a wooden table"
+        }
+      ]
+    },
+    "korean": {
+      "label": "Koreanisches Restaurant",
+      "place": "Korean restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a bibimbap in a hot stone bowl with a raw egg yolk on top"
+        },
+        {
+          "tags": ["dish"],
+          "text": "Korean barbecue meat sizzling on a table grill with banchan side dishes"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a modern Korean restaurant interior with table grills and extractor hoods"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "Korean fried chicken and drinks on an outdoor table in the evening"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a vegetable bibimbap with tofu and kimchi"
+        },
+        {
+          "tags": ["detail"],
+          "text": "small bowls of kimchi and pickled side dishes, close-up"
+        }
+      ]
+    },
+    "asian": {
+      "label": "Asiatisches Restaurant",
+      "place": "pan-Asian restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a wok of stir-fried noodles with vegetables and sesame"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a crispy duck dish with rice and pak choi"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a modern pan-Asian restaurant interior with dark wood and warm lights"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "rice bowls and drinks on an outdoor table on a Berlin sidewalk"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a poke-style bowl with tofu, edamame, avocado and rice"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a wok over a high flame in a restaurant kitchen, motion and steam"
+        }
+      ]
+    },
+    "indian": {
+      "label": "Indisches Restaurant",
+      "place": "Indian restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "butter chicken with naan bread and basmati rice in copper bowls"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a thali platter with several small curries, dal and rice"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a warm Indian restaurant interior with rich colours and brass lamps"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "curries and mango lassi on an outdoor table in a Berlin street"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "palak paneer and chana masala with naan, seen from above"
+        },
+        {
+          "tags": ["detail"],
+          "text": "colourful spices in small bowls on a dark wooden table"
+        }
+      ]
+    },
+    "turkish": {
+      "label": "Türkisches Restaurant / Döner",
+      "place": "Turkish grill restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a Berlin-style döner kebab sandwich with salad and sauce, close-up"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a grilled meat platter with bulgur, grilled peppers and tomatoes"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a Turkish grill restaurant interior with a vertical rotisserie and tiled counter"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "Turkish dishes and tea glasses on an outdoor table on a Kreuzberg street"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a mezze plate with hummus, ezme, stuffed vine leaves and flatbread"
+        },
+        {
+          "tags": ["detail"],
+          "text": "Turkish tea in tulip glasses on a small copper tray"
+        }
+      ]
+    },
+    "middle_eastern": {
+      "label": "Orientalisches Restaurant",
+      "place": "Middle Eastern restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a falafel plate with hummus, tabbouleh and pickles"
+        },
+        {
+          "tags": ["dish"],
+          "text": "shawarma wrapped in thin flatbread, cut in half, close-up"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a cosy Lebanese restaurant interior with patterned tiles and lanterns"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a shared mezze table outdoors in warm afternoon light"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a colourful vegetarian mezze spread with baba ganoush and muhammara"
+        },
+        {
+          "tags": ["detail"],
+          "text": "fresh flatbread and za'atar with olive oil on a wooden board"
+        }
+      ]
+    },
+    "german": {
+      "label": "Deutsches Restaurant",
+      "place": "traditional German restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a Wiener schnitzel with potato salad and a lemon wedge"
+        },
+        {
+          "tags": ["dish"],
+          "text": "Berlin currywurst with fries on a white plate"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a traditional Berlin pub-restaurant interior with dark wood panelling"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a beer and a hearty dish on an outdoor table under chestnut trees"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "Käsespätzle with crispy onions in a cast-iron pan"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a freshly tapped pilsner with a foamy head on a beer mat without text"
+        }
+      ]
+    },
+    "burger": {
+      "label": "Burger-Restaurant",
+      "place": "burger restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a juicy cheeseburger with fries on a metal tray"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a burger cut in half showing the layers, close-up"
+        },
+        {
+          "tags": ["interior"],
+          "text": "an industrial-style burger bar interior with neon-free warm lights"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "burgers and drinks on an outdoor table on a Berlin sidewalk"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a plant-based burger with avocado and sweet potato fries"
+        },
+        {
+          "tags": ["detail"],
+          "text": "burger patties sizzling on a flat-top grill"
+        }
+      ]
+    },
+    "mexican": {
+      "label": "Mexikanisches Restaurant",
+      "place": "Mexican restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "three tacos al pastor with pineapple, coriander and lime"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a burrito bowl with rice, beans, salsa and guacamole"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a colourful Mexican restaurant interior with painted tiles and plants"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "nachos and drinks on an outdoor table in the evening"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "vegetarian tacos with grilled vegetables and black beans"
+        },
+        {
+          "tags": ["detail"],
+          "text": "fresh guacamole in a molcajete with tortilla chips"
+        }
+      ]
+    },
+    "greek": {
+      "label": "Griechisches Restaurant",
+      "place": "Greek taverna",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a gyros plate with tzatziki, fries and tomatoes"
+        },
+        {
+          "tags": ["dish"],
+          "text": "grilled octopus with lemon and olive oil on a white plate"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a Greek taverna interior with white walls and blue wooden chairs"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a Greek salad and souvlaki on an outdoor table under a vine"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a Greek salad with feta, olives and oregano, seen from above"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a carafe of white wine and olives on a checked tablecloth"
+        }
+      ]
+    },
+    "restaurant": {
+      "label": "Restaurant",
+      "place": "neighbourhood restaurant",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a beautifully plated modern European dish on a ceramic plate"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a shared table with several seasonal dishes, seen from above"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a stylish neighbourhood restaurant interior in an old Berlin building with high ceilings"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "set tables on a restaurant terrace on a tree-lined Berlin street"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a colourful vegetable plate with grains and herbs"
+        },
+        {
+          "tags": ["detail"],
+          "text": "wine glasses and cutlery on a set table, close-up"
+        }
+      ]
+    },
+    "cafe": {
+      "label": "Café",
+      "place": "café",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a flat white with latte art and a croissant on a small marble table"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a brunch plate with eggs, avocado toast and fruit, seen from above"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a cosy Berlin café interior with mismatched chairs, plants and big windows"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "coffee cups on a small bistro table outside a café on a cobblestone sidewalk"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a bowl of granola with yoghurt, berries and a matcha latte"
+        },
+        {
+          "tags": ["detail"],
+          "text": "an espresso machine pouring a shot, close-up"
+        }
+      ]
+    },
+    "bakery": {
+      "label": "Bäckerei",
+      "place": "bakery",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "fresh crusty bread loaves and rolls on wooden shelves"
+        },
+        {
+          "tags": ["dish"],
+          "text": "pastries and cakes in a glass display counter"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a small neighbourhood bakery interior in the morning"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a coffee and a pastry on a small bench outside a bakery"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a sourdough loaf cut open on a linen cloth"
+        },
+        {
+          "tags": ["detail"],
+          "text": "flour-dusted hands shaping dough, close-up without faces"
+        }
+      ]
+    },
+    "bar": {
+      "label": "Bar",
+      "place": "cocktail bar",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "two cocktails with garnish on a dark wooden bar counter"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a gin and tonic with lime in a highball glass, close-up"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a dimly lit Berlin cocktail bar interior with a backlit bottle shelf"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "drinks on an outdoor table on a Berlin sidewalk at dusk"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a glass of natural wine and a small plate of snacks"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a bartender's hands stirring a cocktail, close-up without faces"
+        }
+      ]
+    },
+    "pub": {
+      "label": "Kneipe",
+      "place": "corner pub",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "two pints of beer on a worn wooden table"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a bowl of salted pretzels and a beer"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a classic Berlin Eckkneipe interior with wooden bar and old lamps"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "beer glasses on a table outside a corner pub in the evening"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a plate of fries and a beer on a pub table"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a beer being tapped from a brass tap, close-up"
+        }
+      ]
+    },
+    "biergarten": {
+      "label": "Biergarten",
+      "place": "beer garden",
+      "scenes": [
+        {
+          "tags": ["terrace"],
+          "text": "long wooden tables in a beer garden under chestnut trees"
+        },
+        {
+          "tags": ["terrace", "dish"],
+          "text": "a large beer and a pretzel on a beer garden table"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a beer garden by a canal in Berlin with string lights"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "beer garden benches and tables in late summer sun"
+        },
+        {
+          "tags": ["veggie", "terrace", "dish"],
+          "text": "Obatzda, radishes and bread on a beer garden table"
+        },
+        {
+          "tags": ["terrace", "detail"],
+          "text": "glasses of beer clinking, close-up, no faces"
+        }
+      ]
+    },
+    "ice_cream": {
+      "label": "Eisdiele",
+      "place": "ice cream parlour",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a waffle cone with two scoops of gelato, close-up"
+        },
+        {
+          "tags": ["dish"],
+          "text": "a gelato display counter with colourful flavours"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a bright small ice cream parlour interior with pastel tiles"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "ice cream cups on a bench outside an ice cream shop in summer"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a cup of sorbet in mango and raspberry"
+        },
+        {
+          "tags": ["detail"],
+          "text": "a scoop of pistachio gelato being served with a spatula"
+        }
+      ]
+    },
+    "imbiss": {
+      "label": "Imbiss",
+      "place": "snack bar",
+      "scenes": [
+        {
+          "tags": ["dish"],
+          "text": "a paper tray of fries with mayo and ketchup"
+        },
+        {
+          "tags": ["dish"],
+          "text": "falafel wraps and fries on a stand-up counter"
+        },
+        {
+          "tags": ["interior"],
+          "text": "a small Berlin Imbiss with a counter and a few stools"
+        },
+        {
+          "tags": ["terrace"],
+          "text": "a standing table outside a snack bar with food on paper plates"
+        },
+        {
+          "tags": ["veggie", "dish"],
+          "text": "a halloumi wrap with salad, cut in half"
+        },
+        {
+          "tags": ["detail"],
+          "text": "food sizzling on a griddle in a snack bar, close-up"
+        }
+      ]
+    }
+  }
+}

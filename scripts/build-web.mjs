@@ -24,6 +24,8 @@ execFileSync('npx', ['expo', 'export', '--platform', 'web', '--output-dir', OUT,
     // Der tägliche OSM-Datensatz liegt neben der App (siehe fetch-osm-berlin.mjs).
     EXPO_PUBLIC_OSM_DATASET_URL:
       process.env.EXPO_PUBLIC_OSM_DATASET_URL ?? `${BASE}/data/osm-berlin.json`,
+    EXPO_PUBLIC_PLACEHOLDER_BASE_URL:
+      process.env.EXPO_PUBLIC_PLACEHOLDER_BASE_URL ?? `${BASE}/placeholders`,
   },
 });
 

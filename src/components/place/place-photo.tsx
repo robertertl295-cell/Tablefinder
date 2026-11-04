@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { placesProvider } from '@/services/places';
+import type { Placeholder } from '@/services/placeholders/placeholders';
 import type { PhotoRef } from '@/types/place';
 
 type Props = {
@@ -14,19 +15,24 @@ type Props = {
   /** Darstellungsbreite in Punkten; bestimmt die angefragte Bildgröße. */
   width: number;
   style?: StyleProp<ViewStyle>;
+  /** KI-Symbolbild, falls es kein echtes Foto gibt. */
+  placeholder?: Placeholder | null;
 };
 
 /**
  * Lädt ein Ortsfoto erst, wenn es gerendert wird (Listen virtualisieren).
  * Google-Fotos nur im Arbeitsspeicher cachen – dauerhaftes Speichern ist nicht erlaubt.
  */
-export function PlacePhoto({ photo, width, style }: Props) {
+export function PlacePhoto({ photo, width, style, placeholder = null }: Props) {
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
-  const uri = photo
+  const photoUri = photo
     ? placesProvider.getPhotoUrl(photo, PixelRatio.getPixelSizeForLayoutSize(width))
     : null;
+  const symbolic = !photoUri && placeholder !== null;
+  const uri = photoUri ?? placeholder?.uri ?? null;
   const author = photo?.attributions[0]?.displayName;
+  const caption = symbolic ? 'Symbolbild (KI)' : author ? `Foto: ${author}` : null;
 
   return (
     <View style={[styles.frame, { backgroundColor: theme.backgroundSelected }, style]}>
@@ -37,8 +43,9 @@ export function PlacePhoto({ photo, width, style }: Props) {
           contentFit="cover"
           transition={reduceMotion ? 0 : 200}
           // Google-Fotos nie auf dem Gerät speichern (Nutzungsbedingungen).
-          cachePolicy={photo?.name.startsWith('mock/') ? 'memory-disk' : 'memory'}
-          recyclingKey={photo?.name}
+          // Eigene Symbolbilder dürfen auf die Platte.
+          cachePolicy={symbolic || photo?.name.startsWith('mock/') ? 'memory-disk' : 'memory'}
+          recyclingKey={photo?.name ?? placeholder?.uri}
           accessible={false}
         />
       ) : (
@@ -46,10 +53,10 @@ export function PlacePhoto({ photo, width, style }: Props) {
           <Icon name="photo" size={28} color={theme.textSecondary} />
         </View>
       )}
-      {uri && author ? (
+      {uri && caption ? (
         <View style={styles.attribution} accessible={false} importantForAccessibility="no">
           <ThemedText style={styles.attributionText} numberOfLines={1}>
-            Foto: {author}
+            {caption}
           </ThemedText>
         </View>
       ) : null}

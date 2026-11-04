@@ -3,7 +3,11 @@ import { readConfig } from '@/services/config';
 
 describe('readConfig', () => {
   it('ohne Key: kein Schlüssel', () => {
-    expect(readConfig({})).toEqual({ placesApiKey: null, osmDatasetUrl: null });
+    expect(readConfig({})).toEqual({
+      placesApiKey: null,
+      osmDatasetUrl: null,
+      placeholderBaseUrl: null,
+    });
   });
 
   it('behandelt einen leeren Key wie keinen Key', () => {
@@ -19,6 +23,7 @@ it('liest die Adresse des OSM-Datensatzes', () => {
   expect(readConfig({ EXPO_PUBLIC_OSM_DATASET_URL: '/Tablefinder/data/osm-berlin.json' })).toEqual({
     placesApiKey: null,
     osmDatasetUrl: '/Tablefinder/data/osm-berlin.json',
+    placeholderBaseUrl: null,
   });
 });
 

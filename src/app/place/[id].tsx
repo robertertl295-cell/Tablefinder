@@ -22,6 +22,7 @@ import { Icon } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { usePlaceDetails } from '@/hooks/use-place-details';
 import { useTheme } from '@/hooks/use-theme';
+import { placeholderFor } from '@/services/placeholders/placeholders';
 import { useSearch } from '@/store/search-store';
 import type { PlaceDetails, PlaceSummary } from '@/types/place';
 import { formatPriceLevel } from '@/utils/format';
@@ -75,14 +76,19 @@ export default function PlaceDetailScreen() {
     );
   }
 
+  const placeholder = place.photo ? null : placeholderFor(place);
+
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.five }}>
-        {place.source === 'osm' && !place.photo ? (
-          // Keine Fotos in OSM: nur Platz für die schwebenden Buttons.
+        {place.source === 'osm' && !place.photo && !placeholder ? (
+          // Keine Fotos in OSM und kein Symbolbild: nur Platz für die schwebenden Buttons.
           <View style={{ height: insets.top + Spacing.six }} />
         ) : (
-          <PhotoGallery photos={details?.photos ?? (place.photo ? [place.photo] : [])} />
+          <PhotoGallery
+            photos={details?.photos ?? (place.photo ? [place.photo] : [])}
+            placeholder={placeholder}
+          />
         )}
         <Header place={place} details={details} now={now} />
 

@@ -4,17 +4,31 @@ import { FlatList, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { PlacePhoto } from '@/components/place/place-photo';
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
+import type { Placeholder } from '@/services/placeholders/placeholders';
 import type { PhotoRef } from '@/types/place';
 
 const HEIGHT = 300;
 
 /** Wischbare Fotos in voller Breite, mit Zähler. Bilder laden erst beim Anzeigen. */
-export function PhotoGallery({ photos }: { photos: PhotoRef[] }) {
+export function PhotoGallery({
+  photos,
+  placeholder = null,
+}: {
+  photos: PhotoRef[];
+  placeholder?: Placeholder | null;
+}) {
   const { width } = useWindowDimensions();
   const [index, setIndex] = useState(0);
 
   if (photos.length <= 1) {
-    return <PlacePhoto photo={photos[0] ?? null} width={width} style={{ height: HEIGHT }} />;
+    return (
+      <PlacePhoto
+        photo={photos[0] ?? null}
+        width={width}
+        style={{ height: HEIGHT }}
+        placeholder={photos.length ? null : placeholder}
+      />
+    );
   }
 
   return (

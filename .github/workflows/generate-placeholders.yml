@@ -1,0 +1,82 @@
+name: Symbolbilder erzeugen
+
+# Erzeugt KI-Symbolbilder je Restaurant-Typ (scripts/generate-placeholders.mjs) mit der
+# OpenAI-Bild-API, committet sie nach public/placeholders und veröffentlicht die Web-App neu.
+# Nur per Hand: Actions → „Symbolbilder erzeugen“ → Run workflow. Kostet API-Guthaben.
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Nur diese Gruppen (kommagetrennt, z. B. pizza,cafe) – leer = alle'
+        required: false
+        default: ''
+      force:
+        description: 'Vorhandene Bilder neu erzeugen'
+        type: boolean
+        default: false
+      quality:
+        description: 'Bildqualität (low = billiger, medium, high = teurer)'
+        type: choice
+        options: [medium, low, high]
+        default: medium
+      dry_run:
+        description: 'Probelauf: nur Prompts anzeigen, nichts erzeugen'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: placeholders
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Bildverkleinerung installieren
+        # Nur sharp; die App-Abhängigkeiten braucht das Skript nicht.
+        run: npm install --no-save --no-package-lock --ignore-scripts=false sharp@0.34.4
+
+      - name: Bilder erzeugen
+        run: node scripts/generate-placeholders.mjs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ONLY: ${{ inputs.only }}
+          FORCE: ${{ inputs.force && '1' || '' }}
+          IMAGE_QUALITY: ${{ inputs.quality }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+
+      - name: Bilder committen
+        if: ${{ !inputs.dry_run }}
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/placeholders src/services/placeholders/manifest.json
+          if git diff --cached --quiet; then
+            echo "Keine neuen Bilder."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Symbolbilder erzeugt ($(ls public/placeholders/*.webp | wc -l) Bilder)"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Web-App neu veröffentlichen
+        # Pushes mit dem Actions-Token lösen keine Workflows aus – daher ausdrücklich starten.
+        if: ${{ steps.commit.outputs.changed == 'true' }}
+        run: gh workflow run deploy-web.yml --ref "${{ github.ref_name }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
