@@ -1,5 +1,5 @@
 import { PLACES_ERROR_MESSAGE, type PlacesError } from '@/services/places/errors';
-import type { DataSource } from '@/types/place';
+import type { SearchSource } from '@/types/place';
 
 import { StateMessage } from './state-message';
 
@@ -21,7 +21,7 @@ export function SearchError({
 }: {
   error: PlacesError;
   onRetry: () => void;
-  source?: DataSource;
+  source?: SearchSource;
 }) {
   const osmBusy =
     source === 'osm' &&

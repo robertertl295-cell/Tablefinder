@@ -110,8 +110,12 @@ describe('Einstellungen: Datenquelle', () => {
     await fireEvent.press(screen.getByLabelText('Beispieldaten'));
     expect(settingsStore.getState().dataSource).toBe('mock');
 
-    await fireEvent.press(screen.getByLabelText('Google Places'));
+    await fireEvent.press(screen.getByLabelText('Nur Google'));
     expect(alert).toHaveBeenCalledWith('Kein API-Schlüssel', expect.stringContaining('.env'));
+    expect(settingsStore.getState().dataSource).toBe('mock');
+
+    await fireEvent.press(screen.getByLabelText('Google + OSM'));
+    expect(alert).toHaveBeenCalledTimes(2);
     expect(settingsStore.getState().dataSource).toBe('mock');
 
     await fireEvent.press(screen.getByLabelText('OpenStreetMap'));

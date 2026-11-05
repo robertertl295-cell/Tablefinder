@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 374 Tests laufen ohne Fehler.
+- Typecheck, Lint und 384 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -358,6 +358,18 @@ OpenStreetMap hat keine Fotos. Damit die Liste nicht leer wirkt, zeigt die App f
 - **Zuordnung:** `src/services/placeholders/placeholders.ts` – Typ aus Küche (spezifisch vor allgemein), sonst aus Art; Variante per Hash der Orts-ID, also stabil pro Lokal und verschieden zwischen Nachbarn. Terrassen-Motive nur bei Lokalen mit Außenplätzen, vegetarische Lokale bekommen häufig ein vegetarisches Motiv. Fehlt ein Typ, nimmt die App ein allgemeines Restaurant-Bild; ohne Bilder bleibt alles wie vorher.
 - **Native App:** `EXPO_PUBLIC_PLACEHOLDER_BASE_URL` auf die veröffentlichte Adresse setzen (siehe `.env.example`).
 
+## Google + OpenStreetMap kombiniert
+
+Standard, sobald ein Google-Key da ist („Automatisch“, oder ausdrücklich „Google + OSM“ in den Einstellungen; „Nur Google“ und „OpenStreetMap“ bleiben wählbar).
+
+- **Ablauf** (`src/services/places/combined-provider.ts`): Erst die Google-Treffer (Bewertungen, Fotos, Rezensionen), jeweils ergänzt um die OSM-Angaben desselben Lokals. Danach die Lokale, die nur OpenStreetMap kennt, nach Entfernung und ohne Bewertung.
+- **Zuordnung** (`combine.ts`): höchstens 80 m Abstand und passender Name. Verglichen wird ohne Groß-/Kleinschreibung, Akzente und Allerweltswörter wie „Restaurant“ oder „Café“; Teilnamen und kleine Tippfehler zählen. Jedes OSM-Lokal wird höchstens einem Google-Ort zugeordnet.
+- **Ergänzen:** Google hat Vorrang; OSM füllt nur Lücken (vegan, glutenfrei, halal, WLAN, rauchfrei …), Küchen werden vereinigt. Dadurch funktionieren diese Filter auch für Google-Lokale. Auch die Detailseite und Favoriten werden ergänzt.
+- **Filter:** Mit Mindestbewertung oder Preisfilter entfallen die nur-OSM-Lokale, weil sie beides nicht haben.
+- **Ausfall:** Lehnt Google ab (Key, Guthaben, Netz), sucht die App nur mit OSM weiter.
+- **Kosten:** keine zusätzlichen Google-Abfragen; OSM läuft auf dem Gerät aus dem Tagesdatensatz.
+- **Datenschutz/Bedingungen:** Zusammengeführt wird nur im Arbeitsspeicher, gespeichert werden weiterhin nur IDs. Unter der Liste stehen beide Quellenangaben.
+
 ## Google-Bedingungen im EWR
 
 Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsraum. Dafür gelten seit 8. Juli 2025 eigene Bedingungen: Inhalte der Places API (Name, Bewertung, Rezensionen, Fotos, Öffnungszeiten …) dürfen nicht zusammen mit einer Karte gezeigt werden, auch nicht mit Google Maps. Erlaubt sind Koordinaten und `place_id` auf einer Karte sowie alle Inhalte in Listen und Detailseiten ohne Karte.
@@ -423,7 +435,7 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 ## Tests
 
-374 Tests in 39 Dateien (`npm test`):
+384 Tests in 40 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -10,9 +10,15 @@ import { RESULT_SORT_OPTIONS, type ResultSort } from '@/utils/sort-places';
 
 export const RADIUS_SETTING_OPTIONS = RADIUS_OPTIONS;
 
-/** Gewünschte Datenquelle; „auto“ = Google mit API-Schlüssel, sonst OpenStreetMap. */
-export type SourcePreference = 'auto' | 'google' | 'osm' | 'mock';
-export const SOURCE_PREFERENCES: readonly SourcePreference[] = ['auto', 'google', 'osm', 'mock'];
+/** Gewünschte Datenquelle; „auto“ = Google + OSM kombiniert mit API-Schlüssel, sonst OpenStreetMap. */
+export type SourcePreference = 'auto' | 'combined' | 'google' | 'osm' | 'mock';
+export const SOURCE_PREFERENCES: readonly SourcePreference[] = [
+  'auto',
+  'combined',
+  'google',
+  'osm',
+  'mock',
+];
 
 /**
  * Fotos in Trefferliste und Karte: „symbol“ = KI-Symbolbilder statt Google-Fotos (jedes

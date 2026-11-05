@@ -1,20 +1,22 @@
 import { config, type AppConfig } from '@/services/config';
 import { settingsStore, type SourcePreference } from '@/store/settings-store';
-import type { DataSource } from '@/types/place';
+import type { SearchSource } from '@/types/place';
 
 import { CachedPlacesProvider } from './cached-provider';
+import { CombinedPlacesProvider } from './combined-provider';
 import { GooglePlacesProvider } from './google-provider';
 import { MockPlacesProvider } from './mock-provider';
 import { OverpassPlacesProvider } from './overpass-provider';
 import { RoutingPlacesProvider } from './routing-provider';
 
 /**
- * Welche Quelle sucht: „Automatisch“ = Google mit API-Schlüssel, sonst OpenStreetMap.
- * Google ohne Schlüssel fällt ebenfalls auf OpenStreetMap zurück.
+ * Welche Quelle sucht: „Automatisch“ = Google + OpenStreetMap kombiniert, wenn ein
+ * API-Schlüssel da ist, sonst OpenStreetMap. Google ohne Schlüssel fällt ebenfalls auf OSM zurück.
  */
-export function resolveSource(preference: SourcePreference, hasGoogleKey: boolean): DataSource {
+export function resolveSource(preference: SourcePreference, hasGoogleKey: boolean): SearchSource {
   if (preference === 'osm' || preference === 'mock') return preference;
-  return hasGoogleKey ? 'google' : 'osm';
+  if (!hasGoogleKey) return 'osm';
+  return preference === 'google' ? 'google' : 'combined';
 }
 
 export function createPlacesProvider(
@@ -24,13 +26,17 @@ export function createPlacesProvider(
   const google = appConfig.placesApiKey
     ? new CachedPlacesProvider(new GooglePlacesProvider({ apiKey: appConfig.placesApiKey }))
     : undefined;
+  const osm = new CachedPlacesProvider(
+    new OverpassPlacesProvider({ datasetUrl: appConfig.osmDatasetUrl }),
+  );
   return new RoutingPlacesProvider(
     {
       google,
-      osm: new CachedPlacesProvider(
-        new OverpassPlacesProvider({ datasetUrl: appConfig.osmDatasetUrl }),
-      ),
+      osm,
       mock: new CachedPlacesProvider(new MockPlacesProvider()),
+      combined: google
+        ? new CachedPlacesProvider(new CombinedPlacesProvider(google, osm))
+        : undefined,
     },
     () => resolveSource(preference(), google !== undefined),
   );

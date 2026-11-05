@@ -1,5 +1,5 @@
 import type {
-  DataSource,
+  SearchSource,
   LatLng,
   PhotoRef,
   PlaceCategory,
@@ -38,7 +38,7 @@ export type SearchResult = {
  * Alle Methoden werfen bei Fehlern einen `PlacesError`.
  */
 export interface PlacesProvider {
-  readonly source: DataSource;
+  readonly source: SearchSource;
   search(query: SearchQuery): Promise<SearchResult>;
   getDetails(id: string): Promise<PlaceDetails>;
   /** Nur die Felder einer Ergebniskarte – günstiger als Details (z. B. für Favoritenlisten). */

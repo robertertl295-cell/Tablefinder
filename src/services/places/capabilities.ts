@@ -1,5 +1,5 @@
 import type { AttributeKey } from '@/types/filters';
-import type { DataSource } from '@/types/place';
+import type { SearchSource } from '@/types/place';
 
 /** Was eine Datenquelle liefern kann – steuert Filter, Sortierung und Anzeige. */
 export type SourceCapabilities = {
@@ -34,35 +34,40 @@ const GOOGLE: SourceCapabilities = {
   meals: true,
 };
 
-export const SOURCE_CAPABILITIES: Record<DataSource, SourceCapabilities> = {
+const OSM: SourceCapabilities = {
+  ratings: false,
+  priceLevels: false,
+  photos: false,
+  reviews: false,
+  attributes: [
+    'vegetarian',
+    'vegan',
+    'glutenFree',
+    'halal',
+    'outdoorSeating',
+    'dogsAllowed',
+    'wheelchair',
+    'wifi',
+    'smokeFree',
+    'takeaway',
+    'delivery',
+    'reservable',
+    'cards',
+  ],
+  meals: false,
+};
+
+export const SOURCE_CAPABILITIES: Record<SearchSource, SourceCapabilities> = {
   google: GOOGLE,
   // Beispieldaten verhalten sich wie Google.
   mock: GOOGLE,
-  osm: {
-    ratings: false,
-    priceLevels: false,
-    photos: false,
-    reviews: false,
-    attributes: [
-      'vegetarian',
-      'vegan',
-      'glutenFree',
-      'halal',
-      'outdoorSeating',
-      'dogsAllowed',
-      'wheelchair',
-      'wifi',
-      'smokeFree',
-      'takeaway',
-      'delivery',
-      'reservable',
-      'cards',
-    ],
-    meals: false,
-  },
+  osm: OSM,
+  // Google-Angaben, ergänzt um OSM-Merkmale (vegan, glutenfrei, WLAN …).
+  combined: { ...GOOGLE, attributes: [...new Set([...OSM.attributes, ...GOOGLE.attributes])] },
 };
 
-export const SOURCE_LABEL: Record<DataSource, string> = {
+export const SOURCE_LABEL: Record<SearchSource, string> = {
+  combined: 'Google + OpenStreetMap',
   google: 'Google Places',
   osm: 'OpenStreetMap',
   mock: 'Beispieldaten',

@@ -4,6 +4,8 @@
  */
 
 export type DataSource = 'google' | 'osm' | 'mock';
+/** Quelle einer Suche: eine Datenquelle oder „Google + OpenStreetMap“ kombiniert. */
+export type SearchSource = DataSource | 'combined';
 
 export type LatLng = {
   latitude: number;

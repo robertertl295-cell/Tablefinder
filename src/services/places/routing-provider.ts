@@ -1,4 +1,4 @@
-import type { DataSource, PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
+import type { DataSource, PhotoRef, PlaceDetails, PlaceSummary, SearchSource } from '@/types/place';
 
 import { PlacesError } from './errors';
 import { isOsmId } from './osm-mapping';
@@ -20,11 +20,11 @@ export function sourceOfId(id: string): DataSource {
  */
 export class RoutingPlacesProvider implements PlacesProvider {
   constructor(
-    private readonly providers: Partial<Record<DataSource, Provider>>,
-    private readonly active: () => DataSource,
+    private readonly providers: Partial<Record<SearchSource, Provider>>,
+    private readonly active: () => SearchSource,
   ) {}
 
-  get source(): DataSource {
+  get source(): SearchSource {
     return this.active();
   }
 
@@ -34,11 +34,11 @@ export class RoutingPlacesProvider implements PlacesProvider {
   }
 
   async getDetails(id: string): Promise<PlaceDetails> {
-    return this.pick(sourceOfId(id)).getDetails(id);
+    return this.forId(id).getDetails(id);
   }
 
   async getSummary(id: string): Promise<PlaceSummary> {
-    return this.pick(sourceOfId(id)).getSummary(id);
+    return this.forId(id).getSummary(id);
   }
 
   getPhotoUrl(photo: PhotoRef, maxWidthPx: number): string | null {
@@ -50,7 +50,16 @@ export class RoutingPlacesProvider implements PlacesProvider {
     for (const p of Object.values(this.providers)) p?.clear?.();
   }
 
-  private pick(source: DataSource): Provider {
+  /** Google-Orte im Kombi-Modus über den Kombi-Anbieter (ergänzt OSM-Angaben). */
+  private forId(id: string): Provider {
+    const source = sourceOfId(id);
+    if (source === 'google' && this.active() === 'combined' && this.providers.combined) {
+      return this.providers.combined;
+    }
+    return this.pick(source);
+  }
+
+  private pick(source: SearchSource): Provider {
     const provider = this.providers[source];
     if (!provider) {
       // Nur Google kann fehlen (kein API-Schlüssel).

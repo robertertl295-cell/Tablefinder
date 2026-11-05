@@ -22,18 +22,21 @@ import {
   type RouteAppSetting,
   type SourcePreference,
 } from '@/store/settings-store';
-import type { DataSource } from '@/types/place';
+import type { SearchSource } from '@/types/place';
 import { formatDistance, type Units } from '@/utils/format';
 import { showDialog } from '@/utils/dialog';
 
 const SOURCE_OPTIONS: { value: SourcePreference; label: string }[] = [
   { value: 'auto', label: 'Automatisch' },
-  { value: 'google', label: 'Google Places' },
+  { value: 'combined', label: 'Google + OSM' },
+  { value: 'google', label: 'Nur Google' },
   { value: 'osm', label: 'OpenStreetMap' },
   { value: 'mock', label: 'Beispieldaten' },
 ];
 
-const SOURCE_DESCRIPTION: Record<DataSource, string> = {
+const SOURCE_DESCRIPTION: Record<SearchSource, string> = {
+  combined:
+    'Google-Treffer mit Bewertungen, Fotos und Rezensionen, ergänzt um OpenStreetMap-Angaben wie vegan, glutenfrei oder WLAN. Dazu Lokale, die nur OpenStreetMap kennt (ohne Bewertung). Kostet nicht mehr als Google allein.',
   google:
     'Mit Bewertungen, Fotos, Rezensionen und Preisen. Kostenpflichtig nach Nutzung, braucht einen API-Schlüssel.',
   osm: 'Kostenlos und ohne Schlüssel, von Freiwilligen gepflegt, täglich aktualisiert. Kennt vegane Angebote, aber keine Bewertungen, Preise oder Fotos. Daten © OpenStreetMap-Mitwirkende (ODbL).',
@@ -162,10 +165,12 @@ export default function SettingsScreen() {
                 label={o.label}
                 selected={dataSource === o.value}
                 accessibilityHint={
-                  o.value === 'google' && !hasGoogleKey ? 'Benötigt einen API-Schlüssel' : undefined
+                  (o.value === 'google' || o.value === 'combined') && !hasGoogleKey
+                    ? 'Benötigt einen API-Schlüssel'
+                    : undefined
                 }
                 onPress={() => {
-                  if (o.value === 'google' && !hasGoogleKey) {
+                  if ((o.value === 'google' || o.value === 'combined') && !hasGoogleKey) {
                     showDialog(
                       'Kein API-Schlüssel',
                       'Für Google Places muss EXPO_PUBLIC_PLACES_API_KEY in der .env-Datei gesetzt sein (siehe README). Bis dahin sucht die App mit OpenStreetMap.',

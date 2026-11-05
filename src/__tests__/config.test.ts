@@ -32,9 +32,11 @@ it('liest die Adresse des OSM-Datensatzes', () => {
 });
 
 describe('resolveSource', () => {
-  it('Automatisch: Google mit Key, sonst OpenStreetMap', () => {
-    expect(resolveSource('auto', true)).toBe('google');
+  it('Automatisch: Google + OSM kombiniert mit Key, sonst OpenStreetMap', () => {
+    expect(resolveSource('auto', true)).toBe('combined');
     expect(resolveSource('auto', false)).toBe('osm');
+    expect(resolveSource('combined', true)).toBe('combined');
+    expect(resolveSource('combined', false)).toBe('osm');
   });
 
   it('Google ohne Key fällt auf OpenStreetMap zurück', () => {

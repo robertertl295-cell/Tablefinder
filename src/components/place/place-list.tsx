@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 
-import { DataAttribution } from '@/components/data-attribution';
+import { DataAttribution, sourceOfList } from '@/components/data-attribution';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import type { LatLng, PlaceSummary } from '@/types/place';
@@ -75,7 +75,7 @@ export function PlaceList({
                 accessibilityLabel="Weitere Treffer werden geladen"
               />
             )}
-            <DataAttribution source={places[0]?.source ?? 'mock'} />
+            <DataAttribution source={sourceOfList(places.map((p) => p.source))} />
           </View>
         ) : undefined
       }
