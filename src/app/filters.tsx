@@ -102,7 +102,7 @@ export default function FiltersSheet() {
           Filter
         </ThemedText>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
           accessibilityRole="button"
           accessibilityLabel="Filter anwenden und schließen"
           hitSlop={8}>

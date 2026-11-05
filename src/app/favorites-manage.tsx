@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
@@ -30,85 +31,103 @@ export default function FavoritesManageSheet() {
     (s) => !lists.some((l) => l.name.toLowerCase() === s.toLowerCase()),
   );
 
+  const close = () => (router.canGoBack() ? router.back() : router.replace('/favorites'));
+
   return (
-    <ScrollView
-      style={{ backgroundColor: theme.background }}
-      contentContainerStyle={[
-        styles.content,
-        {
-          paddingTop: Spacing.four + sheetInsets.top,
-          paddingBottom: Spacing.six + sheetInsets.bottom,
-        },
-      ]}
-      keyboardShouldPersistTaps="handled">
-      <ThemedText type="subtitle" accessibilityRole="header" style={styles.title}>
-        Favoriten verwalten
-      </ThemedText>
-
-      <Section title="Listen">
-        {lists.length === 0 && (
-          <ThemedText type="small" themeColor="textSecondary">
-            Noch keine Listen. Favoriten können in mehreren Listen gleichzeitig stehen.
-          </ThemedText>
-        )}
-        {lists.map((l) => (
-          <ListRow key={l.id} list={l} />
-        ))}
-        <View style={styles.newRow}>
-          <TextInput
-            value={newName}
-            onChangeText={setNewName}
-            onSubmitEditing={() => create(newName)}
-            placeholder="Neue Liste, z. B. „Brunch“"
-            placeholderTextColor={theme.textSecondary}
-            maxLength={MAX_LIST_NAME_LENGTH}
-            returnKeyType="done"
-            accessibilityLabel="Name der neuen Liste"
-            style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-          />
-          <Pressable
-            onPress={() => create(newName)}
-            disabled={!newName.trim()}
-            accessibilityRole="button"
-            accessibilityLabel="Liste anlegen"
-            style={[
-              styles.iconButton,
-              { backgroundColor: theme.accent, opacity: newName.trim() ? 1 : 0.4 },
-            ]}>
-            <Icon name="plus" size={20} color={theme.onAccent} />
-          </Pressable>
-        </View>
-        {suggestions.length > 0 && (
-          <View style={styles.wrap}>
-            {suggestions.map((s) => (
-              <Chip
-                key={s}
-                label={s}
-                onPress={() => create(s)}
-                accessibilityLabel={`Liste „${s}“ anlegen`}
-                icon={<Icon name="plus" size={14} color={theme.text} />}
-              />
-            ))}
-          </View>
-        )}
-      </Section>
-
-      <Section title="Sicherung">
-        <ThemedText type="small" themeColor="textSecondary">
-          Die Datei enthält deine Listen, Notizen, Bewertungen und die Google-IDs der Orte – keine
-          Inhalte von Google.
+    <View
+      style={[styles.screen, { backgroundColor: theme.background, paddingTop: sheetInsets.top }]}>
+      <View style={styles.bar}>
+        <ThemedText type="smallBold" accessibilityRole="header" style={styles.barTitle}>
+          Favoriten verwalten
         </ThemedText>
-        <View style={styles.backupRow}>
-          <BackupButton
-            icon="share"
-            label="Exportieren"
-            disabled={favoriteCount === 0 && lists.length === 0}
-            onPress={() => void exportFavorites()}
-          />
-          <BackupButton icon="import" label="Importieren" onPress={() => void importFavorites()} />
-        </View>
-      </Section>
-    </ScrollView>
+        <Pressable
+          onPress={close}
+          accessibilityRole="button"
+          accessibilityLabel="Fertig, zurück zu den Favoriten"
+          hitSlop={8}>
+          <ThemedText type="link" style={styles.done}>
+            Fertig
+          </ThemedText>
+        </Pressable>
+      </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: Spacing.six + sheetInsets.bottom },
+        ]}
+        keyboardShouldPersistTaps="handled">
+        <Section title="Listen">
+          {lists.length === 0 && (
+            <ThemedText type="small" themeColor="textSecondary">
+              Noch keine Listen. Favoriten können in mehreren Listen gleichzeitig stehen.
+            </ThemedText>
+          )}
+          {lists.map((l) => (
+            <ListRow key={l.id} list={l} />
+          ))}
+          <View style={styles.newRow}>
+            <TextInput
+              value={newName}
+              onChangeText={setNewName}
+              onSubmitEditing={() => create(newName)}
+              placeholder="Neue Liste, z. B. „Brunch“"
+              placeholderTextColor={theme.textSecondary}
+              maxLength={MAX_LIST_NAME_LENGTH}
+              returnKeyType="done"
+              accessibilityLabel="Name der neuen Liste"
+              style={[
+                styles.input,
+                { color: theme.text, backgroundColor: theme.backgroundElement },
+              ]}
+            />
+            <Pressable
+              onPress={() => create(newName)}
+              disabled={!newName.trim()}
+              accessibilityRole="button"
+              accessibilityLabel="Liste anlegen"
+              style={[
+                styles.iconButton,
+                { backgroundColor: theme.accent, opacity: newName.trim() ? 1 : 0.4 },
+              ]}>
+              <Icon name="plus" size={20} color={theme.onAccent} />
+            </Pressable>
+          </View>
+          {suggestions.length > 0 && (
+            <View style={styles.wrap}>
+              {suggestions.map((s) => (
+                <Chip
+                  key={s}
+                  label={s}
+                  onPress={() => create(s)}
+                  accessibilityLabel={`Liste „${s}“ anlegen`}
+                  icon={<Icon name="plus" size={14} color={theme.text} />}
+                />
+              ))}
+            </View>
+          )}
+        </Section>
+
+        <Section title="Sicherung">
+          <ThemedText type="small" themeColor="textSecondary">
+            Die Datei enthält deine Listen, Notizen, Bewertungen und die Google-IDs der Orte – keine
+            Inhalte von Google.
+          </ThemedText>
+          <View style={styles.backupRow}>
+            <BackupButton
+              icon="share"
+              label="Exportieren"
+              disabled={favoriteCount === 0 && lists.length === 0}
+              onPress={() => void exportFavorites()}
+            />
+            <BackupButton
+              icon="import"
+              label="Importieren"
+              onPress={() => void importFavorites()}
+            />
+          </View>
+        </Section>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -245,8 +264,18 @@ function importSummary(
 }
 
 const styles = StyleSheet.create({
-  content: { paddingTop: Spacing.four, paddingBottom: Spacing.six },
-  title: { paddingHorizontal: Spacing.three, paddingBottom: Spacing.two },
+  screen: { flex: 1 },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.four,
+    paddingBottom: Spacing.one,
+  },
+  barTitle: { fontSize: 17 },
+  done: { fontWeight: 600 },
+  content: { paddingTop: Spacing.one, paddingBottom: Spacing.six },
   newRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   input: {
     flex: 1,

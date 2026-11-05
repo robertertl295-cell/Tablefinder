@@ -11,9 +11,14 @@ import { favoritesStore } from '@/store/favorites-store';
 import { createBackup } from '@/utils/favorites';
 
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 let mockId = 'mock-ramen-kreuzberg';
 jest.mock('expo-router', () => ({
-  router: { push: (...a: unknown[]) => mockPush(...a), back: jest.fn(), canGoBack: () => true },
+  router: {
+    push: (...a: unknown[]) => mockPush(...a),
+    back: () => mockBack(),
+    canGoBack: () => true,
+  },
   useLocalSearchParams: () => ({ id: mockId }),
 }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
@@ -133,6 +138,12 @@ describe('Favoriten-Tab', () => {
 });
 
 describe('Verwalten-Sheet', () => {
+  it('hat oben „Fertig“ und führt zurück zu den Favoriten', async () => {
+    await render(wrap(<FavoritesManageSheet />));
+    await fireEvent.press(screen.getByLabelText('Fertig, zurück zu den Favoriten'));
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
   it('legt Listen an, löscht sie und exportiert', async () => {
     await render(wrap(<FavoritesManageSheet />));
     await fireEvent.press(screen.getByLabelText('Liste „Date-Abend“ anlegen'));
