@@ -61,11 +61,7 @@ export function PlaceCard({
   ].filter(Boolean);
   const badges = compact ? [] : cardBadges(place, distanceMeters, new Date());
   const isClosed = place.businessStatus === 'closed_permanently';
-  const listPhotos = useSettings((s) => s.listPhotos);
-  // Foto-Sparmodus: Google-Fotos kosten pro Anzeige – in der Liste daher Symbolbilder.
-  const savePhoto = listPhotos === 'symbol' && place.source === 'google';
-  const photo = savePhoto ? null : place.photo;
-  const placeholder = photo ? null : placeholderFor(place);
+  const { photo, placeholder, savePhoto } = useCardImage(place);
   const score = showTrustScore ? trustScore(place.rating, place.ratingCount) : null;
 
   return (
@@ -204,4 +200,16 @@ export function cardBadges(
   if (place.attributes.vegan) badges.push('Vegan');
   else if (place.attributes.outdoorSeating) badges.push('Terrasse');
   return badges;
+}
+
+/**
+ * Bild für Karten in Listen: Foto-Sparmodus (Google-Fotos kosten pro Anzeige → Symbolbild),
+ * sonst Foto, ohne Foto das KI-Symbolbild.
+ */
+export function useCardImage(place: PlaceSummary) {
+  const listPhotos = useSettings((s) => s.listPhotos);
+  const savePhoto = listPhotos === 'symbol' && place.source === 'google';
+  const photo = savePhoto ? null : place.photo;
+  const placeholder = photo ? null : placeholderFor(place);
+  return { photo, placeholder, savePhoto };
 }

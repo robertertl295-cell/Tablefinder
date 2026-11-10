@@ -1,7 +1,7 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ResultsMap } from '@/components/place/results-map';
+import { MapWithSheet } from '@/components/place/map-with-sheet';
 import { ThemedText } from '@/components/themed-text';
 import { PLACES_ERROR_MESSAGE } from '@/services/places/errors';
 import { Radius, Spacing } from '@/constants/theme';
@@ -19,6 +19,7 @@ export default function MapScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const results = useSearch((s) => s.results);
+  const hasMore = useSearch((s) => s.nextPageToken !== null);
   const status = useSearch((s) => s.status);
   const error = useSearch((s) => s.error);
   const text = useSearch((s) => s.text.trim());
@@ -30,39 +31,46 @@ export default function MapScreen() {
   const title = text ? `„${text}“ · ${label}` : label;
   const headerTop = insets.top + Spacing.two;
 
+  const summary =
+    status === 'loading'
+      ? 'Suche läuft …'
+      : status === 'error' && error
+        ? PLACES_ERROR_MESSAGE[error.kind]
+        : results.length === 0
+          ? 'Keine Treffer – verschiebe die Karte oder ändere die Filter.'
+          : `${results.length}${hasMore ? '+' : ''} Treffer`;
+
   return (
     <View style={styles.screen}>
-      <ResultsMap
+      <MapWithSheet
         places={results}
         center={center}
         radiusMeters={radius}
         userLocation={userLocation}
         onSearchArea={searchStore.getState().selectArea}
         topInset={headerTop + 56}
+        summary={summary}
+        onEndReached={() => void searchStore.getState().loadMore()}
+        overlay={
+          <View
+            style={[styles.header, { top: headerTop, backgroundColor: theme.background }]}
+            accessibilityRole="header">
+            <View style={styles.headerText}>
+              <ThemedText type="smallBold" numberOfLines={1}>
+                {title}
+              </ThemedText>
+              <ThemedText
+                type="small"
+                themeColor="textSecondary"
+                style={status === 'error' && { color: theme.danger }}
+                accessibilityLiveRegion="polite">
+                {summary}
+              </ThemedText>
+            </View>
+            {status === 'loading' && <ActivityIndicator color={theme.accent} />}
+          </View>
+        }
       />
-      <View
-        style={[styles.header, { top: headerTop, backgroundColor: theme.background }]}
-        accessibilityRole="header">
-        <View style={styles.headerText}>
-          <ThemedText type="smallBold" numberOfLines={1}>
-            {title}
-          </ThemedText>
-          <ThemedText
-            type="small"
-            themeColor="textSecondary"
-            style={status === 'error' && { color: theme.danger }}
-            accessibilityLiveRegion="polite">
-            {status === 'loading'
-              ? 'Suche läuft …'
-              : status === 'error' && error
-                ? PLACES_ERROR_MESSAGE[error.kind]
-                : results.length === 0
-                  ? 'Keine Treffer – verschiebe die Karte oder ändere die Filter.'
-                  : `${results.length} Treffer`}
-          </ThemedText>
-        </View>
-        {status === 'loading' && <ActivityIndicator color={theme.accent} />}
-      </View>
     </View>
   );
 }

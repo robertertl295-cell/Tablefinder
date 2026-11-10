@@ -1,6 +1,5 @@
 import 'leaflet/dist/leaflet.css';
 
-import { router } from 'expo-router';
 import { latLng, type LatLngBounds } from 'leaflet';
 import { useEffect, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
@@ -17,8 +16,7 @@ import { config } from '@/services/config';
 import { BaseMap } from './base-map.web';
 import { useGoogleMapsFailed } from './google-maps-auth';
 import { GoogleResultsMap } from './google-results-map.web';
-import { MapOverlays, type ResultsMapProps } from './map-overlays';
-import { mayShowDetailsOnMap } from '@/services/places/map-rules';
+import { MapOverlays, useMapSelection, type ResultsMapProps } from './map-overlays';
 
 type Props = ResultsMapProps;
 
@@ -42,6 +40,17 @@ function FollowSearch({ center, radiusMeters }: { center: LatLng; radiusMeters: 
   useEffect(() => {
     map.fitBounds(toBounds(center, radiusMeters), { animate: !reduceMotion });
   }, [map, center.latitude, center.longitude, radiusMeters, reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
+/** Schwenkt zum gewählten Ort (wenn die Auswahl von außen kommt, z. B. aus der Karten-Leiste). */
+function FocusPlace({ place }: { place: PlaceSummary | null }) {
+  const map = useMap();
+  const reduceMotion = useReducedMotion();
+  useEffect(() => {
+    if (place)
+      map.panTo([place.location.latitude, place.location.longitude], { animate: !reduceMotion });
+  }, [map, place?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
 
@@ -79,22 +88,22 @@ function LeafletResultsMap({
   userLocation,
   onSearchArea,
   topInset = Spacing.three,
+  selectedId: selectedIdProp,
+  onSelectPlace,
 }: Props) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [visibleRegion, setVisibleRegion] = useState<MapRegion | null>(null);
   const pendingRegion =
     visibleRegion && regionDiffersFromSearch(visibleRegion, center, radiusMeters)
       ? visibleRegion
       : null;
-  const selected = places.find((p) => p.id === selectedId) ?? null;
-  // Google-Orte: Name und Bewertung nicht auf der Karte zeigen (EWR-Bedingungen) –
-  // ein Tipp auf den Punkt öffnet direkt die Detailseite.
-  const select = (p: PlaceSummary) => {
-    if (mayShowDetailsOnMap(p.source)) setSelectedId(p.id);
-    else router.push({ pathname: '/place/[id]', params: { id: p.id } });
-  };
+  const { selectedId, controlled, card, select, clear } = useMapSelection(
+    places,
+    selectedIdProp,
+    onSelectPlace,
+  );
+  const selectedPlace = places.find((p) => p.id === selectedId) ?? null;
 
   return (
     <View style={styles.container} accessibilityLabel="Karte mit Suchergebnissen">
@@ -105,7 +114,8 @@ function LeafletResultsMap({
         maxZoom={19}>
         <BaseMap dark={dark} />
         <FollowSearch center={center} radiusMeters={radiusMeters} />
-        <TrackRegion onRegion={setVisibleRegion} onMapPress={() => setSelectedId(null)} />
+        <TrackRegion onRegion={setVisibleRegion} onMapPress={clear} />
+        {controlled && <FocusPlace place={selectedPlace} />}
         {userLocation && (
           <CircleMarker
             center={[userLocation.latitude, userLocation.longitude]}
@@ -135,7 +145,7 @@ function LeafletResultsMap({
         pendingRegion={pendingRegion}
         onSearchArea={onSearchArea}
         topInset={topInset}
-        selected={selected && mayShowDetailsOnMap(selected.source) ? selected : null}
+        selected={card}
         userLocation={userLocation}
       />
     </View>

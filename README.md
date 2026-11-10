@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 393 Tests laufen ohne Fehler.
+- Typecheck, Lint und 398 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -336,6 +336,12 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 - **Speicherung:** unter `tablefinder.filters`, beim Laden wird geprüft.
 - **Je Datenquelle:** Welche Filter angeboten werden, hängt von der Quelle ab (siehe [Datenquellen](#datenquellen)).
 
+## Entdecken und Karten-Leiste
+
+- **Entdecken-Reihen** (`utils/discover.ts`, `components/search/discover-rows.tsx`): Ohne Suchbegriff und ohne Filter stehen über der Liste horizontale Reihen zum Durchwischen: „Top bewertet in deiner Nähe“ (nach Vertrauensscore, ab 20 Bewertungen), „Jetzt geöffnet“, „Draußen sitzen“, „Vegan & vegetarisch“, „Günstig essen“, „Gemerkt, noch nicht besucht“ – jeweils 3–10 Lokale, nach Entfernung. Gebaut aus den schon geladenen Treffern, also ohne zusätzliche Abfragen. Darunter „Alle Lokale“.
+- **Karten-Leiste** (`components/place/map-sheet.tsx`, `map-with-sheet.tsx`): In der Kartenansicht und im Karten-Tab liegt unter der Karte eine Leiste mit wischbaren Karten. Punkt antippen → die Leiste springt zur passenden Karte; Karte wischen → die Karte schwenkt zum Punkt. Hochziehen oder „Liste“ → alle Treffer als Liste, die Karte ist dann ganz verdeckt; „Karte“ oder Runterziehen klappt sie wieder ein.
+- **EWR:** Eingeklappt zeigt die Leiste nur Lokale, die zusammen mit einer Karte erscheinen dürfen (OSM, Beispieldaten). Google-Lokale bleiben Punkte (Tipp öffnet die Details) und stehen in der hochgezogenen Liste. Die Leiste liegt unter, nicht über der Karte – Quellenangabe und Google-Logo bleiben sichtbar.
+
 ## Trefferkarten
 
 - **Kurzinfos auf dem Bild** (`cardBadges`): geschätzte Gehzeit („🚶 6 Min.“), „bis 23:00“ bzw. „24 h“, wenn geöffnet, und ein Merkmal („Vegan“, sonst „Terrasse“). Bild 196 pt hoch.
@@ -442,7 +448,7 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 ## Tests
 
-393 Tests in 41 Dateien (`npm test`):
+398 Tests in 42 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

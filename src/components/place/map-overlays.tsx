@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -9,6 +10,8 @@ import type { LatLng, PlaceSummary } from '@/types/place';
 import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, type MapRegion } from '@/utils/map-region';
 
+import { mayShowDetailsOnMap } from '@/services/places/map-rules';
+
 import { PlaceCard } from './place-card';
 
 export type ResultsMapProps = {
@@ -18,7 +21,42 @@ export type ResultsMapProps = {
   userLocation: LatLng | null;
   onSearchArea?: (center: LatLng, radiusMeters: number) => void;
   topInset?: number;
+  /**
+   * Auswahl von außen steuern (z. B. die Karten-Leiste darunter). Ist `onSelectPlace` gesetzt,
+   * zeigt die Karte keine eigene Vorschaukarte und schwenkt zum gewählten Ort.
+   */
+  selectedId?: string | null;
+  onSelectPlace?: (place: PlaceSummary | null) => void;
 };
+
+/**
+ * Auswahl eines Punkts – gemeinsam für alle Karten.
+ * Google-Orte: Name und Bewertung nicht auf der Karte zeigen (EWR-Bedingungen) –
+ * ein Tipp auf den Punkt öffnet direkt die Detailseite.
+ */
+export function useMapSelection(
+  places: PlaceSummary[],
+  selectedIdProp: string | null | undefined,
+  onSelectPlace: ((place: PlaceSummary | null) => void) | undefined,
+) {
+  const [internal, setInternal] = useState<string | null>(null);
+  const controlled = onSelectPlace !== undefined;
+  const selectedId = controlled ? (selectedIdProp ?? null) : internal;
+  const setSelected = (p: PlaceSummary | null) =>
+    controlled ? onSelectPlace(p) : setInternal(p?.id ?? null);
+  const selected = places.find((p) => p.id === selectedId) ?? null;
+  return {
+    selectedId,
+    controlled,
+    /** Vorschaukarte auf der Karte (nur ohne Steuerung von außen und nur wenn erlaubt). */
+    card: !controlled && selected && mayShowDetailsOnMap(selected.source) ? selected : null,
+    select: (p: PlaceSummary) => {
+      if (mayShowDetailsOnMap(p.source)) setSelected(p);
+      else router.push({ pathname: '/place/[id]', params: { id: p.id } });
+    },
+    clear: () => setSelected(null),
+  };
+}
 
 /** Knopf „In diesem Bereich suchen“ und Vorschaukarte – gemeinsam für Leaflet- und Google-Karte. */
 export function MapOverlays({

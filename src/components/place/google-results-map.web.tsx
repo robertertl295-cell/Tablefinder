@@ -6,7 +6,6 @@ import {
   Map as GoogleMap,
   useMap,
 } from '@vis.gl/react-google-maps';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, useColorScheme, View } from 'react-native';
 
@@ -14,11 +13,10 @@ import { Spacing } from '@/constants/theme';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useTheme } from '@/hooks/use-theme';
 import { config } from '@/services/config';
-import { mayShowDetailsOnMap } from '@/services/places/map-rules';
 import type { LatLng, PlaceSummary } from '@/types/place';
 import { regionDiffersFromSearch, type MapRegion } from '@/utils/map-region';
 
-import { MapOverlays, type ResultsMapProps as Props } from './map-overlays';
+import { MapOverlays, useMapSelection, type ResultsMapProps as Props } from './map-overlays';
 
 /** Kartenausschnitt, der den Suchkreis mit etwas Rand zeigt. */
 export function boundsFor(center: LatLng, radiusMeters: number): google.maps.LatLngBoundsLiteral {
@@ -58,6 +56,15 @@ function FollowSearch({ center, radiusMeters }: { center: LatLng; radiusMeters: 
   return null;
 }
 
+/** Schwenkt zum gewählten Ort (Auswahl aus der Karten-Leiste). */
+function FocusPlace({ place }: { place: PlaceSummary | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map && place) map.panTo({ lat: place.location.latitude, lng: place.location.longitude });
+  }, [map, place?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 /** Punkt auf der Karte (eigenes Element statt Google-Pin: passt zum App-Design). */
 function Dot({ color, size, ring = '#FFFFFF' }: { color: string; size: number; ring?: string }) {
   return (
@@ -88,20 +95,22 @@ export function GoogleResultsMap({
   userLocation,
   onSearchArea,
   topInset = Spacing.three,
+  selectedId: selectedIdProp,
+  onSelectPlace,
 }: Props) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [visibleRegion, setVisibleRegion] = useState<MapRegion | null>(null);
   const pendingRegion =
     visibleRegion && regionDiffersFromSearch(visibleRegion, center, radiusMeters)
       ? visibleRegion
       : null;
-  const selected = places.find((p) => p.id === selectedId) ?? null;
-  const select = (p: PlaceSummary) => {
-    if (mayShowDetailsOnMap(p.source)) setSelectedId(p.id);
-    else router.push({ pathname: '/place/[id]', params: { id: p.id } });
-  };
+  const { selectedId, controlled, card, select, clear } = useMapSelection(
+    places,
+    selectedIdProp,
+    onSelectPlace,
+  );
+  const selectedPlace = places.find((p) => p.id === selectedId) ?? null;
 
   return (
     <View
@@ -116,12 +125,13 @@ export function GoogleResultsMap({
           disableDefaultUI
           clickableIcons={false}
           style={{ width: '100%', height: '100%' }}
-          onClick={() => setSelectedId(null)}
+          onClick={clear}
           onIdle={(e) => {
             const bounds = e.map.getBounds();
             if (bounds) setVisibleRegion(regionOf(bounds));
           }}>
           <FollowSearch center={center} radiusMeters={radiusMeters} />
+          {controlled && <FocusPlace place={selectedPlace} />}
           {userLocation && (
             <AdvancedMarker
               position={{ lat: userLocation.latitude, lng: userLocation.longitude }}
@@ -148,7 +158,7 @@ export function GoogleResultsMap({
         pendingRegion={pendingRegion}
         onSearchArea={onSearchArea}
         topInset={topInset}
-        selected={selected && mayShowDetailsOnMap(selected.source) ? selected : null}
+        selected={card}
         userLocation={userLocation}
       />
     </View>

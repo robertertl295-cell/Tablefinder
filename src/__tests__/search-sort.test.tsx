@@ -29,13 +29,17 @@ function App() {
   return <SearchScreen />;
 }
 
-/** Namen der Treffer in Anzeigereihenfolge. */
-const shownNames = () =>
-  screen
+/** Namen der Treffer in Anzeigereihenfolge (ohne die Entdecken-Reihen darüber). */
+const shownNames = () => {
+  const rows = screen.queryByTestId('discover-rows');
+  const inRows = new Set(rows ? within(rows).queryAllByRole('button') : []);
+  return screen
     .getAllByRole('button')
+    .filter((b) => !inRows.has(b))
     .map((b) => b.props.accessibilityLabel as string | undefined)
     .filter((l): l is string => !!l && l.includes('Sternen'))
     .map((l) => l.split(',')[0]);
+};
 
 it('sortiert nach Vertrauensscore und zeigt ihn auf den Karten', async () => {
   await render(
@@ -44,7 +48,7 @@ it('sortiert nach Vertrauensscore und zeigt ihn auf den Karten', async () => {
     </SafeAreaProvider>,
   );
   await act(async () => searchStore.getState().selectDistrict('kreuzberg'));
-  expect(await screen.findByText('Nudelwerk Ramen', {}, WAIT)).toBeOnTheScreen();
+  expect((await screen.findAllByText('Nudelwerk Ramen', {}, WAIT))[0]).toBeOnTheScreen();
   await waitFor(() => expect(shownNames()).toContain('Kebab am Kanal'), WAIT);
   // Relevanz = Reihenfolge der Datenquelle; kein Score auf den Karten.
   expect(screen.queryByText(/^Vertrauensscore/)).toBeNull();
@@ -58,7 +62,9 @@ it('sortiert nach Vertrauensscore und zeigt ihn auf den Karten', async () => {
     'Sonnendeck Café', // 4,6 aus 87 → 4,533
   ]);
   expect(
-    within(screen.getByLabelText(/^Nudelwerk Ramen,/)).getByText(/Vertrauensscore/),
+    within(screen.getByLabelText(/^Nudelwerk Ramen,.*Vertrauensscore/)).getByText(
+      /Vertrauensscore/,
+    ),
   ).toBeOnTheScreen();
   expect(screen.getByLabelText(/^Nudelwerk Ramen,.*Vertrauensscore 4,6$/)).toBeOnTheScreen();
 

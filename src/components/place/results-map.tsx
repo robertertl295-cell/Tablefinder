@@ -8,24 +8,15 @@ import { ThemedText } from '@/components/themed-text';
 import { Icon } from '@/components/ui/icon';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import type { LatLng, PlaceSummary } from '@/types/place';
 import { distanceMeters } from '@/utils/geo';
 import { radiusForRegion, regionDiffersFromSearch, regionForRadius } from '@/utils/map-region';
 
 import { mayShowDetailsOnMap } from '@/services/places/map-rules';
 
+import { useMapSelection, type ResultsMapProps } from './map-overlays';
 import { PlaceCard } from './place-card';
 
-type Props = {
-  places: PlaceSummary[];
-  center: LatLng;
-  radiusMeters: number;
-  userLocation: LatLng | null;
-  /** Ohne Angabe gibt es keinen „In diesem Bereich suchen“-Button. */
-  onSearchArea?: (center: LatLng, radiusMeters: number) => void;
-  /** Abstand der schwebenden Elemente vom oberen Rand (z. B. unter einer Kopfzeile). */
-  topInset?: number;
-};
+type Props = ResultsMapProps;
 
 export function ResultsMap({
   places,
@@ -34,12 +25,13 @@ export function ResultsMap({
   userLocation,
   onSearchArea,
   topInset = Spacing.three,
+  selectedId: selectedIdProp,
+  onSelectPlace,
 }: Props) {
   const theme = useTheme();
   const mapRef = useRef<MapView>(null);
   const scheme = useColorScheme();
   const reduceMotion = useReducedMotion();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   // Zuletzt sichtbarer Ausschnitt. Der Button erscheint nur, wenn er deutlich vom Suchkreis abweicht –
   // nach einer neuen Suche oder dem Schwenk zu einem Bezirk verschwindet er dadurch von selbst.
   const [visibleRegion, setVisibleRegion] = useState<Region | null>(null);
@@ -47,13 +39,22 @@ export function ResultsMap({
     visibleRegion && regionDiffersFromSearch(visibleRegion, center, radiusMeters)
       ? visibleRegion
       : null;
-  const selected = places.find((p) => p.id === selectedId) ?? null;
-  // Google-Orte: Name und Bewertung nicht auf der Karte zeigen (EWR-Bedingungen) –
-  // ein Tipp auf den Punkt öffnet direkt die Detailseite.
-  const select = (p: PlaceSummary) => {
-    if (mayShowDetailsOnMap(p.source)) setSelectedId(p.id);
-    else router.push({ pathname: '/place/[id]', params: { id: p.id } });
-  };
+  const { selectedId, controlled, card, select, clear } = useMapSelection(
+    places,
+    selectedIdProp,
+    onSelectPlace,
+  );
+
+  // Auswahl aus der Karten-Leiste: zum Ort schwenken.
+  useEffect(() => {
+    const place = controlled ? places.find((p) => p.id === selectedId) : undefined;
+    if (place) {
+      mapRef.current?.animateCamera(
+        { center: place.location },
+        { duration: reduceMotion ? 0 : 300 },
+      );
+    }
+  }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Bei neuem Suchmittelpunkt (z. B. anderer Bezirk) dorthin schwenken.
   useEffect(() => {
@@ -70,7 +71,7 @@ export function ResultsMap({
         userInterfaceStyle={scheme === 'dark' ? 'dark' : 'light'}
         showsPointsOfInterests={false}
         toolbarEnabled={false}
-        onPress={() => setSelectedId(null)}
+        onPress={clear}
         onRegionChangeComplete={setVisibleRegion}
         accessibilityLabel="Karte mit Suchergebnissen">
         {places.map((p) => (
@@ -112,13 +113,13 @@ export function ResultsMap({
         </View>
       )}
 
-      {selected && mayShowDetailsOnMap(selected.source) && (
+      {card && (
         <View style={styles.bottomOverlay}>
           <PlaceCard
             compact
-            place={selected}
-            distanceMeters={userLocation ? distanceMeters(userLocation, selected.location) : null}
-            onPress={() => router.push({ pathname: '/place/[id]', params: { id: selected.id } })}
+            place={card}
+            distanceMeters={userLocation ? distanceMeters(userLocation, card.location) : null}
+            onPress={() => router.push({ pathname: '/place/[id]', params: { id: card.id } })}
           />
         </View>
       )}

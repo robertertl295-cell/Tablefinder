@@ -8,8 +8,9 @@ import { FilterButton } from '@/components/filters/filter-button';
 import { InstallHint } from '@/components/install-hint';
 import { PlaceCardSkeleton } from '@/components/place/place-card-skeleton';
 import { PlaceList } from '@/components/place/place-list';
-import { ResultsMap } from '@/components/place/results-map';
+import { MapWithSheet } from '@/components/place/map-with-sheet';
 import { CuisineCarousel } from '@/components/search/cuisine-carousel';
+import { DiscoverRows } from '@/components/search/discover-rows';
 import { LocationNotice } from '@/components/search/location-notice';
 import { LocationPicker } from '@/components/search/location-picker';
 import { SearchBar } from '@/components/search/search-bar';
@@ -22,6 +23,7 @@ import { Icon } from '@/components/ui/icon';
 import { Spacing } from '@/constants/theme';
 import { useActiveSource, useSourceCapabilities } from '@/hooks/use-active-source';
 import { useTheme } from '@/hooks/use-theme';
+import { useFavorites } from '@/store/favorites-store';
 import { filterStore, useFilters } from '@/store/filter-store';
 import { settingsStore, useSettings } from '@/store/settings-store';
 import {
@@ -31,6 +33,7 @@ import {
   useSearch,
   useSearchRadius,
 } from '@/store/search-store';
+import { discoverRows } from '@/utils/discover';
 import { activeFilterChips, effectiveFilters, quickFilters } from '@/utils/filters';
 import { effectiveSort, RESULT_SORT_LABEL, sortPlaces } from '@/utils/sort-places';
 
@@ -73,6 +76,13 @@ export default function SearchScreen() {
         : `Nach ${RESULT_SORT_LABEL[resultSort]}`;
   // Chips nur für Filter, die die aktive Quelle auswerten kann; Entfernen wirkt auf die gespeicherten.
   const chips = activeFilterChips(effectiveFilters(filters, caps), defaultRadius, units);
+  // Entdecken-Reihen nur beim Stöbern: ohne Suchbegriff und ohne aktive Filter.
+  const favorites = useFavorites((s) => s.favorites);
+  const browsing = !text.trim() && chips.length === 0 && status === 'success';
+  const rows = useMemo(
+    () => (browsing ? discoverRows(results, favorites, userLocation) : []),
+    [browsing, results, favorites, userLocation],
+  );
   // Ein-Tipp-Filter: aktive erscheinen oben als normale Chips (mit ×), die übrigen als Vorschlag.
   const suggestions = quickFilters(caps)
     .filter((q) => !q.isActive(filters))
@@ -178,12 +188,14 @@ export default function SearchScreen() {
             onRetry={() => void actions().search()}
           />
         ) : viewMode === 'map' ? (
-          <ResultsMap
-            places={results}
+          <MapWithSheet
+            places={sortedResults}
             center={center}
             radiusMeters={radius}
             userLocation={userLocation}
             onSearchArea={actions().selectArea}
+            summary={`${results.length}${hasMore ? '+' : ''} Treffer`}
+            onEndReached={() => void actions().loadMore()}
           />
         ) : (
           <PlaceList
@@ -196,7 +208,10 @@ export default function SearchScreen() {
             onRefresh={() => void actions().refresh()}
             ListEmptyComponent={empty}
             ListHeaderComponent={
-              <CuisineCarousel filters={filters} onChange={filterStore.getState().setFilters} />
+              <>
+                <CuisineCarousel filters={filters} onChange={filterStore.getState().setFilters} />
+                <DiscoverRows rows={rows} userLocation={userLocation} />
+              </>
             }
           />
         )}
