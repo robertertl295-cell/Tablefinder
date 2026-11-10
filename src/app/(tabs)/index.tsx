@@ -9,6 +9,7 @@ import { InstallHint } from '@/components/install-hint';
 import { PlaceCardSkeleton } from '@/components/place/place-card-skeleton';
 import { PlaceList } from '@/components/place/place-list';
 import { ResultsMap } from '@/components/place/results-map';
+import { CuisineCarousel } from '@/components/search/cuisine-carousel';
 import { LocationNotice } from '@/components/search/location-notice';
 import { LocationPicker } from '@/components/search/location-picker';
 import { SearchBar } from '@/components/search/search-bar';
@@ -30,7 +31,7 @@ import {
   useSearch,
   useSearchRadius,
 } from '@/store/search-store';
-import { activeFilterChips, effectiveFilters } from '@/utils/filters';
+import { activeFilterChips, effectiveFilters, quickFilters } from '@/utils/filters';
 import { effectiveSort, RESULT_SORT_LABEL, sortPlaces } from '@/utils/sort-places';
 
 const actions = () => searchStore.getState();
@@ -72,6 +73,14 @@ export default function SearchScreen() {
         : `Nach ${RESULT_SORT_LABEL[resultSort]}`;
   // Chips nur für Filter, die die aktive Quelle auswerten kann; Entfernen wirkt auf die gespeicherten.
   const chips = activeFilterChips(effectiveFilters(filters, caps), defaultRadius, units);
+  // Ein-Tipp-Filter: aktive erscheinen oben als normale Chips (mit ×), die übrigen als Vorschlag.
+  const suggestions = quickFilters(caps)
+    .filter((q) => !q.isActive(filters))
+    .map((q) => ({
+      id: q.id,
+      label: q.label,
+      onPress: () => filterStore.getState().setFilters(q.apply(filterStore.getState().filters)),
+    }));
 
   // Android liest die Trefferzeile über accessibilityLiveRegion vor, iOS braucht eine Ansage.
   const resultCount = results.length;
@@ -155,6 +164,7 @@ export default function SearchScreen() {
           </>
         }
         chips={chips}
+        suggestions={suggestions}
         filters={filters}
         onChange={filterStore.getState().setFilters}
         onReset={filterStore.getState().reset}
@@ -185,6 +195,9 @@ export default function SearchScreen() {
             onEndReached={() => void actions().loadMore()}
             onRefresh={() => void actions().refresh()}
             ListEmptyComponent={empty}
+            ListHeaderComponent={
+              <CuisineCarousel filters={filters} onChange={filterStore.getState().setFilters} />
+            }
           />
         )}
       </View>

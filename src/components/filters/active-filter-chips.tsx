@@ -15,10 +15,19 @@ type Props = {
   onReset: () => void;
   /** Steht immer am Anfang der Zeile (z. B. der Filter-Button). */
   leading?: ReactNode;
+  /** Ein-Tipp-Filter, die noch nicht aktiv sind („Jetzt offen“, „Terrasse“ …). */
+  suggestions?: { id: string; label: string; onPress: () => void }[];
 };
 
 /** Filterleiste: optionaler Button vorne, dann aktive Filter als Chips (Antippen entfernt). */
-export function ActiveFilterChips({ chips, filters, onChange, onReset, leading }: Props) {
+export function ActiveFilterChips({
+  chips,
+  filters,
+  onChange,
+  onReset,
+  leading,
+  suggestions = [],
+}: Props) {
   const theme = useTheme();
   if (chips.length === 0 && !leading) return null;
   return (
@@ -37,6 +46,14 @@ export function ActiveFilterChips({ chips, filters, onChange, onReset, leading }
           onPress={() => onChange(chip.remove(filters))}
           accessibilityLabel={`Filter ${chip.label} entfernen`}
           trailing={<Icon name="close" size={14} color={theme.onAccent} />}
+        />
+      ))}
+      {suggestions.map((s) => (
+        <Chip
+          key={s.id}
+          label={s.label}
+          onPress={s.onPress}
+          accessibilityLabel={`Filter ${s.label} setzen`}
         />
       ))}
       {chips.length > 1 && (

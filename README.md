@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 385 Tests laufen ohne Fehler.
+- Typecheck, Lint und 393 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -328,11 +328,18 @@ Vertrauensscore = (k · m + n · r) / (k + n)
 | Mahlzeit       | Frühstück / Mittagessen / Abendessen                                                                                               | App, nur Google                                               |
 
 - **Fehlende Angaben:** Bei Ernährung, Ausstattung, Service, Mahlzeiten und Öffnungszeiten gilt nur ein ausdrückliches „ja“. Fehlt die Angabe, fällt das Lokal heraus. Lieber ein Treffer zu wenig als ein Lokal, das sich vor Ort als unpassend herausstellt.
+- **Küchen-Karussell:** Über der Trefferliste runde Bildkacheln (Pizza, Italienisch, Burger, Döner, Sushi … Café, Bar, Bäckerei) mit den KI-Symbolbildern; ein Tipp schaltet Küche bzw. Art um (`components/search/cuisine-carousel.tsx`). Ohne Symbolbilder (native App ohne Adresse) Emojis.
+- **Schnellfilter:** In der Filterleiste stehen hinter den aktiven Filtern Ein-Tipp-Vorschläge: „Jetzt offen“, „4,5+ ★“, „Terrasse“, „Vegan“ (bei Google allein „Vegetarisch“), „Günstig (€–€€)“, „Spät offen“ – nur, was die Quelle kann (`quickFilters`). Aktiv erscheinen sie als normale Chips mit ×.
 - **Übernahme:** Änderungen im Filter-Sheet greifen erst beim Schließen, per „Fertig“ oder Wischgeste. So löst nicht jeder einzelne Tipp eine kostenpflichtige Anfrage aus.
 - **Nachladen beim Filtern:** Filtert die App selbst, lädt sie automatisch weitere Seiten, bis mindestens 8 Treffer da sind. Pro Suche sind es höchstens 3 Seiten (Kostenbremse).
 - **Bedienung:** Aktive Filter stehen als Chips unter der Suche, ein Tipp entfernt sie. Ab zwei Filtern gibt es „Zurücksetzen“, im Leerzustand „Filter zurücksetzen“.
 - **Speicherung:** unter `tablefinder.filters`, beim Laden wird geprüft.
 - **Je Datenquelle:** Welche Filter angeboten werden, hängt von der Quelle ab (siehe [Datenquellen](#datenquellen)).
+
+## Trefferkarten
+
+- **Kurzinfos auf dem Bild** (`cardBadges`): geschätzte Gehzeit („🚶 6 Min.“), „bis 23:00“ bzw. „24 h“, wenn geöffnet, und ein Merkmal („Vegan“, sonst „Terrasse“). Bild 196 pt hoch.
+- **Gehzeit** (`utils/walking.ts`): Luftlinie × 1,3 (Umwege) bei 80 m/min, ohne Routing-Dienst und ohne Kosten. In der kompakten Karte (Karte-Ansicht) steht sie neben der Entfernung; Screenreader lesen sie mit vor.
 
 ## Detailseite
 
@@ -435,7 +442,7 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 ## Tests
 
-385 Tests in 40 Dateien (`npm test`):
+393 Tests in 41 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

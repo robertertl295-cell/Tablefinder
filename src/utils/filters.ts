@@ -345,3 +345,58 @@ export function sanitizeFilters(input: unknown, defaultRadius = DEFAULT_RADIUS_M
     hours: pick(raw.hours, HOURS_OPTIONS),
   };
 }
+
+/** Ein-Tipp-Filter unter der Suche („Jetzt offen“, „4,5+ ★“ …). `id` entspricht dem Chip-ID. */
+export type QuickFilter = {
+  id: string;
+  label: string;
+  isActive: (f: Filters) => boolean;
+  apply: (f: Filters) => Filters;
+};
+
+/** Schnellfilter, die die aktive Quelle auswerten kann. */
+export function quickFilters(caps: SourceCapabilities): QuickFilter[] {
+  const out: QuickFilter[] = [
+    {
+      id: 'openNow',
+      label: 'Jetzt offen',
+      isActive: (f) => f.openNow,
+      apply: (f) => ({ ...f, openNow: true }),
+    },
+  ];
+  if (caps.ratings) {
+    out.push({
+      id: 'minRating',
+      label: '4,5+ ★',
+      isActive: (f) => f.minRating !== null,
+      apply: (f) => ({ ...f, minRating: 4.5 }),
+    });
+  }
+  const attribute = (key: AttributeKey, label: string) => {
+    if (!caps.attributes.includes(key)) return;
+    out.push({
+      id: `attribute:${key}`,
+      label,
+      isActive: (f) => f.attributes.includes(key),
+      apply: (f) => ({ ...f, attributes: [...f.attributes, key] }),
+    });
+  };
+  attribute('outdoorSeating', 'Terrasse');
+  if (caps.attributes.includes('vegan')) attribute('vegan', 'Vegan');
+  else attribute('vegetarian', 'Vegetarisch');
+  if (caps.priceLevels) {
+    out.push({
+      id: 'priceLevels',
+      label: 'Günstig (€–€€)',
+      isActive: (f) => f.priceLevels.length > 0,
+      apply: (f) => ({ ...f, priceLevels: [1, 2] }),
+    });
+  }
+  out.push({
+    id: 'hours:lateOpen',
+    label: 'Spät offen',
+    isActive: (f) => f.hours.includes('lateOpen'),
+    apply: (f) => ({ ...f, hours: [...f.hours, 'lateOpen'] }),
+  });
+  return out;
+}

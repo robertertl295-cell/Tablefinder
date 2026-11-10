@@ -180,3 +180,10 @@ const manifest = manifestJson as PlaceholderManifest;
 export function placeholderFor(place: PlaceSummary): Placeholder | null {
   return pickPlaceholder(place, manifest, config.placeholderBaseUrl);
 }
+
+/** Erstes Symbolbild einer Gruppe (für Kacheln wie das Küchen-Karussell), oder `null`. */
+export function groupImageUri(group: PlaceholderGroup): string | null {
+  const image = manifest.images[group]?.[0];
+  const base = config.placeholderBaseUrl;
+  return image && base ? `${base.replace(/\/$/, '')}/${image.file}` : null;
+}

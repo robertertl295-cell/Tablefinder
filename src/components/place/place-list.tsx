@@ -25,6 +25,8 @@ type Props = {
   onEndReached: () => void;
   onRefresh: () => void;
   ListEmptyComponent?: ReactElement;
+  /** Scrollt mit der Liste mit (z. B. das Küchen-Karussell). */
+  ListHeaderComponent?: ReactElement;
   showTrustScore?: boolean;
 };
 
@@ -36,6 +38,7 @@ export function PlaceList({
   onEndReached,
   onRefresh,
   ListEmptyComponent,
+  ListHeaderComponent,
   showTrustScore = false,
 }: Props) {
   const theme = useTheme();
@@ -65,6 +68,7 @@ export function PlaceList({
         <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.accent} />
       }
       ListEmptyComponent={ListEmptyComponent}
+      ListHeaderComponent={ListHeaderComponent}
       ListFooterComponent={
         places.length > 0 ? (
           <View>
