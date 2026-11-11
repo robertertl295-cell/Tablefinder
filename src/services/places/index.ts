@@ -1,4 +1,5 @@
 import { config, type AppConfig } from '@/services/config';
+import { placeLinksStore } from '@/store/place-links-store';
 import { settingsStore, type SourcePreference } from '@/store/settings-store';
 import type { SearchSource } from '@/types/place';
 
@@ -23,9 +24,10 @@ export function createPlacesProvider(
   appConfig: AppConfig,
   preference: () => SourcePreference,
 ): RoutingPlacesProvider {
-  const google = appConfig.placesApiKey
-    ? new CachedPlacesProvider(new GooglePlacesProvider({ apiKey: appConfig.placesApiKey }))
+  const googleRaw = appConfig.placesApiKey
+    ? new GooglePlacesProvider({ apiKey: appConfig.placesApiKey })
     : undefined;
+  const google = googleRaw ? new CachedPlacesProvider(googleRaw) : undefined;
   const osm = new CachedPlacesProvider(
     new OverpassPlacesProvider({ datasetUrl: appConfig.osmDatasetUrl }),
   );
@@ -34,9 +36,18 @@ export function createPlacesProvider(
       google,
       osm,
       mock: new CachedPlacesProvider(new MockPlacesProvider()),
-      combined: google
-        ? new CachedPlacesProvider(new CombinedPlacesProvider(google, osm))
-        : undefined,
+      combined:
+        google && googleRaw
+          ? new CachedPlacesProvider(
+              new CombinedPlacesProvider(google, osm, {
+                lookup: (name, location) => googleRaw.findByName(name, location),
+                links: {
+                  get: (osmId) => placeLinksStore.getState().links[osmId],
+                  set: (osmId, googleId) => placeLinksStore.getState().setLink(osmId, googleId),
+                },
+              }),
+            )
+          : undefined,
     },
     () => resolveSource(preference(), google !== undefined),
   );

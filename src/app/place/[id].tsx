@@ -23,6 +23,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { usePlaceDetails } from '@/hooks/use-place-details';
 import { useTheme } from '@/hooks/use-theme';
 import { mayShowDetailsOnMap } from '@/services/places/map-rules';
+import { isOsmId } from '@/services/places/osm-mapping';
 import { placeholderFor } from '@/services/placeholders/placeholders';
 import { useSearch } from '@/store/search-store';
 import { useSettings } from '@/store/settings-store';
@@ -185,7 +186,7 @@ function DetailSections({ details, now }: { details: PlaceDetails; now: Date }) 
         details.location,
         details.name,
         routeApp,
-        details.source === 'google' ? details.id : null,
+        details.source === 'google' && !isOsmId(details.id) ? details.id : null,
       ),
     );
   const phone = details.internationalPhone ?? details.phone;

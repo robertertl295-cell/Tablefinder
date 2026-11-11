@@ -169,3 +169,104 @@ describe('CombinedPlacesProvider', () => {
     expect(details.rating).toBe(4.6);
   });
 });
+
+describe('Kombi: OSM-Lokale zwischen den Google-Seiten (Teilkreise)', () => {
+  const CENTER = { latitude: 52.5, longitude: 13.4 };
+  const Q: SearchQuery = { center: CENTER, radiusMeters: 1500 };
+  // Ring-Teilkreis 0° liegt ~1125 m nördlich.
+  const north = (m: number) => 52.5 + m / 111_320;
+  const G_TWIN = place('ChIJtwin', 'Zwillingsbar', north(1150), 13.4, { rating: 4.4 });
+  const O_TWIN = place('osm:node/50', 'Zwillingsbar', north(1160), 13.4, { rating: null });
+  const O_CENTER = place('osm:node/51', 'Mittelimbiss', 52.5, 13.4001, { rating: null });
+
+  /** Google-Attrappe: Seite i = Teilkreis i, liefert die Orte in diesem Kreis. */
+  function cellGoogle(all: PlaceSummary[]): PlacesProvider {
+    const { searchCells } = jest.requireActual('@/services/places/search-cells');
+    return {
+      source: 'google',
+      search: async (q: SearchQuery) => {
+        const cells = searchCells(q.center, q.radiusMeters);
+        const i = q.pageToken ? Number(q.pageToken) : 0;
+        const cell = cells[i];
+        const { distanceMeters } = jest.requireActual('@/utils/geo');
+        return {
+          places:
+            i === 0
+              ? []
+              : all.filter((p) => distanceMeters(p.location, cell.center) <= cell.radiusMeters),
+          nextPageToken: i + 1 < cells.length ? String(i + 1) : null,
+        };
+      },
+      getDetails: async (id) => all.find((p) => p.id === id) as PlaceDetails,
+      getSummary: async (id) => all.find((p) => p.id === id)!,
+      getPhotoUrl: () => null,
+    };
+  }
+
+  it('Mittel-Lokal kommt früh, Zwilling erscheint nur einmal (zusammengeführt)', async () => {
+    const combined = new CombinedPlacesProvider(
+      cellGoogle([G_TWIN]),
+      fakeProvider([O_CENTER, O_TWIN]),
+    );
+    const pages: string[][] = [];
+    let token: string | undefined;
+    for (let i = 0; i < 20; i++) {
+      const r = await combined.search({ ...Q, pageToken: token });
+      pages.push(r.places.map((p) => p.id));
+      if (!r.nextPageToken) break;
+      token = r.nextPageToken;
+    }
+    const all = pages.flat();
+    // Nach Seite 2 (Mitte) ist das Mittel-Lokal sicher – nicht erst am Ende.
+    expect(pages[1]).toContain('osm:node/51');
+    expect(all.filter((id) => id === 'osm:node/51')).toHaveLength(1);
+    // Der OSM-Zwilling steht nie allein in der Liste, nur als Google-Ort.
+    expect(all).not.toContain('osm:node/50');
+    expect(all.filter((id) => id === 'ChIJtwin').length).toBeGreaterThan(0);
+  });
+});
+
+describe('Kombi: OSM-Lokal öffnen holt Google-Daten', () => {
+  it('sucht einmal bei Google, merkt sich die place_id und zeigt Bewertung', async () => {
+    const lookup = jest.fn(async () => [
+      { id: 'ChIJother', name: 'Ganz anders', location: G_RAMEN.location },
+      { id: 'ChIJramen', name: 'Nudelwerk Ramen', location: G_RAMEN.location },
+    ]);
+    const links = new Map<string, string>();
+    const combined = new CombinedPlacesProvider(
+      fakeProvider([G_RAMEN]),
+      fakeProvider([O_RAMEN, O_OTHER]),
+      { lookup, links: { get: (k) => links.get(k), set: (k, v) => void links.set(k, v) } },
+    );
+
+    const details = await combined.getDetails('osm:node/1');
+    expect(details.id).toBe('osm:node/1'); // ID bleibt (Favoriten, Navigation)
+    expect(details.source).toBe('google');
+    expect(details.rating).toBe(4.6);
+    expect(details.attributes.vegan).toBe(true); // OSM-Angabe bleibt
+    expect(links.get('osm:node/1')).toBe('ChIJramen');
+
+    await combined.getDetails('osm:node/1');
+    expect(lookup).toHaveBeenCalledTimes(1); // beim zweiten Mal aus dem Speicher
+  });
+
+  it('ohne passenden Google-Eintrag bleibt es beim OSM-Lokal', async () => {
+    const combined = new CombinedPlacesProvider(
+      fakeProvider([G_RAMEN]),
+      fakeProvider([O_RAMEN, O_OTHER]),
+      { lookup: async () => [{ id: 'ChIJx', name: 'Etwas anderes', location: O_OTHER.location }] },
+    );
+    const details = await combined.getDetails('osm:node/2');
+    expect(details.source).toBe('osm');
+    expect(details.id).toBe('osm:node/2');
+  });
+
+  it('Kurzdaten von OSM-Lokalen (Favoritenliste) ohne Google-Abfrage', async () => {
+    const lookup = jest.fn(async () => []);
+    const combined = new CombinedPlacesProvider(fakeProvider([G_RAMEN]), fakeProvider([O_RAMEN]), {
+      lookup,
+    });
+    expect((await combined.getSummary('osm:node/1')).source).toBe('osm');
+    expect(lookup).not.toHaveBeenCalled();
+  });
+});

@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 398 Tests laufen ohne Fehler.
+- Typecheck, Lint und 408 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -378,6 +378,9 @@ Standard, sobald ein Google-Key da ist („Automatisch“, oder ausdrücklich �
 - **Ablauf** (`src/services/places/combined-provider.ts`): Erst die Google-Treffer (Bewertungen, Fotos, Rezensionen), jeweils ergänzt um die OSM-Angaben desselben Lokals. Danach die Lokale, die nur OpenStreetMap kennt, nach Entfernung und ohne Bewertung.
 - **Zuordnung** (`combine.ts`): höchstens 80 m Abstand und passender Name. Verglichen wird ohne Groß-/Kleinschreibung, Akzente und Allerweltswörter wie „Restaurant“ oder „Café“; Teilnamen und kleine Tippfehler zählen. Jedes OSM-Lokal wird höchstens einem Google-Ort zugeordnet.
 - **Ergänzen:** Google hat Vorrang; OSM füllt nur Lücken (vegan, glutenfrei, halal, WLAN, rauchfrei …), Küchen werden vereinigt. Dadurch funktionieren diese Filter auch für Google-Lokale. Auch die Detailseite und Favoriten werden ergänzt.
+- **Mehr Google-Lokale (Teilkreise, `search-cells.ts`):** Googles Umgebungssuche liefert pro Anfrage höchstens 20 Orte und keine weiteren Seiten. Beim Weiterscrollen fragt die App deshalb nacheinander Teilkreise ab: erst den ganzen Kreis (die beliebtesten 20), dann die Mitte und sechs Kreise im Ring (je 0,55 R, Ring bei 0,75 R – lückenlos, per Test geprüft). Bis zu 8 Anfragen und ca. 160 Google-Orte statt 20; jede weitere Seite kostet eine Anfrage und wird nur beim Scrollen geladen. Ab 600 m Umkreis; mit Suchbegriff bleibt es bei Googles 60 Treffern.
+- **OSM-Lokale einsortiert:** Lokale, die nur OSM kennt, kommen schon zwischen den Google-Seiten, sobald kein noch ausstehender Teilkreis sie erreichen kann (sonst könnte Google sie später noch liefern → doppelt). Der Rest folgt am Ende.
+- **Google-Daten beim Öffnen eines OSM-Lokals:** Die App sucht das Lokal einmal bei Google (Name in 150 m Umkreis, günstige Abrechnungsstufe nur mit ID/Name/Lage) und zeigt dann Bewertung, Fotos und Rezensionen. Die Zuordnung – nur die place_id, das erlaubt Google – wird dauerhaft gemerkt (`tablefinder.placeLinks`, wird mit „Alle lokalen Daten löschen“ entfernt). Kurzdaten für Listen fragen Google nicht ab.
 - **Filter:** Mit Mindestbewertung oder Preisfilter entfallen die nur-OSM-Lokale, weil sie beides nicht haben.
 - **Ausfall:** Lehnt Google ab (Key, Guthaben, Netz), sucht die App nur mit OSM weiter.
 - **Kosten:** keine zusätzlichen Google-Abfragen; OSM läuft auf dem Gerät aus dem Tagesdatensatz.
@@ -448,7 +451,7 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 ## Tests
 
-398 Tests in 42 Dateien (`npm test`):
+408 Tests in 43 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

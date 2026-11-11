@@ -1,4 +1,4 @@
-import type { PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
+import type { LatLng, PhotoRef, PlaceDetails, PlaceSummary } from '@/types/place';
 import { boundingBox } from '@/utils/geo';
 
 import { PlacesError, type PlacesErrorKind } from './errors';
@@ -7,6 +7,7 @@ import type { GErrorBody, GPlace, GSearchResponse } from './google-types';
 import { mapPlaceDetails, mapPlaceSummary, PRICE_LEVEL_TO_GOOGLE } from './mapping';
 import { CATEGORY_TO_GOOGLE_TYPE, NEARBY_INCLUDED_TYPES } from './place-types';
 import type { PlacesProvider, SearchQuery, SearchResult } from './provider';
+import { searchCells } from './search-cells';
 import { matchesQuery, normalizeMinRating } from './query-filter';
 
 export const GOOGLE_PLACES_BASE_URL = 'https://places.googleapis.com/v1';
@@ -139,13 +140,21 @@ export class GooglePlacesProvider implements PlacesProvider {
     });
   }
 
-  /** Umgebungssuche ohne Suchbegriff. Liefert max. 20 Treffer, keine weiteren Seiten. */
-  private nearbySearch(query: SearchQuery): Promise<GSearchResponse> {
-    if (query.pageToken) return Promise.resolve({ places: [] });
+  /**
+   * Umgebungssuche ohne Suchbegriff. Google liefert pro Anfrage max. 20 Orte und keine
+   * weiteren Seiten – „Seiten“ sind hier Teilkreise (siehe search-cells.ts), der Token ist
+   * der Index des nächsten Teilkreises. Jede weitere Seite kostet eine Anfrage.
+   */
+  private async nearbySearch(query: SearchQuery): Promise<GSearchResponse> {
+    const radius = Math.min(query.radiusMeters, MAX_RADIUS_METERS);
+    const cells = searchCells(query.center, radius);
+    const index = query.pageToken ? Number.parseInt(query.pageToken, 10) : 0;
+    const cell = cells[index];
+    if (!cell) return { places: [] };
     const includedTypes = query.category
       ? [CATEGORY_TO_GOOGLE_TYPE[query.category]]
       : [...NEARBY_INCLUDED_TYPES];
-    return this.request<GSearchResponse>('/places:searchNearby', {
+    const response = await this.request<GSearchResponse>('/places:searchNearby', {
       method: 'POST',
       body: {
         includedTypes,
@@ -153,17 +162,44 @@ export class GooglePlacesProvider implements PlacesProvider {
         rankPreference: 'POPULARITY',
         languageCode: this.languageCode,
         regionCode: this.regionCode,
-        locationRestriction: {
-          circle: {
-            center: query.center,
-            radius: Math.min(query.radiusMeters, MAX_RADIUS_METERS),
-          },
-        },
+        locationRestriction: { circle: { center: cell.center, radius: cell.radiusMeters } },
       },
       fieldMask: searchFieldMask({
         includeAttributes: query.includeAttributes ?? false,
         withPageToken: false,
       }),
+    });
+    return {
+      places: response.places,
+      nextPageToken: index + 1 < cells.length ? String(index + 1) : undefined,
+    };
+  }
+
+  /**
+   * Google-Gegenstücke zu einem Namen in der Nähe (für OSM-Lokale, siehe Kombi-Anbieter).
+   * Nur ID, Name und Lage – günstigste Abrechnungsstufe, die Namen liefert.
+   */
+  async findByName(
+    name: string,
+    location: LatLng,
+  ): Promise<{ id: string; name: string; location: LatLng }[]> {
+    const response = await this.request<GSearchResponse>('/places:searchText', {
+      method: 'POST',
+      body: {
+        textQuery: name,
+        languageCode: this.languageCode,
+        regionCode: this.regionCode,
+        pageSize: 5,
+        locationRestriction: { rectangle: boundingBox(location, 150) },
+      },
+      fieldMask: 'places.id,places.displayName,places.location',
+    });
+    return (response.places ?? []).flatMap((p) => {
+      const lat = p.location?.latitude;
+      const lng = p.location?.longitude;
+      const name = p.displayName?.text;
+      if (!p.id || !name || lat === undefined || lng === undefined) return [];
+      return [{ id: p.id, name, location: { latitude: lat, longitude: lng } }];
     });
   }
 

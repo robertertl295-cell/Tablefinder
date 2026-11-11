@@ -50,10 +50,13 @@ export class RoutingPlacesProvider implements PlacesProvider {
     for (const p of Object.values(this.providers)) p?.clear?.();
   }
 
-  /** Google-Orte im Kombi-Modus über den Kombi-Anbieter (ergänzt OSM-Angaben). */
+  /**
+   * Im Kombi-Modus Google- und OSM-Orte über den Kombi-Anbieter: Google-Orte bekommen
+   * OSM-Angaben, OSM-Orte beim Öffnen Bewertung und Fotos von Google.
+   */
   private forId(id: string): Provider {
     const source = sourceOfId(id);
-    if (source === 'google' && this.active() === 'combined' && this.providers.combined) {
+    if (source !== 'mock' && this.active() === 'combined' && this.providers.combined) {
       return this.providers.combined;
     }
     return this.pick(source);

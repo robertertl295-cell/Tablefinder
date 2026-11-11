@@ -90,10 +90,36 @@ describe('GooglePlacesProvider.search', () => {
     expect(body().includedTypes).toEqual(expect.arrayContaining(['restaurant', 'cafe', 'bar']));
     expect(body().locationRestriction).toEqual({ circle: { center: CENTER, radius: 1500 } });
     expect(header('X-Goog-FieldMask')).not.toContain('nextPageToken');
+    // Weitere „Seiten“ = Teilkreise (Google liefert pro Anfrage nur 20).
+    expect(result.nextPageToken).toBe('1');
+  });
+
+  it('lädt bei Nearby weitere Seiten über Teilkreise: Mitte, dann 6 im Ring', async () => {
+    const { provider, body } = setup(() => jsonResponse({ places: [FULL_PLACE] }));
+    const center = await provider.search({ ...BASE_QUERY, pageToken: '1' });
+    expect(body().locationRestriction).toEqual({ circle: { center: CENTER, radius: 825 } });
+    expect(center.nextPageToken).toBe('2');
+    const last = await provider.search({ ...BASE_QUERY, pageToken: '7' });
+    expect((body().locationRestriction as { circle: { radius: number } }).circle.radius).toBe(825);
+    expect(last.nextPageToken).toBeNull();
+  });
+
+  it('kleiner Umkreis: nur eine Anfrage, keine Teilkreise', async () => {
+    const { provider } = setup(() => jsonResponse({ places: [FULL_PLACE] }));
+    const result = await provider.search({ ...BASE_QUERY, radiusMeters: 500 });
     expect(result.nextPageToken).toBeNull();
   });
 
-  it('fragt bei Nearby keine weitere Seite an (gibt es dort nicht)', async () => {
+  it('findByName: günstige Namenssuche nahe einem Ort', async () => {
+    const { provider, calls, body, header } = setup(() => jsonResponse({ places: [FULL_PLACE] }));
+    const found = await provider.findByName('Nudelwerk', CENTER);
+    expect(calls[0]?.url).toBe('https://places.googleapis.com/v1/places:searchText');
+    expect(body().textQuery).toBe('Nudelwerk');
+    expect(header('X-Goog-FieldMask')).toBe('places.id,places.displayName,places.location');
+    expect(found[0]?.id).toBe('ChIJabc');
+  });
+
+  it('fragt bei Nearby keine ungültige Seite an', async () => {
     const { provider, calls } = setup(() => jsonResponse({ places: [FULL_PLACE] }));
     const result = await provider.search({ ...BASE_QUERY, pageToken: 'x' });
     expect(calls).toHaveLength(0);
