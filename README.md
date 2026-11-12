@@ -434,7 +434,8 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 - **Abstände:** Im Web misst `SafeAreaProvider` (in `app/_layout.tsx`) die Ränder für Uhr/Notch und Home-Balken. Alle Bildschirme halten oben Abstand: `Screen` (Suche, Favoriten, Einstellungen), Filter- und Favoriten-Sheet, Karten-Kopfzeile, die hochgezogene Karten-Liste (`topInset`) und die schwebenden Buttons der Detailseite.
 - **Detailseite:** Das Foto reicht bewusst bis unter die Uhr. Sobald gescrollt wird, liegt hinter der Statusleiste eine Fläche in der Hintergrundfarbe, damit dort keine Buttons oder Texte durchscheinen.
-- **Bildschirmhöhe:** iOS legt Home-Bildschirm-Apps mit durchsichtiger Statusleiste teils um die Höhe der Statusleiste zu kurz an – unten bleibt ein Balken in der Hintergrundfarbe. Ein kleines Skript in `scripts/build-web.mjs` (`tablefinder-viewport`) streckt die Seite dann auf die echte Bildschirmhöhe (nur im Standalone-Modus, nur bei einer Lücke bis 100 px).
+- **Bildschirmhöhe (iOS 26, WebKit-Fehler 301108):** In Home-Bildschirm-Apps mit `viewport-fit=cover` und durchsichtiger Statusleiste legt iOS 26 die Seite um die Höhe der Statusleiste zu kurz an, solange sie kürzer als der Bildschirm ist – unten bleibt ein Balken in der Hintergrundfarbe. Abhilfe ist eine reine CSS-Regel in `scripts/build-web.mjs` (`tablefinder-viewport`): `html { min-height: min(100lvh, calc(100% + env(safe-area-inset-top))) }` im Standalone-Modus (Media-Query und Klasse `tf-standalone` über `navigator.standalone`). Der Deckel `100lvh` verhindert Scrollen, wenn iOS schon die volle Höhe liefert. Im Desktop-Browser lässt sich der Fehler nicht nachstellen.
+- **Anzeige-Diagnose:** Einstellungen → Über → „Anzeige-Diagnose“ zeigt die Messwerte des Geräts (Bildschirm, Fensterhöhe, 100lvh, Ränder, iOS-Version; `utils/viewport-diagnostics.ts`) – für Layoutprobleme, die nur auf dem echten iPhone auftreten.
 
 ## Barrierefreiheit, Dunkelmodus, Performance
 

@@ -50,31 +50,27 @@ const head = `
       .tf-map-dark .leaflet-control-attribution { background: rgba(28, 25, 23, 0.85); color: #A8A29E; }
       .tf-map-dark .leaflet-control-attribution a { color: #F0876B; }
     </style>
-    <script id="tablefinder-viewport">
-      // iOS-Home-Bildschirm-App mit durchsichtiger Statusleiste: Die Seite beginnt unter der
-      // Statusleiste, ist aber um deren Höhe zu kurz – unten bleibt ein Balken in der
-      // Hintergrundfarbe. Dann die Seite auf die echte Bildschirmhöhe strecken.
-      (function () {
-        var MAX_GAP = 100; // größer als jede Statusleiste: dann ist es etwas anderes (z. B. geteilter Bildschirm)
-        function fix() {
-          var root = document.documentElement;
-          var standalone =
-            window.navigator.standalone === true ||
-            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-          root.style.height = '';
-          if (!standalone) return;
-          var portrait = !window.matchMedia || window.matchMedia('(orientation: portrait)').matches;
-          var full = portrait
-            ? Math.max(window.screen.height, window.screen.width)
-            : Math.min(window.screen.height, window.screen.width);
-          var gap = full - root.clientHeight;
-          if (gap > 0 && gap <= MAX_GAP) root.style.height = full + 'px';
+    <style id="tablefinder-viewport">
+      /* iOS 26, Home-Bildschirm-App mit viewport-fit=cover und durchsichtiger Statusleiste
+         (WebKit-Fehler 301108): Solange die Seite kürzer als der Bildschirm ist, legt iOS sie um
+         die Höhe der Statusleiste zu kurz an – unten bleibt ein Balken in der Hintergrundfarbe.
+         Ist die Seite mindestens bildschirmhoch, bekommt sie die volle Höhe. Deshalb die Seite
+         um die obere Sicherheitszone verlängern; gedeckelt auf 100lvh, damit nichts scrollt,
+         wenn iOS schon die volle Höhe liefert. Reine CSS-Regel: kein Messen, kein Flackern. */
+      @media (display-mode: standalone) {
+        html {
+          height: min(100lvh, calc(100% + env(safe-area-inset-top)));
+          min-height: min(100lvh, calc(100% + env(safe-area-inset-top)));
         }
-        fix();
-        window.addEventListener('resize', fix);
-        window.addEventListener('orientationchange', function () { setTimeout(fix, 300); });
-        window.addEventListener('pageshow', fix);
-      })();
+      }
+      /* display-mode ist auf iOS nicht immer verlässlich – zusätzlich über navigator.standalone. */
+      html.tf-standalone {
+        height: min(100lvh, calc(100% + env(safe-area-inset-top)));
+        min-height: min(100lvh, calc(100% + env(safe-area-inset-top)));
+      }
+    </style>
+    <script id="tablefinder-standalone">
+      if (window.navigator.standalone === true) document.documentElement.classList.add('tf-standalone');
     </script>`;
 
 const file = join(OUT, 'index.html');

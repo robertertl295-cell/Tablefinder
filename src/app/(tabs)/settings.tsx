@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/screen';
 import { Section } from '@/components/detail/section';
@@ -25,6 +25,7 @@ import {
 import type { SearchSource } from '@/types/place';
 import { formatDistance, type Units } from '@/utils/format';
 import { showDialog } from '@/utils/dialog';
+import { formatDiagnostics, viewportDiagnostics } from '@/utils/viewport-diagnostics';
 
 const SOURCE_OPTIONS: { value: SourcePreference; label: string }[] = [
   { value: 'auto', label: 'Automatisch' },
@@ -258,6 +259,19 @@ export default function SettingsScreen() {
             Google-API-Schlüssel: {hasGoogleKey ? 'hinterlegt' : 'nicht hinterlegt'}
           </Paragraph>
           <Paragraph>Version {version}</Paragraph>
+          {Platform.OS === 'web' && (
+            <Row
+              icon="settings"
+              label="Anzeige-Diagnose"
+              onPress={() => {
+                const d = viewportDiagnostics();
+                showDialog(
+                  'Anzeige-Diagnose',
+                  d ? formatDiagnostics(d) : 'Nur in der Web-App verfügbar.',
+                );
+              }}
+            />
+          )}
         </Section>
       </ScrollView>
     </Screen>
