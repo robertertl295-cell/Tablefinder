@@ -34,6 +34,11 @@ type Props = {
   /** Zeile über den Karten, z. B. „20 Treffer“. */
   summary: string;
   onEndReached?: () => void;
+  /**
+   * Abstand oben für die hochgezogene Liste, wenn sie bis an den Bildschirmrand reicht
+   * (Karten-Tab): Sonst läge der Griff mit „Karte“ unter Uhr und Notch.
+   */
+  topInset?: number;
 };
 
 /**
@@ -52,6 +57,7 @@ export function MapSheet({
   onSelect,
   summary,
   onEndReached,
+  topInset = 0,
 }: Props) {
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
@@ -118,7 +124,12 @@ export function MapSheet({
   if (expanded) {
     return (
       <View
-        style={[StyleSheet.absoluteFill, styles.expanded, { backgroundColor: theme.background }]}>
+        testID="map-sheet-expanded"
+        style={[
+          StyleSheet.absoluteFill,
+          styles.expanded,
+          { backgroundColor: theme.background, paddingTop: topInset },
+        ]}>
         {handle}
         <FlatList
           data={places}

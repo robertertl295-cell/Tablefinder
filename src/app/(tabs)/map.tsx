@@ -50,6 +50,7 @@ export default function MapScreen() {
         onSearchArea={searchStore.getState().selectArea}
         topInset={headerTop + 56}
         summary={summary}
+        sheetTopInset={insets.top}
         onEndReached={() => void searchStore.getState().loadMore()}
         overlay={
           <View

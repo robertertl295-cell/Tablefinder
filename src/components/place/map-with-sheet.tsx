@@ -17,13 +17,15 @@ type Props = {
   onEndReached?: () => void;
   /** Schwebt über der Karte (z. B. die Kopfzeile des Karten-Tabs). */
   overlay?: ReactNode;
+  /** Abstand zur Statusleiste, wenn die Karte bis an den oberen Bildschirmrand reicht. */
+  sheetTopInset?: number;
 };
 
 /**
  * Karte mit Leiste darunter. Die Leiste liegt nicht über der Karte, sondern darunter –
  * so bleiben Quellenangabe und Google-Logo der Karte sichtbar. Hochgezogen deckt sie alles ab.
  */
-export function MapWithSheet({ summary, onEndReached, overlay, ...map }: Props) {
+export function MapWithSheet({ summary, onEndReached, overlay, sheetTopInset, ...map }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const select = (p: PlaceSummary | null) => setSelectedId(p?.id ?? null);
   return (
@@ -39,6 +41,7 @@ export function MapWithSheet({ summary, onEndReached, overlay, ...map }: Props) 
         onSelect={select}
         summary={summary}
         onEndReached={onEndReached}
+        topInset={sheetTopInset}
       />
     </View>
   );

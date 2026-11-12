@@ -95,6 +95,24 @@ describe('MapSheet', () => {
     expect(screen.getByText(/1 Google-Lokale nur als Punkt/)).toBeOnTheScreen();
   });
 
+  it('hochgezogen im Karten-Tab: Abstand zur Statusleiste, „Karte“ bleibt erreichbar', async () => {
+    await render(
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <MapSheet
+          places={[p(1)]}
+          userLocation={null}
+          selectedId={null}
+          onSelect={jest.fn()}
+          summary="1 Treffer"
+          topInset={59}
+        />
+      </SafeAreaProvider>,
+    );
+    await act(async () => fireEvent.press(screen.getByLabelText('Liste aufklappen')));
+    const sheet = screen.getByTestId('map-sheet-expanded');
+    expect(sheet).toHaveStyle({ paddingTop: 59 });
+  });
+
   it('hochgezogen: alle Lokale, die Karte ist verdeckt', async () => {
     await renderSheet([p(1), google]);
     await act(async () => fireEvent.press(screen.getByLabelText('Liste aufklappen')));

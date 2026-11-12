@@ -33,6 +33,9 @@ import { directionsUrl, displayUrl, mapsPlatform, phoneUrl } from '@/utils/links
 import { describeOpenState } from '@/utils/opening-hours';
 import { placeStatus, type StatusTone } from '@/utils/place-labels';
 
+/** Ab so vielen Punkten Scrollweg bekommt die Statusleiste einen Hintergrund. */
+const SCROLLED_AFTER = 24;
+
 export default function PlaceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
@@ -41,6 +44,7 @@ export default function PlaceDetailScreen() {
   // Aus der Trefferliste sofort Name und Foto zeigen, während die Details laden.
   const summary = useSearch((s) => s.results.find((p) => p.id === id) ?? null);
   const [now] = useState(() => new Date());
+  const [scrolled, setScrolled] = useState(false);
 
   const details = state.status === 'success' ? state.details : null;
   const place: PlaceSummary | null = details ?? summary;
@@ -83,7 +87,10 @@ export default function PlaceDetailScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.five }}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.five }}
+        scrollEventThrottle={32}
+        onScroll={(e) => setScrolled(e.nativeEvent.contentOffset.y > SCROLLED_AFTER)}>
         {place.source === 'osm' && !place.photo && !placeholder ? (
           // Keine Fotos in OSM und kein Symbolbild: nur Platz für die schwebenden Buttons.
           <View style={{ height: insets.top + Spacing.six }} />
@@ -108,6 +115,15 @@ export default function PlaceDetailScreen() {
         {details && <DetailSections details={details} now={now} />}
         {details && <DataAttribution source={details.source} />}
       </ScrollView>
+      {/* Sobald gescrollt wird: Fläche hinter Uhr und Notch, damit dort keine Inhalte
+          (Buttons, Text) durchscheinen, die man nicht antippen kann. */}
+      {scrolled && insets.top > 0 && (
+        <View
+          style={[styles.statusBar, { height: insets.top, backgroundColor: theme.background }]}
+          accessible={false}
+          importantForAccessibility="no"
+        />
+      )}
       {backButton}
       <View style={[styles.favorite, { top: insets.top + Spacing.two }]}>
         <FavoriteButton placeId={place.id} placeName={place.name} />
@@ -324,6 +340,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   favorite: { position: 'absolute', right: Spacing.three },
+  statusBar: { position: 'absolute', top: 0, left: 0, right: 0 },
   header: { padding: Spacing.three, paddingTop: Spacing.four, gap: Spacing.one },
   name: { fontSize: 28, lineHeight: 34 },
   banner: {

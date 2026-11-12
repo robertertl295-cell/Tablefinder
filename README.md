@@ -32,7 +32,7 @@ Alle acht Phasen aus dem Auftrag sind umgesetzt.
 
 **Geprüft wurde:**
 
-- Typecheck, Lint und 408 Tests laufen ohne Fehler.
+- Typecheck, Lint und 409 Tests laufen ohne Fehler.
 - Die App-Pakete für iOS und Android lassen sich bauen (`expo export`).
 - Die Oberfläche wurde in jeder Phase in einer Browser-Vorschau angesehen, in Hell und Dunkel.
 
@@ -430,6 +430,12 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
   - „Alle lokalen Daten löschen“ entfernt nach Rückfrage Favoriten, Listen, Notizen, Filter, Einstellungen, den Zwischenspeicher und erzeugte Sicherungsdateien.
 - **Datenschutz-Hinweis:** Steht in der App und deckt sich mit dem Abschnitt [Datenschutz und Nutzungsbedingungen](#datenschutz-und-nutzungsbedingungen).
 
+## Statusleiste und Bildschirmhöhe (Home-Bildschirm-App)
+
+- **Abstände:** Im Web misst `SafeAreaProvider` (in `app/_layout.tsx`) die Ränder für Uhr/Notch und Home-Balken. Alle Bildschirme halten oben Abstand: `Screen` (Suche, Favoriten, Einstellungen), Filter- und Favoriten-Sheet, Karten-Kopfzeile, die hochgezogene Karten-Liste (`topInset`) und die schwebenden Buttons der Detailseite.
+- **Detailseite:** Das Foto reicht bewusst bis unter die Uhr. Sobald gescrollt wird, liegt hinter der Statusleiste eine Fläche in der Hintergrundfarbe, damit dort keine Buttons oder Texte durchscheinen.
+- **Bildschirmhöhe:** iOS legt Home-Bildschirm-Apps mit durchsichtiger Statusleiste teils um die Höhe der Statusleiste zu kurz an – unten bleibt ein Balken in der Hintergrundfarbe. Ein kleines Skript in `scripts/build-web.mjs` (`tablefinder-viewport`) streckt die Seite dann auf die echte Bildschirmhöhe (nur im Standalone-Modus, nur bei einer Lücke bis 100 px).
+
 ## Barrierefreiheit, Dunkelmodus, Performance
 
 - **Kontrast:** Ein Test prüft alle Text-/Hintergrund-Paare in Hell und Dunkel gegen WCAG AA (≥ 4,5 : 1).
@@ -451,7 +457,7 @@ Das Google-Cloud-Projekt hat eine Rechnungsadresse im Europäischen Wirtschaftsr
 
 ## Tests
 
-408 Tests in 43 Dateien (`npm test`):
+409 Tests in 43 Dateien (`npm test`):
 
 | Bereich                         | Was geprüft wird                                                                                                                                                     |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

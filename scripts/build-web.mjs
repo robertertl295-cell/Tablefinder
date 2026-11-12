@@ -49,7 +49,33 @@ const head = `
       .leaflet-control-attribution { font-size: 10px; }
       .tf-map-dark .leaflet-control-attribution { background: rgba(28, 25, 23, 0.85); color: #A8A29E; }
       .tf-map-dark .leaflet-control-attribution a { color: #F0876B; }
-    </style>`;
+    </style>
+    <script id="tablefinder-viewport">
+      // iOS-Home-Bildschirm-App mit durchsichtiger Statusleiste: Die Seite beginnt unter der
+      // Statusleiste, ist aber um deren Höhe zu kurz – unten bleibt ein Balken in der
+      // Hintergrundfarbe. Dann die Seite auf die echte Bildschirmhöhe strecken.
+      (function () {
+        var MAX_GAP = 100; // größer als jede Statusleiste: dann ist es etwas anderes (z. B. geteilter Bildschirm)
+        function fix() {
+          var root = document.documentElement;
+          var standalone =
+            window.navigator.standalone === true ||
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+          root.style.height = '';
+          if (!standalone) return;
+          var portrait = !window.matchMedia || window.matchMedia('(orientation: portrait)').matches;
+          var full = portrait
+            ? Math.max(window.screen.height, window.screen.width)
+            : Math.min(window.screen.height, window.screen.width);
+          var gap = full - root.clientHeight;
+          if (gap > 0 && gap <= MAX_GAP) root.style.height = full + 'px';
+        }
+        fix();
+        window.addEventListener('resize', fix);
+        window.addEventListener('orientationchange', function () { setTimeout(fix, 300); });
+        window.addEventListener('pageshow', fix);
+      })();
+    </script>`;
 
 const file = join(OUT, 'index.html');
 let html = readFileSync(file, 'utf8');
